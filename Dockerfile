@@ -2,17 +2,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copia package.json e package-lock.json
+# Copia package.json
 COPY package*.json ./
 
 # Installa dipendenze
-RUN npm ci --only=production
+RUN npm install --production
 
 # Copia il resto dei file
 COPY . .
-
-# Crea directory per logs
-RUN mkdir -p logs
 
 # Esponi porta
 EXPOSE 3000

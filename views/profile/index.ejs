@@ -7,21 +7,10 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <nav class="navbar">
-    <div class="nav-brand">Portal-01</div>
-    <div class="nav-menu">
-      <a href="/dashboard">Dashboard</a>
-      <a href="/ferie">Ferie</a>
-      <% if (user.role === 'admin') { %>
-        <a href="/admin/users">Gestione Utenti</a>
-      <% } %>
-      <a href="/profile" class="active">Profilo</a>
-      <span>Benvenuto, <%= user.full_name %></span>
-      <a href="/auth/logout">Logout</a>
-    </div>
-  </nav>
-  
-  <div class="container">
+  <div class="app-wrap">
+    <%- include('../partials/sidebar', { user: user, activePage: 'profile' }) %>
+    <main class="main">
+      <div class="container">
     <h1>Il Mio Profilo</h1>
     
     <div class="card">
@@ -79,8 +68,9 @@
       </form>
       <div id="passwordMessage" class="msg-box"></div>
     </div>
+      </div>
+    </main>
   </div>
-  
   <script>
     // Aggiorna profilo
     document.getElementById('profileForm').addEventListener('submit', async (e) => {

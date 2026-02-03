@@ -7,21 +7,10 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <nav class="navbar">
-    <div class="nav-brand">Portal-01</div>
-    <div class="nav-menu">
-      <a href="/dashboard">Dashboard</a>
-      <a href="/ferie" class="active">Ferie</a>
-      <% if (user.role === 'admin') { %>
-        <a href="/admin/users">Gestione Utenti</a>
-      <% } %>
-      <a href="/profile">Profilo</a>
-      <span>Benvenuto, <%= user.full_name %></span>
-      <a href="/auth/logout">Logout</a>
-    </div>
-  </nav>
-  
-  <div class="container">
+  <div class="app-wrap">
+    <%- include('../partials/sidebar', { user: user, activePage: 'ferie' }) %>
+    <main class="main">
+      <div class="container">
     <h1>Gestione Ferie</h1>
     
     <div class="card">
@@ -88,8 +77,9 @@
         </div>
       <% } %>
     </div>
+      </div>
+    </main>
   </div>
-  
   <script>
     document.getElementById('ferieForm').addEventListener('submit', async (e) => {
       e.preventDefault();

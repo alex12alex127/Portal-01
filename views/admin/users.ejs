@@ -7,19 +7,10 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <nav class="navbar">
-    <div class="nav-brand">Portal-01</div>
-    <div class="nav-menu">
-      <a href="/dashboard">Dashboard</a>
-      <a href="/ferie">Ferie</a>
-      <a href="/admin/users" class="active">Gestione Utenti</a>
-      <a href="/profile">Profilo</a>
-      <span>Benvenuto, <%= user.full_name %></span>
-      <a href="/auth/logout">Logout</a>
-    </div>
-  </nav>
-  
-  <div class="container">
+  <div class="app-wrap">
+    <%- include('../partials/sidebar', { user: user, activePage: 'admin' }) %>
+    <main class="main">
+      <div class="container">
     <h1>Gestione Utenti</h1>
     
     <div class="card">
@@ -117,8 +108,9 @@
         <% }); %>
       </div>
     </div>
+      </div>
+    </main>
   </div>
-  
   <script>
     const csrfToken = '<%= csrfToken %>';
     

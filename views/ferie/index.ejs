@@ -48,58 +48,80 @@
           <label>Note</label>
           <textarea name="note" rows="3"></textarea>
         </div>
-        <button type="submit" class="btn">Invia Richiesta</button>
+        <button type="submit" class="btn" id="ferieSubmitBtn"><span class="btn__text">Invia Richiesta</span></button>
       </form>
+      <div id="ferieMessage"></div>
     </div>
     
     <div class="card">
       <h2>Le Mie Richieste</h2>
-      <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Data Inizio</th>
-            <th>Data Fine</th>
-            <th>Giorni</th>
-            <th>Tipo</th>
-            <th>Stato</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% ferie.forEach(f => { %>
-          <tr>
-            <td><%= new Date(f.data_inizio).toLocaleDateString('it-IT') %></td>
-            <td><%= new Date(f.data_fine).toLocaleDateString('it-IT') %></td>
-            <td><%= f.giorni_totali %></td>
-            <td><%= f.tipo %></td>
-            <td><span class="badge <%= f.stato %>"><%= f.stato %></span></td>
-          </tr>
-          <% }); %>
-        </tbody>
-      </table>
-      </div>
+      <% if (ferie.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-state__icon" aria-hidden="true">📅</div>
+          <p class="empty-state__title">Nessuna richiesta</p>
+          <p class="empty-state__text">Non hai ancora inviato richieste di ferie. Usa il modulo sopra per inviare la prima.</p>
+        </div>
+      <% } else { %>
+        <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Data Inizio</th>
+              <th>Data Fine</th>
+              <th>Giorni</th>
+              <th>Tipo</th>
+              <th>Stato</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% ferie.forEach(f => { %>
+            <tr>
+              <td><%= new Date(f.data_inizio).toLocaleDateString('it-IT') %></td>
+              <td><%= new Date(f.data_fine).toLocaleDateString('it-IT') %></td>
+              <td><%= f.giorni_totali %></td>
+              <td><%= f.tipo %></td>
+              <td><span class="badge <%= f.stato %>"><%= f.stato %></span></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        </div>
+      <% } %>
     </div>
   </div>
   
   <script>
     document.getElementById('ferieForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData);
-      
+      const btn = document.getElementById('ferieSubmitBtn');
+      const msgEl = document.getElementById('ferieMessage');
+      msgEl.textContent = '';
+      msgEl.className = '';
+      btn.classList.add('btn--loading');
+      btn.disabled = true;
+
       try {
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
         const res = await fetch('/ferie/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
         const result = await res.json();
-        
+
         if (result.success) {
           window.location.reload();
+          return;
         }
+        msgEl.textContent = result.error || 'Errore durante la creazione';
+        msgEl.className = 'message--error';
       } catch (err) {
-        alert('Errore durante la creazione');
+        msgEl.textContent = 'Errore di connessione';
+        msgEl.className = 'message--error';
+      } finally {
+        btn.classList.remove('btn--loading');
+        btn.disabled = false;
       }
     });
   </script>

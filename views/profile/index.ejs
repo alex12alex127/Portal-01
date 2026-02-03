@@ -53,9 +53,9 @@
           <label>Registrato il</label>
           <input type="text" value="<%= new Date(profile.created_at).toLocaleString('it-IT') %>" disabled>
         </div>
-        <button type="submit" class="btn">Aggiorna Profilo</button>
+        <button type="submit" class="btn" id="profileSubmitBtn"><span class="btn__text">Aggiorna Profilo</span></button>
       </form>
-      <div id="profileMessage"></div>
+      <div id="profileMessage" class="msg-box"></div>
     </div>
     
     <div class="card">
@@ -75,9 +75,9 @@
           <label>Conferma Nuova Password</label>
           <input type="password" name="confirm_password" required>
         </div>
-        <button type="submit" class="btn">Cambia Password</button>
+        <button type="submit" class="btn" id="passwordSubmitBtn"><span class="btn__text">Cambia Password</span></button>
       </form>
-      <div id="passwordMessage"></div>
+      <div id="passwordMessage" class="msg-box"></div>
     </div>
   </div>
   
@@ -85,56 +85,74 @@
     // Aggiorna profilo
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData);
-      
+      const btn = document.getElementById('profileSubmitBtn');
+      const msg = document.getElementById('profileMessage');
+      msg.textContent = '';
+      msg.className = 'msg-box';
+      btn.classList.add('btn--loading');
+      btn.disabled = true;
+
       try {
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
         const res = await fetch('/profile/update', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
         const result = await res.json();
-        
-        const msg = document.getElementById('profileMessage');
+
         if (result.success) {
-          msg.style.color = 'var(--success)';
+          msg.className = 'msg-box message--success';
           msg.textContent = result.message;
           setTimeout(() => window.location.reload(), 1500);
         } else {
-          msg.style.color = 'var(--danger)';
+          msg.className = 'msg-box message--error';
           msg.textContent = result.error;
         }
       } catch (err) {
-        document.getElementById('profileMessage').textContent = 'Errore di connessione';
+        msg.className = 'msg-box message--error';
+        msg.textContent = 'Errore di connessione';
+      } finally {
+        btn.classList.remove('btn--loading');
+        btn.disabled = false;
       }
     });
-    
+
     // Cambia password
     document.getElementById('passwordForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData);
-      
+      const btn = document.getElementById('passwordSubmitBtn');
+      const msg = document.getElementById('passwordMessage');
+      msg.textContent = '';
+      msg.className = 'msg-box';
+      btn.classList.add('btn--loading');
+      btn.disabled = true;
+
       try {
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
         const res = await fetch('/profile/change-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
         const result = await res.json();
-        
-        const msg = document.getElementById('passwordMessage');
+
         if (result.success) {
-          msg.style.color = 'var(--success)';
+          msg.className = 'msg-box message--success';
           msg.textContent = result.message;
           e.target.reset();
         } else {
-          msg.style.color = 'var(--danger)';
+          msg.className = 'msg-box message--error';
           msg.textContent = result.error;
         }
       } catch (err) {
-        document.getElementById('passwordMessage').textContent = 'Errore di connessione';
+        msg.className = 'msg-box message--error';
+        msg.textContent = 'Errore di connessione';
+      } finally {
+        btn.classList.remove('btn--loading');
+        btn.disabled = false;
       }
     });
   </script>

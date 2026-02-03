@@ -329,6 +329,36 @@ small {
   transform: translateY(0);
 }
 
+/* Stato di caricamento bottone */
+.btn--loading,
+.btn.btn--loading {
+  pointer-events: none;
+  opacity: 0.85;
+  position: relative;
+}
+
+.btn--loading .btn__text {
+  visibility: hidden;
+}
+
+.btn--loading::after {
+  content: '';
+  position: absolute;
+  width: 1.25rem;
+  height: 1.25rem;
+  top: 50%;
+  left: 50%;
+  margin: -0.625rem 0 0 -0.625rem;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (min-width: 768px) {
   .btn {
     display: inline-block;
@@ -708,7 +738,17 @@ select.role-select:focus {
 
 #message,
 #profileMessage,
-#passwordMessage {
+#passwordMessage,
+#ferieMessage {
+  margin-top: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-size: 0.875rem;
+  word-wrap: break-word;
+}
+
+.msg-box {
   margin-top: 1rem;
   padding: 0.875rem 1rem;
   border-radius: var(--radius-sm);
@@ -719,9 +759,136 @@ select.role-select:focus {
 
 #message:not(:empty),
 #profileMessage:not(:empty),
-#passwordMessage:not(:empty) {
+#passwordMessage:not(:empty),
+#ferieMessage:not(:empty) {
   background: var(--light);
   border: 1px solid var(--border);
+}
+
+.message--success,
+#profileMessage.message--success,
+#passwordMessage.message--success {
+  background: #d1fae5;
+  border-color: var(--success);
+  color: #065f46;
+}
+
+.message--error,
+#message.message--error,
+#profileMessage.message--error,
+#passwordMessage.message--error,
+#ferieMessage.message--error {
+  background: #fee2e2;
+  border-color: var(--danger);
+  color: #991b1b;
+}
+
+/* Stato vuoto (lista ferie, ecc.) */
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: var(--gray);
+}
+
+.empty-state__icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.6;
+}
+
+.empty-state__title {
+  font-weight: 600;
+  color: var(--dark-soft);
+  margin-bottom: 0.375rem;
+}
+
+.empty-state__text {
+  font-size: 0.9375rem;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* ========================================
+   ADMIN — Card utenti (mobile)
+   ======================================== */
+
+.users-cards {
+  display: none;
+}
+
+.user-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.user-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.user-card__name {
+  font-weight: 700;
+  color: var(--dark);
+  font-size: 1.0625rem;
+}
+
+.user-card__meta {
+  font-size: 0.875rem;
+  color: var(--gray);
+  margin-bottom: 0.5rem;
+}
+
+.user-card__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.user-card__row:last-of-type {
+  margin-bottom: 1rem;
+}
+
+.user-card__label {
+  font-weight: 500;
+  color: var(--dark-soft);
+  min-width: 5rem;
+}
+
+.user-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.user-card__actions .btn-small {
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  .users-table-wrap {
+    display: none;
+  }
+
+  .users-cards {
+    display: block;
+  }
+}
+
+@media (min-width: 768px) {
+  .users-cards {
+    display: none;
+  }
 }
 
 /* ========================================

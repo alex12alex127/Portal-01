@@ -24,55 +24,97 @@
     
     <div class="card">
       <h2>Tutti gli Utenti (<%= users.length %>)</h2>
-      <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Ruolo</th>
-            <th>Stato</th>
-            <th>Ultimo Accesso</th>
-            <th>Azioni</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% users.forEach(u => { %>
-          <tr data-user-id="<%= u.id %>">
-            <td><strong><%= u.username %></strong></td>
-            <td><%= u.full_name %></td>
-            <td><%= u.email %></td>
-            <td>
-              <select class="role-select" data-user-id="<%= u.id %>" <%= u.id === user.id ? 'disabled' : '' %>>
-                <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>User</option>
-                <option value="manager" <%= u.role === 'manager' ? 'selected' : '' %>>Manager</option>
-                <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
-              </select>
-            </td>
-            <td>
-              <span class="badge <%= u.is_active ? 'approved' : 'rejected' %>">
-                <%= u.is_active ? 'Attivo' : 'Disattivato' %>
-              </span>
-            </td>
-            <td><%= u.last_login ? new Date(u.last_login).toLocaleString('it-IT') : 'Mai' %></td>
-            <td>
-              <% if (u.id !== user.id) { %>
-                <div class="cell-actions">
-                  <button class="btn-small toggle-btn" data-user-id="<%= u.id %>">
-                    <%= u.is_active ? 'Disattiva' : 'Attiva' %>
-                  </button>
-                  <button class="btn-small reset-btn" data-user-id="<%= u.id %>">Reset Password</button>
-                  <button class="btn-small delete-btn" data-user-id="<%= u.id %>">Elimina</button>
-                </div>
-              <% } else { %>
-                <span style="color: var(--gray);">Tu</span>
-              <% } %>
-            </td>
-          </tr>
-          <% }); %>
-        </tbody>
-      </table>
+
+      <!-- Tabella: desktop -->
+      <div class="users-table-wrap">
+        <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Ruolo</th>
+              <th>Stato</th>
+              <th>Ultimo Accesso</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(u => { %>
+            <tr data-user-id="<%= u.id %>">
+              <td><strong><%= u.username %></strong></td>
+              <td><%= u.full_name %></td>
+              <td><%= u.email %></td>
+              <td>
+                <select class="role-select" data-user-id="<%= u.id %>" <%= u.id === user.id ? 'disabled' : '' %>>
+                  <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>User</option>
+                  <option value="manager" <%= u.role === 'manager' ? 'selected' : '' %>>Manager</option>
+                  <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                </select>
+              </td>
+              <td>
+                <span class="badge <%= u.is_active ? 'approved' : 'rejected' %>">
+                  <%= u.is_active ? 'Attivo' : 'Disattivato' %>
+                </span>
+              </td>
+              <td><%= u.last_login ? new Date(u.last_login).toLocaleString('it-IT') : 'Mai' %></td>
+              <td>
+                <% if (u.id !== user.id) { %>
+                  <div class="cell-actions">
+                    <button class="btn-small toggle-btn" data-user-id="<%= u.id %>">
+                      <%= u.is_active ? 'Disattiva' : 'Attiva' %>
+                    </button>
+                    <button class="btn-small reset-btn" data-user-id="<%= u.id %>">Reset Password</button>
+                    <button class="btn-small delete-btn" data-user-id="<%= u.id %>">Elimina</button>
+                  </div>
+                <% } else { %>
+                  <span style="color: var(--gray);">Tu</span>
+                <% } %>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <!-- Card: mobile -->
+      <div class="users-cards">
+        <% users.forEach(u => { %>
+        <div class="user-card" data-user-id="<%= u.id %>">
+          <div class="user-card__header">
+            <span class="user-card__name"><%= u.username %></span>
+            <span class="badge <%= u.is_active ? 'approved' : 'rejected' %>">
+              <%= u.is_active ? 'Attivo' : 'Disattivato' %>
+            </span>
+          </div>
+          <p class="user-card__meta"><%= u.full_name %> · <%= u.email %></p>
+          <div class="user-card__row">
+            <span class="user-card__label">Ruolo</span>
+            <select class="role-select" data-user-id="<%= u.id %>" <%= u.id === user.id ? 'disabled' : '' %>>
+              <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>User</option>
+              <option value="manager" <%= u.role === 'manager' ? 'selected' : '' %>>Manager</option>
+              <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
+            </select>
+          </div>
+          <div class="user-card__row">
+            <span class="user-card__label">Accesso</span>
+            <span><%= u.last_login ? new Date(u.last_login).toLocaleString('it-IT') : 'Mai' %></span>
+          </div>
+          <% if (u.id !== user.id) { %>
+            <div class="user-card__actions cell-actions">
+              <button class="btn-small toggle-btn" data-user-id="<%= u.id %>">
+                <%= u.is_active ? 'Disattiva' : 'Attiva' %>
+              </button>
+              <button class="btn-small reset-btn" data-user-id="<%= u.id %>">Reset Password</button>
+              <button class="btn-small delete-btn" data-user-id="<%= u.id %>">Elimina</button>
+            </div>
+          <% } else { %>
+            <div class="user-card__actions"><span style="color: var(--gray);">Tu</span></div>
+          <% } %>
+        </div>
+        <% }); %>
       </div>
     </div>
   </div>

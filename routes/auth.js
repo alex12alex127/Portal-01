@@ -13,23 +13,29 @@ router.post('/login', loginLimiter, checkLoginAttempts, validateLogin, async (re
   const { username, password } = req.body;
   const ip = req.ip;
   
+  console.log(`[${new Date().toISOString()}] Login attempt for username: ${username}`);
+  
   try {
     const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
     
     if (result.rows.length === 0) {
+      console.log(`[${new Date().toISOString()}] User not found: ${username}`);
       await logLoginAttempt(username, false, ip);
       recordLoginAttempt(req.loginAttemptsKey, false);
       return res.status(401).json({ error: 'Credenziali non valide' });
     }
     
     const user = result.rows[0];
+    console.log(`[${new Date().toISOString()}] User found: ${username}, Active: ${user.is_active}`);
     
     // Verifica se l'account è attivo
     if (user.is_active === false) {
+      console.log(`[${new Date().toISOString()}] Account disabled: ${username}`);
       return res.status(403).json({ error: 'Account disabilitato. Contatta l\'amministratore.' });
     }
     
     const validPassword = await bcrypt.compare(password, user.password);
+    console.log(`[${new Date().toISOString()}] Password valid: ${validPassword}`);
     
     if (!validPassword) {
       await logLoginAttempt(username, false, ip);

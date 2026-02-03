@@ -58,11 +58,13 @@
             <td><%= u.last_login ? new Date(u.last_login).toLocaleString('it-IT') : 'Mai' %></td>
             <td>
               <% if (u.id !== user.id) { %>
-                <button class="btn-small toggle-btn" data-user-id="<%= u.id %>">
-                  <%= u.is_active ? 'Disattiva' : 'Attiva' %>
-                </button>
-                <button class="btn-small reset-btn" data-user-id="<%= u.id %>">Reset Password</button>
-                <button class="btn-small delete-btn" data-user-id="<%= u.id %>">Elimina</button>
+                <div class="cell-actions">
+                  <button class="btn-small toggle-btn" data-user-id="<%= u.id %>">
+                    <%= u.is_active ? 'Disattiva' : 'Attiva' %>
+                  </button>
+                  <button class="btn-small reset-btn" data-user-id="<%= u.id %>">Reset Password</button>
+                  <button class="btn-small delete-btn" data-user-id="<%= u.id %>">Elimina</button>
+                </div>
               <% } else { %>
                 <span style="color: var(--gray);">Tu</span>
               <% } %>

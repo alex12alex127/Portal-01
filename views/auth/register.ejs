@@ -11,6 +11,7 @@
     <h1>Portal-01</h1>
     <h2>Registrazione</h2>
     <form id="registerForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="text" name="username" placeholder="Username" required>
       <input type="email" name="email" placeholder="Email" required>
       <input type="text" name="full_name" placeholder="Nome Completo" required>

@@ -47,10 +47,15 @@ const helmetConfig = helmet({
 
 // Protezione CSRF semplice
 const csrfProtection = (req, res, next) => {
-  if (req.method === 'GET') {
-    // Genera token CSRF per richieste GET
+  // Genera token CSRF se non esiste
+  if (!req.session.csrfToken) {
     req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
-    res.locals.csrfToken = req.session.csrfToken;
+  }
+  
+  res.locals.csrfToken = req.session.csrfToken;
+  
+  // Per richieste GET, passa oltre
+  if (req.method === 'GET') {
     return next();
   }
 
@@ -58,6 +63,7 @@ const csrfProtection = (req, res, next) => {
   const token = req.body._csrf || req.headers['x-csrf-token'];
   
   if (!token || token !== req.session.csrfToken) {
+    console.log(`[${new Date().toISOString()}] CSRF token mismatch - Expected: ${req.session.csrfToken}, Got: ${token}`);
     return res.status(403).json({ error: 'Token CSRF non valido' });
   }
   

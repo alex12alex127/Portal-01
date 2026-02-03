@@ -393,3 +393,85 @@ h1 {
   font-weight: 800;
   margin-bottom: 1.5rem;
 }
+
+/* Bottoni piccoli per azioni */
+.btn-small {
+  background: var(--primary);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin: 0 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-small.delete-btn {
+  background: var(--danger);
+}
+
+.btn-small.delete-btn:hover {
+  background: #dc2626;
+}
+
+.btn-small.reset-btn {
+  background: var(--warning);
+}
+
+.btn-small.reset-btn:hover {
+  background: #f97316;
+}
+
+.btn-small.toggle-btn {
+  background: var(--secondary);
+}
+
+.btn-small.toggle-btn:hover {
+  background: #0891b2;
+}
+
+/* Select personalizzato */
+select.role-select {
+  padding: 0.5rem;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: var(--light);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+select.role-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: white;
+}
+
+select.role-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Messaggi */
+#profileMessage,
+#passwordMessage {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--gray);
+  font-size: 0.85rem;
+}

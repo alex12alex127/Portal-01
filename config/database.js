@@ -40,7 +40,8 @@ const initDatabase = async () => {
       )
     `);
 
-    console.log('Database initialized successfully');
+    console.log('✓ Database initialized successfully');
+    console.log('ℹ️  Run "npm run create-admin" to create default admin users');
   } catch (err) {
     console.error('Error initializing database:', err);
     throw err;

@@ -32,6 +32,21 @@ cp .env.example .env
 npm start
 ```
 
+5. Crea account admin:
+```bash
+npm run create-admin
+```
+
+## Account di Default
+
+Dopo aver eseguito `npm run create-admin`:
+
+- **Admin**: username: `admin`, password: `Admin123!`
+- **Manager**: username: `manager`, password: `Manager123!`
+- **User**: username: `user`, password: `User123!`
+
+⚠️ Cambia queste password in produzione!
+
 ## Deploy su Dokploy
 
 1. Crea nuovo progetto su Dokploy

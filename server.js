@@ -52,6 +52,8 @@ app.use((req, res, next) => {
 app.use('/', require('./routes/index'));
 app.use('/auth', require('./routes/auth'));
 app.use('/ferie', require('./routes/ferie'));
+app.use('/profile', require('./routes/profile'));
+app.use('/admin', require('./routes/admin'));
 
 // 404 Handler
 app.use((req, res) => {

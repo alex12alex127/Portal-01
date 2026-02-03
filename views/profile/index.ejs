@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profilo - Portal-01</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Portal-01</div>
+    <div class="nav-menu">
+      <a href="/dashboard">Dashboard</a>
+      <a href="/ferie">Ferie</a>
+      <% if (user.role === 'admin') { %>
+        <a href="/admin/users">Gestione Utenti</a>
+      <% } %>
+      <a href="/profile" class="active">Profilo</a>
+      <span>Benvenuto, <%= user.full_name %></span>
+      <a href="/auth/logout">Logout</a>
+    </div>
+  </nav>
+  
+  <div class="container">
+    <h1>Il Mio Profilo</h1>
+    
+    <div class="card">
+      <h2>Informazioni Account</h2>
+      <form id="profileForm">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" value="<%= profile.username %>" disabled>
+          <small>Il username non può essere modificato</small>
+        </div>
+        <div class="form-group">
+          <label>Nome Completo</label>
+          <input type="text" name="full_name" value="<%= profile.full_name %>" required>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" value="<%= profile.email %>" required>
+        </div>
+        <div class="form-group">
+          <label>Ruolo</label>
+          <input type="text" value="<%= profile.role %>" disabled>
+        </div>
+        <div class="form-group">
+          <label>Ultimo Accesso</label>
+          <input type="text" value="<%= profile.last_login ? new Date(profile.last_login).toLocaleString('it-IT') : 'Mai' %>" disabled>
+        </div>
+        <div class="form-group">
+          <label>Registrato il</label>
+          <input type="text" value="<%= new Date(profile.created_at).toLocaleString('it-IT') %>" disabled>
+        </div>
+        <button type="submit" class="btn">Aggiorna Profilo</button>
+      </form>
+      <div id="profileMessage"></div>
+    </div>
+    
+    <div class="card">
+      <h2>Cambia Password</h2>
+      <form id="passwordForm">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-group">
+          <label>Password Corrente</label>
+          <input type="password" name="current_password" required>
+        </div>
+        <div class="form-group">
+          <label>Nuova Password</label>
+          <input type="password" name="new_password" required>
+          <small>Min 8 caratteri, maiuscole, minuscole e numeri</small>
+        </div>
+        <div class="form-group">
+          <label>Conferma Nuova Password</label>
+          <input type="password" name="confirm_password" required>
+        </div>
+        <button type="submit" class="btn">Cambia Password</button>
+      </form>
+      <div id="passwordMessage"></div>
+    </div>
+  </div>
+  
+  <script>
+    // Aggiorna profilo
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      
+      try {
+        const res = await fetch('/profile/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        
+        const msg = document.getElementById('profileMessage');
+        if (result.success) {
+          msg.style.color = 'var(--success)';
+          msg.textContent = result.message;
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          msg.style.color = 'var(--danger)';
+          msg.textContent = result.error;
+        }
+      } catch (err) {
+        document.getElementById('profileMessage').textContent = 'Errore di connessione';
+      }
+    });
+    
+    // Cambia password
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      
+      try {
+        const res = await fetch('/profile/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        
+        const msg = document.getElementById('passwordMessage');
+        if (result.success) {
+          msg.style.color = 'var(--success)';
+          msg.textContent = result.message;
+          e.target.reset();
+        } else {
+          msg.style.color = 'var(--danger)';
+          msg.textContent = result.error;
+        }
+      } catch (err) {
+        document.getElementById('passwordMessage').textContent = 'Errore di connessione';
+      }
+    });
+  </script>
+</body>
+</html>

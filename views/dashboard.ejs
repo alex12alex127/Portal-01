@@ -12,6 +12,10 @@
     <div class="nav-menu">
       <a href="/dashboard">Dashboard</a>
       <a href="/ferie">Ferie</a>
+      <% if (user.role === 'admin') { %>
+        <a href="/admin/users">Gestione Utenti</a>
+      <% } %>
+      <a href="/profile">Profilo</a>
       <span>Benvenuto, <%= user.full_name %></span>
       <a href="/auth/logout">Logout</a>
     </div>

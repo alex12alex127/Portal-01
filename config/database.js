@@ -1,11 +1,19 @@
 const { Pool } = require('pg');
 
+if (!process.env.DATABASE_URL) {
+  console.error('ATTENZIONE: DATABASE_URL non è impostata. Configura la variabile d\'ambiente.');
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: 10000
 });
 
 const initDatabase = async () => {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL non configurata. Imposta la variabile d\'ambiente.');
+  }
   const client = await pool.connect();
   try {
     console.log('Initializing database...');

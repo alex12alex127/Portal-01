@@ -57,7 +57,14 @@ app.use('/admin', require('./routes/admin'));
 
 // 404 Handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Risorsa non trovata' });
+  res.status(404);
+  const acceptsHtml = (req.headers.accept || '').indexOf('text/html') !== -1;
+  if (acceptsHtml) {
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>404 - Portal-01</title><link rel="stylesheet" href="/css/style.css"></head><body><div class="container" style="padding:2rem;text-align:center"><h1>404</h1><p>Pagina non trovata.</p><a href="/" class="btn">Torna alla home</a></div></body></html>`);
+  } else {
+    res.json({ error: 'Risorsa non trovata' });
+  }
 });
 
 // Error Handler
@@ -70,16 +77,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Initialize database and start server
+// Avvia subito il server (così il proxy non dà 502), poi init DB in background
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✓ Server running on port ${PORT}`);
+  console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+});
+
 db.initDatabase()
   .then(() => {
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`✓ Server running on port ${PORT}`);
-      console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`✓ Security features enabled`);
-    });
+    console.log('✓ Database initialized');
   })
   .catch(err => {
     console.error('Failed to initialize database:', err);
-    process.exit(1);
+    console.error('L\'app resta in ascolto ma le pagine che usano il DB potrebbero dare errore.');
   });

@@ -1,9 +1,14 @@
 // Middleware per autenticazione
 const requireAuth = (req, res, next) => {
   if (!req.session.userId) {
-    if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+    const accept = req.headers.accept || '';
+    if (req.xhr || accept.indexOf('json') > -1) {
       return res.status(401).json({ error: 'Non autorizzato' });
     }
+    return res.redirect('/auth/login');
+  }
+  if (!req.session.user) {
+    req.session.destroy(() => {});
     return res.redirect('/auth/login');
   }
   next();
@@ -16,7 +21,7 @@ const requireRole = (...roles) => {
       return res.status(401).json({ error: 'Non autorizzato' });
     }
     
-    if (!roles.includes(req.session.user.role)) {
+    if (!req.session.user || !roles.includes(req.session.user.role)) {
       return res.status(403).json({ error: 'Accesso negato' });
     }
     

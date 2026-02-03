@@ -23,7 +23,8 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) => {
-  const { data_inizio, data_fine, tipo, note } = req.body;
+  const { data_inizio, data_fine, note } = req.body;
+  const tipo = req.body.tipo || 'ferie';
   
   try {
     // Verifica sovrapposizioni

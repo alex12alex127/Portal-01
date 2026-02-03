@@ -74,12 +74,13 @@ const validateFerie = (req, res, next) => {
   if (data_inizio && data_fine) {
     const inizio = new Date(data_inizio);
     const fine = new Date(data_fine);
-    
+    const oggi = new Date();
+    oggi.setHours(0, 0, 0, 0);
+
     if (inizio > fine) {
       errors.push('Data inizio deve essere prima della data fine');
     }
-    
-    if (inizio < new Date().setHours(0, 0, 0, 0)) {
+    if (inizio < oggi) {
       errors.push('Non puoi richiedere ferie nel passato');
     }
   }

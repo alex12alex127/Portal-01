@@ -8,6 +8,8 @@ const pool = new Pool({
 const initDatabase = async () => {
   const client = await pool.connect();
   try {
+    console.log('Initializing database...');
+    
     // Create users table
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -23,6 +25,7 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('✓ Users table ready');
 
     // Create ferie table
     await client.query(`
@@ -39,6 +42,7 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('✓ Ferie table ready');
 
     console.log('✓ Database initialized successfully');
     console.log('ℹ️  Run "npm run create-admin" to create default admin users');

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Portal-01</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Portal-01</div>
+    <div class="nav-menu">
+      <a href="/dashboard">Dashboard</a>
+      <a href="/ferie">Ferie</a>
+      <span>Benvenuto, <%= user.full_name %></span>
+      <a href="/auth/logout">Logout</a>
+    </div>
+  </nav>
+  
+  <div class="container">
+    <h1>Dashboard</h1>
+    <div class="modules-grid">
+      <div class="module-card">
+        <h3>Gestione Ferie</h3>
+        <p>Richiedi e gestisci le tue ferie</p>
+        <a href="/ferie" class="btn">Vai al modulo</a>
+      </div>
+      <div class="module-card disabled">
+        <h3>Magazzino</h3>
+        <p>Modulo in arrivo</p>
+        <span class="badge">Prossimamente</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

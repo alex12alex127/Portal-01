@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestione Ferie - Portal-01</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Portal-01</div>
+    <div class="nav-menu">
+      <a href="/dashboard">Dashboard</a>
+      <a href="/ferie" class="active">Ferie</a>
+      <span>Benvenuto, <%= user.full_name %></span>
+      <a href="/auth/logout">Logout</a>
+    </div>
+  </nav>
+  
+  <div class="container">
+    <h1>Gestione Ferie</h1>
+    
+    <div class="card">
+      <h2>Nuova Richiesta</h2>
+      <form id="ferieForm">
+        <div class="form-group">
+          <label>Data Inizio</label>
+          <input type="date" name="data_inizio" required>
+        </div>
+        <div class="form-group">
+          <label>Data Fine</label>
+          <input type="date" name="data_fine" required>
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select name="tipo">
+            <option value="ferie">Ferie</option>
+            <option value="permesso">Permesso</option>
+            <option value="malattia">Malattia</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Note</label>
+          <textarea name="note" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn">Invia Richiesta</button>
+      </form>
+    </div>
+    
+    <div class="card">
+      <h2>Le Mie Richieste</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Data Inizio</th>
+            <th>Data Fine</th>
+            <th>Giorni</th>
+            <th>Tipo</th>
+            <th>Stato</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% ferie.forEach(f => { %>
+          <tr>
+            <td><%= new Date(f.data_inizio).toLocaleDateString('it-IT') %></td>
+            <td><%= new Date(f.data_fine).toLocaleDateString('it-IT') %></td>
+            <td><%= f.giorni_totali %></td>
+            <td><%= f.tipo %></td>
+            <td><span class="badge <%= f.stato %>"><%= f.stato %></span></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById('ferieForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      
+      try {
+        const res = await fetch('/ferie/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        
+        if (result.success) {
+          window.location.reload();
+        }
+      } catch (err) {
+        alert('Errore durante la creazione');
+      }
+    });
+  </script>
+</body>
+</html>

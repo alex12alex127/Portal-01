@@ -37,14 +37,14 @@ a {
   color: inherit;
 }
 
-/* ---- Tema azienda elettro strumentale ---- */
+/* ---- Tema (solo colori) ---- */
 :root {
-  --c-primary: #0d9488;
-  --c-primary-hover: #0f766e;
-  --c-primary-light: #5eead4;
-  --c-sidebar: #0f172a;
-  --c-sidebar-hover: #1e293b;
-  --c-sidebar-active: #0d9488;
+  --c-primary: #2563eb;
+  --c-primary-hover: #1d4ed8;
+  --c-primary-light: #93c5fd;
+  --c-sidebar: #1e293b;
+  --c-sidebar-hover: #334155;
+  --c-sidebar-active: #2563eb;
   --c-sidebar-text: #e2e8f0;
   --c-sidebar-muted: #94a3b8;
   --c-success: #16a34a;
@@ -52,8 +52,8 @@ a {
   --c-danger: #dc2626;
   --c-text: #0f172a;
   --c-text-muted: #475569;
-  --c-border: #cbd5e1;
-  --c-bg: #f1f5f9;
+  --c-border: #e2e8f0;
+  --c-bg: #f8fafc;
   --c-bg-card: #fff;
   --r: 8px;
   --space: 1rem;
@@ -166,7 +166,7 @@ a {
 }
 
 .sidebar__link--active {
-  background: rgba(13, 148, 136, 0.15);
+  background: rgba(37, 99, 235, 0.2);
   color: var(--c-primary-light);
   border-left-color: var(--c-primary);
 }
@@ -223,7 +223,7 @@ a {
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
 .sidebar__backdrop {
@@ -373,7 +373,7 @@ h2 {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--c-primary);
-  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.25);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
 }
 
 .form-group textarea {
@@ -720,7 +720,7 @@ select.role-select {
 .auth-container input:focus {
   outline: none;
   border-color: var(--c-primary);
-  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.25);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
 }
 
 .auth-container .btn {

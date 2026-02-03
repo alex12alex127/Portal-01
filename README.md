@@ -47,15 +47,17 @@ Dopo aver eseguito `npm run create-admin`:
 
 ⚠️ Cambia queste password in produzione!
 
-## Deploy su Dokploy
+## Deploy (Git + Dokploy o altro)
 
-1. Crea nuovo progetto su Dokploy
-2. Collega repository Git
-3. Configura variabili ambiente:
-   - DATABASE_URL
-   - SESSION_SECRET
-   - NODE_ENV=production
-4. Deploy automatico
+L’app è pronta per il deploy: dopo il push su Git, la piattaforma può buildare l’immagine dal `Dockerfile` e avviare con `npm start`. Il server ascolta su `0.0.0.0` e usa `PORT` dalle variabili d’ambiente.
+
+1. Push del repository su GitHub/GitLab
+2. Su Dokploy: nuovo progetto → collega repo Git
+3. Variabili ambiente obbligatorie:
+   - `DATABASE_URL` (PostgreSQL)
+   - `SESSION_SECRET`
+   - `NODE_ENV=production`
+4. Dopo il primo deploy, dalla console esegui: `npm run create-admin`
 
 ## Moduli Futuri
 

@@ -69,7 +69,7 @@
                     <button class="btn-small delete-btn" data-user-id="<%= u.id %>">Elimina</button>
                   </div>
                 <% } else { %>
-                  <span style="color: var(--gray);">Tu</span>
+                  <span class="text-muted">Tu</span>
                 <% } %>
               </td>
             </tr>
@@ -111,7 +111,7 @@
               <button class="btn-small delete-btn" data-user-id="<%= u.id %>">Elimina</button>
             </div>
           <% } else { %>
-            <div class="user-card__actions"><span style="color: var(--gray);">Tu</span></div>
+            <div class="user-card__actions"><span class="text-muted">Tu</span></div>
           <% } %>
         </div>
         <% }); %>

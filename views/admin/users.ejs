@@ -2,36 +2,50 @@
   <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
   Gestione Utenti
 </h1>
-<div class="card">
+<div class="card card--users">
   <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg> Utenti (<%= typeof pagination !== 'undefined' ? pagination.total : users.length %>)</h2>
   <% if (users.length === 0) { %>
     <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg> Nessun utente.</p>
   <% } else { %>
     <div class="table-wrap">
-      <table>
+      <table class="table table--users">
         <thead>
-          <tr><th>Username</th><th>Nome</th><th>Email</th><th>Ruolo</th><th>Stato</th><th>Azioni</th></tr>
+          <tr>
+            <th class="th--user">Utente</th>
+            <th class="th--email">Email</th>
+            <th class="th--role">Ruolo</th>
+            <th class="th--status">Stato</th>
+            <th class="th--actions">Azioni</th>
+          </tr>
         </thead>
         <tbody>
           <% users.forEach(function(u) { %>
-          <tr data-id="<%= u.id %>">
-            <td><strong><%= u.username %></strong></td>
-            <td><%= u.full_name %></td>
-            <td><%= u.email %></td>
-            <td>
-              <select class="role-select" data-id="<%= u.id %>" <%= u.id === user.id ? 'disabled' : '' %>>
-                <option value="user" <%= u.role==='user'?'selected':'' %>>user</option>
-                <option value="manager" <%= u.role==='manager'?'selected':'' %>>manager</option>
-                <option value="admin" <%= u.role==='admin'?'selected':'' %>>admin</option>
+          <tr data-id="<%= u.id %>" class="user-row">
+            <td class="td--user">
+              <span class="user-row__name"><%= u.username %></span>
+              <span class="user-row__full"><%= u.full_name %></span>
+            </td>
+            <td class="td--email"><%= u.email %></td>
+            <td class="td--role">
+              <select class="role-select" data-id="<%= u.id %>" <%= u.id === user.id ? 'disabled' : '' %> aria-label="Ruolo per <%= u.username %>">
+                <option value="user" <%= u.role==='user'?'selected':'' %>>User</option>
+                <option value="manager" <%= u.role==='manager'?'selected':'' %>>Manager</option>
+                <option value="admin" <%= u.role==='admin'?'selected':'' %>>Admin</option>
               </select>
             </td>
-            <td><span class="badge <%= u.is_active?'approved':'rejected' %>"><%= u.is_active?'Attivo':'Disattivo' %></span></td>
-            <td>
+            <td class="td--status">
+              <span class="badge <%= u.is_active ? 'approved' : 'rejected' %>"><%= u.is_active ? 'Attivo' : 'Disattivo' %></span>
+            </td>
+            <td class="td--actions">
               <% if (u.id !== user.id) { %>
-                <button type="button" class="btn-sm toggle" data-id="<%= u.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><%= u.is_active?'Disattiva':'Attiva' %></button>
-                <button type="button" class="btn-sm reset" data-id="<%= u.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.852-.051-1.704-.223-2.654-.523a3 3 0 11-3.75-3.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Reset pwd</button>
-                <button type="button" class="btn-sm del" data-id="<%= u.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> Elimina</button>
-              <% } else { %>—<% } %>
+                <div class="user-actions">
+                  <button type="button" class="btn-action btn-action--toggle" data-id="<%= u.id %>" title="<%= u.is_active ? 'Disattiva' : 'Attiva' %>" aria-label="<%= u.is_active ? 'Disattiva utente' : 'Attiva utente' %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span class="btn-action__label"><%= u.is_active ? 'Disattiva' : 'Attiva' %></span></button>
+                  <button type="button" class="btn-action btn-action--reset" data-id="<%= u.id %>" title="Reset password" aria-label="Reset password"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.852-.051-1.704-.223-2.654-.523a3 3 0 11-3.75-3.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span class="btn-action__label">Password</span></button>
+                  <button type="button" class="btn-action btn-action--del" data-id="<%= u.id %>" title="Elimina" aria-label="Elimina utente"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg><span class="btn-action__label">Elimina</span></button>
+                </div>
+              <% } else { %>
+                <span class="user-actions__self">Tu</span>
+              <% } %>
             </td>
           </tr>
           <% }); %>
@@ -64,7 +78,7 @@
       this.disabled=false;
     };
   });
-  document.querySelectorAll('.toggle').forEach(function(btn){
+  document.querySelectorAll('.btn-action--toggle').forEach(function(btn){
     btn.onclick=function(){
       var id=btn.dataset.id;
       window.showModal({ title: 'Conferma', text: 'Attivare o disattivare questo utente?', onConfirm: async function(){
@@ -79,7 +93,7 @@
       }});
     };
   });
-  document.querySelectorAll('.reset').forEach(function(btn){
+  document.querySelectorAll('.btn-action--reset').forEach(function(btn){
     btn.onclick=function(){
       window.promptModal({ title: 'Reset password', text: 'Nuova password (min 8 caratteri, maiuscole, minuscole, numeri):', placeholder: 'Nuova password', type: 'password' }, async function(p){
         if(!p) return;
@@ -93,7 +107,7 @@
       });
     };
   });
-  document.querySelectorAll('.del').forEach(function(btn){
+  document.querySelectorAll('.btn-action--del').forEach(function(btn){
     btn.onclick=function(){
       window.showModal({ title: 'Elimina utente', text: 'Eliminare definitivamente questo utente?', onConfirm: async function(){
         var id=btn.dataset.id; btn.disabled=true;

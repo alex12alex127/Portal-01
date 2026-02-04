@@ -11,9 +11,12 @@
     <%- include('../partials/sidebar', { user: user, activePage: 'profile' }) %>
     <main class="main">
       <div class="container">
-        <h1>Profilo</h1>
+        <h1 class="page-title">
+          <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+          Profilo
+        </h1>
         <div class="card">
-          <h2>Dati account</h2>
+          <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg> Dati account</h2>
           <form id="pf">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <label>Username <input type="text" value="<%= profile.username %>" disabled></label>
@@ -24,7 +27,7 @@
           <div id="pfMsg"></div>
         </div>
         <div class="card">
-          <h2>Cambia password</h2>
+          <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.852-.051-1.704-.223-2.654-.523a3 3 0 11-3.75-3.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Cambia password</h2>
           <form id="pw">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <label>Password attuale <input type="password" name="current_password" required></label>

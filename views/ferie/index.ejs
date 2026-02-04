@@ -11,23 +11,26 @@
     <%- include('../partials/sidebar', { user: user, activePage: 'ferie' }) %>
     <main class="main">
       <div class="container">
-        <h1>Gestione Ferie</h1>
+        <h1 class="page-title">
+          <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+          Gestione Ferie
+        </h1>
         <div class="card">
-          <h2>Nuova richiesta</h2>
+          <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> Nuova richiesta</h2>
           <form id="frm">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <label>Data inizio <input type="date" name="data_inizio" required></label>
             <label>Data fine <input type="date" name="data_fine" required></label>
             <label>Tipo <select name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select></label>
             <label>Note <textarea name="note" rows="2"></textarea></label>
-            <button type="submit" class="btn">Invia</button>
+            <button type="submit" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg> Invia</button>
           </form>
           <div id="ferieMsg"></div>
         </div>
         <div class="card">
-          <h2>Le mie richieste</h2>
+          <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg> Le mie richieste</h2>
           <% if (ferie.length === 0) { %>
-            <p class="empty">Nessuna richiesta. Usa il modulo sopra.</p>
+            <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> Nessuna richiesta. Usa il modulo sopra.</p>
           <% } else { %>
             <div class="table-wrap">
               <table>

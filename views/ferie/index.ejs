@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Gestione Ferie - Portal-01</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ferie - Portal-01</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,109 +11,57 @@
     <%- include('../partials/sidebar', { user: user, activePage: 'ferie' }) %>
     <main class="main">
       <div class="container">
-    <h1>Gestione Ferie</h1>
-    
-    <div class="card">
-      <h2>Nuova Richiesta</h2>
-      <form id="ferieForm">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div class="form-group">
-          <label>Data Inizio</label>
-          <input type="date" name="data_inizio" required>
+        <h1>Gestione Ferie</h1>
+        <div class="card">
+          <h2>Nuova richiesta</h2>
+          <form id="frm">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label>Data inizio <input type="date" name="data_inizio" required></label>
+            <label>Data fine <input type="date" name="data_fine" required></label>
+            <label>Tipo <select name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select></label>
+            <label>Note <textarea name="note" rows="2"></textarea></label>
+            <button type="submit" class="btn">Invia</button>
+          </form>
+          <div id="ferieMsg"></div>
         </div>
-        <div class="form-group">
-          <label>Data Fine</label>
-          <input type="date" name="data_fine" required>
+        <div class="card">
+          <h2>Le mie richieste</h2>
+          <% if (ferie.length === 0) { %>
+            <p class="empty">Nessuna richiesta. Usa il modulo sopra.</p>
+          <% } else { %>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Da</th><th>A</th><th>Giorni</th><th>Tipo</th><th>Stato</th></tr></thead>
+                <tbody>
+                  <% ferie.forEach(function(f) { %>
+                  <tr>
+                    <td><%= f.data_inizio %></td>
+                    <td><%= f.data_fine %></td>
+                    <td><%= f.giorni_totali %></td>
+                    <td><%= f.tipo %></td>
+                    <td><span class="badge <%= f.stato %>"><%= f.stato %></span></td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
         </div>
-        <div class="form-group">
-          <label>Tipo</label>
-          <select name="tipo">
-            <option value="ferie">Ferie</option>
-            <option value="permesso">Permesso</option>
-            <option value="malattia">Malattia</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Note</label>
-          <textarea name="note" rows="3"></textarea>
-        </div>
-        <button type="submit" class="btn" id="ferieSubmitBtn"><span class="btn__text">Invia Richiesta</span></button>
-      </form>
-      <div id="ferieMessage"></div>
-    </div>
-    
-    <div class="card">
-      <h2>Le Mie Richieste</h2>
-      <% if (ferie.length === 0) { %>
-        <div class="empty-state">
-          <div class="empty-state__icon" aria-hidden="true">📅</div>
-          <p class="empty-state__title">Nessuna richiesta</p>
-          <p class="empty-state__text">Non hai ancora inviato richieste di ferie. Usa il modulo sopra per inviare la prima.</p>
-        </div>
-      <% } else { %>
-        <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Data Inizio</th>
-              <th>Data Fine</th>
-              <th>Giorni</th>
-              <th>Tipo</th>
-              <th>Stato</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% ferie.forEach(f => { %>
-            <tr>
-              <td><%= new Date(f.data_inizio).toLocaleDateString('it-IT') %></td>
-              <td><%= new Date(f.data_fine).toLocaleDateString('it-IT') %></td>
-              <td><%= f.giorni_totali %></td>
-              <td><%= f.tipo %></td>
-              <td><span class="badge <%= f.stato %>"><%= f.stato %></span></td>
-            </tr>
-            <% }); %>
-          </tbody>
-        </table>
-        </div>
-      <% } %>
-    </div>
       </div>
     </main>
   </div>
   <script>
-    document.getElementById('ferieForm').addEventListener('submit', async (e) => {
+    document.getElementById('frm').onsubmit=async function(e){
       e.preventDefault();
-      const btn = document.getElementById('ferieSubmitBtn');
-      const msgEl = document.getElementById('ferieMessage');
-      msgEl.textContent = '';
-      msgEl.className = '';
-      btn.classList.add('btn--loading');
-      btn.disabled = true;
-
-      try {
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData);
-        const res = await fetch('/ferie/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const result = await res.json();
-
-        if (result.success) {
-          window.location.reload();
-          return;
-        }
-        msgEl.textContent = result.error || 'Errore durante la creazione';
-        msgEl.className = 'message--error';
-      } catch (err) {
-        msgEl.textContent = 'Errore di connessione';
-        msgEl.className = 'message--error';
-      } finally {
-        btn.classList.remove('btn--loading');
-        btn.disabled = false;
-      }
-    });
+      var btn=this.querySelector('button'),msg=document.getElementById('ferieMsg');
+      msg.textContent='';btn.disabled=true;
+      try{
+        var r=await fetch('/ferie/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
+        var j=await r.json();
+        if(j.success)location.reload();else msg.textContent=j.error||'Errore';
+      }catch(x){msg.textContent='Errore';}
+      btn.disabled=false;
+    };
   </script>
 </body>
 </html>

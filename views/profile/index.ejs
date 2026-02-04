@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profilo - Portal-01</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -11,140 +11,35 @@
     <%- include('../partials/sidebar', { user: user, activePage: 'profile' }) %>
     <main class="main">
       <div class="container">
-    <h1>Il Mio Profilo</h1>
-    
-    <div class="card">
-      <h2>Informazioni Account</h2>
-      <form id="profileForm">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div class="form-group">
-          <label>Username</label>
-          <input type="text" value="<%= profile.username %>" disabled>
-          <small>Il username non può essere modificato</small>
+        <h1>Profilo</h1>
+        <div class="card">
+          <h2>Dati account</h2>
+          <form id="pf">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label>Username <input type="text" value="<%= profile.username %>" disabled></label>
+            <label>Nome <input type="text" name="full_name" value="<%= profile.full_name %>" required></label>
+            <label>Email <input type="email" name="email" value="<%= profile.email %>" required></label>
+            <button type="submit" class="btn">Aggiorna</button>
+          </form>
+          <div id="pfMsg"></div>
         </div>
-        <div class="form-group">
-          <label>Nome Completo</label>
-          <input type="text" name="full_name" value="<%= profile.full_name %>" required>
+        <div class="card">
+          <h2>Cambia password</h2>
+          <form id="pw">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label>Password attuale <input type="password" name="current_password" required></label>
+            <label>Nuova password <input type="password" name="new_password" required></label>
+            <label>Conferma <input type="password" name="confirm_password" required></label>
+            <button type="submit" class="btn">Cambia password</button>
+          </form>
+          <div id="pwMsg"></div>
         </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" name="email" value="<%= profile.email %>" required>
-        </div>
-        <div class="form-group">
-          <label>Ruolo</label>
-          <input type="text" value="<%= profile.role %>" disabled>
-        </div>
-        <div class="form-group">
-          <label>Ultimo Accesso</label>
-          <input type="text" value="<%= profile.last_login ? new Date(profile.last_login).toLocaleString('it-IT') : 'Mai' %>" disabled>
-        </div>
-        <div class="form-group">
-          <label>Registrato il</label>
-          <input type="text" value="<%= new Date(profile.created_at).toLocaleString('it-IT') %>" disabled>
-        </div>
-        <button type="submit" class="btn" id="profileSubmitBtn"><span class="btn__text">Aggiorna Profilo</span></button>
-      </form>
-      <div id="profileMessage" class="msg-box"></div>
-    </div>
-    
-    <div class="card">
-      <h2>Cambia Password</h2>
-      <form id="passwordForm">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div class="form-group">
-          <label>Password Corrente</label>
-          <input type="password" name="current_password" required>
-        </div>
-        <div class="form-group">
-          <label>Nuova Password</label>
-          <input type="password" name="new_password" required>
-          <small>Min 8 caratteri, maiuscole, minuscole e numeri</small>
-        </div>
-        <div class="form-group">
-          <label>Conferma Nuova Password</label>
-          <input type="password" name="confirm_password" required>
-        </div>
-        <button type="submit" class="btn" id="passwordSubmitBtn"><span class="btn__text">Cambia Password</span></button>
-      </form>
-      <div id="passwordMessage" class="msg-box"></div>
-    </div>
       </div>
     </main>
   </div>
   <script>
-    // Aggiorna profilo
-    document.getElementById('profileForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('profileSubmitBtn');
-      const msg = document.getElementById('profileMessage');
-      msg.textContent = '';
-      msg.className = 'msg-box';
-      btn.classList.add('btn--loading');
-      btn.disabled = true;
-
-      try {
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData);
-        const res = await fetch('/profile/update', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const result = await res.json();
-
-        if (result.success) {
-          msg.className = 'msg-box message--success';
-          msg.textContent = result.message;
-          setTimeout(() => window.location.reload(), 1500);
-        } else {
-          msg.className = 'msg-box message--error';
-          msg.textContent = result.error;
-        }
-      } catch (err) {
-        msg.className = 'msg-box message--error';
-        msg.textContent = 'Errore di connessione';
-      } finally {
-        btn.classList.remove('btn--loading');
-        btn.disabled = false;
-      }
-    });
-
-    // Cambia password
-    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('passwordSubmitBtn');
-      const msg = document.getElementById('passwordMessage');
-      msg.textContent = '';
-      msg.className = 'msg-box';
-      btn.classList.add('btn--loading');
-      btn.disabled = true;
-
-      try {
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData);
-        const res = await fetch('/profile/change-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const result = await res.json();
-
-        if (result.success) {
-          msg.className = 'msg-box message--success';
-          msg.textContent = result.message;
-          e.target.reset();
-        } else {
-          msg.className = 'msg-box message--error';
-          msg.textContent = result.error;
-        }
-      } catch (err) {
-        msg.className = 'msg-box message--error';
-        msg.textContent = 'Errore di connessione';
-      } finally {
-        btn.classList.remove('btn--loading');
-        btn.disabled = false;
-      }
-    });
+    document.getElementById('pf').onsubmit=async function(e){e.preventDefault();var m=document.getElementById('pfMsg');m.textContent='';try{var r=await fetch('/profile/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});var j=await r.json();m.textContent=j.success?j.message:j.error;}catch(x){m.textContent='Errore';}};
+    document.getElementById('pw').onsubmit=async function(e){e.preventDefault();var m=document.getElementById('pwMsg');m.textContent='';try{var r=await fetch('/profile/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});var j=await r.json();m.textContent=j.success?j.message:j.error;if(j.success)this.reset();}catch(x){m.textContent='Errore';}};
   </script>
 </body>
 </html>

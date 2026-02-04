@@ -11,54 +11,31 @@ router.get('/login', (req, res) => {
 
 router.post('/login', loginLimiter, checkLoginAttempts, validateLogin, async (req, res) => {
   const { username, password } = req.body;
-  const ip = req.ip;
-  
-  console.log(`[${new Date().toISOString()}] Login attempt for username: ${username}`);
-  
+  const ip = req.ip || '';
+  const key = req._loginKey;
+
   try {
     const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-    
     if (result.rows.length === 0) {
-      console.log(`[${new Date().toISOString()}] User not found: ${username}`);
-      await logLoginAttempt(username, false, ip);
-      recordLoginAttempt(req.loginAttemptsKey, false);
+      logLoginAttempt(username, false, ip);
+      recordLoginAttempt(key, false);
       return res.status(401).json({ error: 'Credenziali non valide' });
     }
-    
     const user = result.rows[0];
-    console.log(`[${new Date().toISOString()}] User found: ${username}, Active: ${user.is_active}`);
-    
-    // Verifica se l'account è attivo
     if (user.is_active === false) {
-      console.log(`[${new Date().toISOString()}] Account disabled: ${username}`);
       return res.status(403).json({ error: 'Account disabilitato. Contatta l\'amministratore.' });
     }
-    
-    const validPassword = await bcrypt.compare(password, user.password);
-    console.log(`[${new Date().toISOString()}] Password valid: ${validPassword}`);
-    
-    if (!validPassword) {
-      await logLoginAttempt(username, false, ip);
-      recordLoginAttempt(req.loginAttemptsKey, false);
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      logLoginAttempt(username, false, ip);
+      recordLoginAttempt(key, false);
       return res.status(401).json({ error: 'Credenziali non valide' });
     }
-    
-    // Login riuscito
-    await logLoginAttempt(username, true, ip);
-    recordLoginAttempt(req.loginAttemptsKey, true);
-    
-    // Aggiorna ultimo login
+    logLoginAttempt(username, true, ip);
+    recordLoginAttempt(key, true);
     await db.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
-    
     req.session.userId = user.id;
-    req.session.user = { 
-      id: user.id, 
-      username: user.username, 
-      role: user.role, 
-      full_name: user.full_name,
-      email: user.email
-    };
-    
+    req.session.user = { id: user.id, username: user.username, role: user.role, full_name: user.full_name, email: user.email };
     res.json({ success: true, redirect: '/dashboard' });
   } catch (err) {
     console.error(err);
@@ -72,32 +49,14 @@ router.get('/register', (req, res) => {
 
 router.post('/register', registerLimiter, validateRegister, async (req, res) => {
   const { username, email, password, full_name } = req.body;
-  
   try {
-    // Verifica se username o email esistono già
-    const existing = await db.query(
-      'SELECT * FROM users WHERE username = $1 OR email = $2',
-      [username, email]
-    );
-    
+    const existing = await db.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
     if (existing.rows.length > 0) {
-      if (existing.rows[0].username === username) {
-        return res.status(400).json({ error: 'Username già in uso' });
-      }
-      if (existing.rows[0].email === email) {
-        return res.status(400).json({ error: 'Email già in uso' });
-      }
+      if (existing.rows[0].username === username) return res.status(400).json({ error: 'Username già in uso' });
+      return res.status(400).json({ error: 'Email già in uso' });
     }
-    
-    const hashedPassword = await bcrypt.hash(password, 12);
-    
-    await db.query(
-      'INSERT INTO users (username, email, password, full_name) VALUES ($1, $2, $3, $4)',
-      [username, email, hashedPassword, full_name]
-    );
-    
-    console.log(`[${new Date().toISOString()}] New user registered: ${username}`);
-    
+    const hash = await bcrypt.hash(password, 12);
+    await db.query('INSERT INTO users (username, email, password, full_name) VALUES ($1, $2, $3, $4)', [username, email, hash, full_name]);
     res.json({ success: true, redirect: '/auth/login' });
   } catch (err) {
     console.error(err);
@@ -106,14 +65,7 @@ router.post('/register', registerLimiter, validateRegister, async (req, res) => 
 });
 
 router.get('/logout', (req, res) => {
-  const username = req.session.user?.username;
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Errore durante logout:', err);
-    }
-    console.log(`[${new Date().toISOString()}] User logged out: ${username}`);
-    res.redirect('/auth/login');
-  });
+  req.session.destroy(() => res.redirect('/auth/login'));
 });
 
 module.exports = router;

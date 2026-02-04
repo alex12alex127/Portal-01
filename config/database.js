@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
 
 if (!process.env.DATABASE_URL) {
-  console.error('ATTENZIONE: DATABASE_URL non è impostata. Configura la variabile d\'ambiente.');
+  console.warn('DATABASE_URL non impostata.');
 }
 
 const pool = new Pool({
@@ -10,15 +10,12 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000
 });
 
-const initDatabase = async () => {
+async function initDatabase() {
   if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL non configurata. Imposta la variabile d\'ambiente.');
+    throw new Error('DATABASE_URL obbligatoria. Vedi .env.example e DOKPLOY-POSTGRES.md');
   }
   const client = await pool.connect();
   try {
-    console.log('Initializing database...');
-    
-    // Create users table
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -33,9 +30,6 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✓ Users table ready');
-
-    // Create ferie table
     await client.query(`
       CREATE TABLE IF NOT EXISTS ferie (
         id SERIAL PRIMARY KEY,
@@ -50,17 +44,13 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✓ Ferie table ready');
-
-    console.log('✓ Database initialized successfully');
-    console.log('ℹ️  Run "npm run create-admin" to create default admin users');
+    console.log('Tabelle create/verificate');
   } catch (err) {
-    console.error('Error initializing database:', err);
     throw err;
   } finally {
     client.release();
   }
-};
+}
 
 module.exports = {
   query: (text, params) => pool.query(text, params),

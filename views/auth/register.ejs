@@ -2,60 +2,37 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registrazione - Portal-01</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="auth-page">
-  <div class="auth-container">
+  <div class="auth-box">
     <h1>Portal-01</h1>
     <h2>Registrazione</h2>
-    <form id="registerForm">
+    <form id="regForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="text" name="username" placeholder="Username" required>
       <input type="email" name="email" placeholder="Email" required>
-      <input type="text" name="full_name" placeholder="Nome Completo" required>
+      <input type="text" name="full_name" placeholder="Nome completo" required>
       <input type="password" name="password" placeholder="Password" required>
-      <button type="submit" class="btn" id="registerBtn"><span class="btn__text">Registrati</span></button>
+      <button type="submit" class="btn">Registrati</button>
     </form>
-    <p>Hai già un account? <a href="/auth/login">Accedi</a></p>
-    <div id="message" class="msg-box"></div>
+    <p><a href="/auth/login">Hai già un account? Accedi</a></p>
+    <div id="msg"></div>
   </div>
-  
   <script>
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    document.getElementById('regForm').onsubmit=async function(e){
       e.preventDefault();
-      const btn = document.getElementById('registerBtn');
-      const msg = document.getElementById('message');
-      msg.textContent = '';
-      msg.className = 'msg-box';
-      btn.classList.add('btn--loading');
-      btn.disabled = true;
-
-      try {
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData);
-        const res = await fetch('/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const result = await res.json();
-
-        if (result.success) {
-          window.location.href = result.redirect;
-          return;
-        }
-        msg.className = 'msg-box message--error';
-        msg.textContent = result.error;
-      } catch (err) {
-        msg.className = 'msg-box message--error';
-        msg.textContent = 'Errore di connessione';
-      } finally {
-        btn.classList.remove('btn--loading');
-        btn.disabled = false;
-      }
-    });
+      var btn=this.querySelector('button'),msg=document.getElementById('msg');
+      msg.textContent='';btn.disabled=true;
+      try{
+        var r=await fetch('/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
+        var j=await r.json();
+        if(j.success)location.href=j.redirect;else msg.textContent=j.error||'Errore';
+      }catch(x){msg.textContent='Errore di connessione';}
+      btn.disabled=false;
+    };
   </script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestione Utenti - Portal-01</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -11,224 +11,61 @@
     <%- include('../partials/sidebar', { user: user, activePage: 'admin' }) %>
     <main class="main">
       <div class="container">
-    <h1>Gestione Utenti</h1>
-    
-    <div class="card">
-      <h2>Tutti gli Utenti (<%= users.length %>)</h2>
-
-      <!-- Tabella: desktop -->
-      <div class="users-table-wrap">
-        <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Nome</th>
-              <th>Email</th>
-              <th>Ruolo</th>
-              <th>Stato</th>
-              <th>Ultimo Accesso</th>
-              <th>Azioni</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% users.forEach(u => { %>
-            <tr data-user-id="<%= u.id %>">
-              <td><strong><%= u.username %></strong></td>
-              <td><%= u.full_name %></td>
-              <td><%= u.email %></td>
-              <td>
-                <select class="role-select" data-user-id="<%= u.id %>" <%= u.id === user.id ? 'disabled' : '' %>>
-                  <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>User</option>
-                  <option value="manager" <%= u.role === 'manager' ? 'selected' : '' %>>Manager</option>
-                  <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
-                </select>
-              </td>
-              <td>
-                <span class="badge <%= u.is_active ? 'approved' : 'rejected' %>">
-                  <%= u.is_active ? 'Attivo' : 'Disattivato' %>
-                </span>
-              </td>
-              <td><%= u.last_login ? new Date(u.last_login).toLocaleString('it-IT') : 'Mai' %></td>
-              <td>
-                <% if (u.id !== user.id) { %>
-                  <div class="cell-actions">
-                    <button class="btn-small toggle-btn" data-user-id="<%= u.id %>">
-                      <%= u.is_active ? 'Disattiva' : 'Attiva' %>
-                    </button>
-                    <button class="btn-small reset-btn" data-user-id="<%= u.id %>">Reset Password</button>
-                    <button class="btn-small delete-btn" data-user-id="<%= u.id %>">Elimina</button>
-                  </div>
-                <% } else { %>
-                  <span class="text-muted">Tu</span>
-                <% } %>
-              </td>
-            </tr>
-            <% }); %>
-          </tbody>
-        </table>
+        <h1>Gestione Utenti</h1>
+        <div class="card">
+          <h2>Utenti (<%= users.length %>)</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Username</th><th>Nome</th><th>Email</th><th>Ruolo</th><th>Stato</th><th>Azioni</th></tr>
+              </thead>
+              <tbody>
+                <% users.forEach(function(u) { %>
+                <tr data-id="<%= u.id %>">
+                  <td><strong><%= u.username %></strong></td>
+                  <td><%= u.full_name %></td>
+                  <td><%= u.email %></td>
+                  <td>
+                    <select class="role-select" data-id="<%= u.id %>" <%= u.id === user.id ? 'disabled' : '' %>>
+                      <option value="user" <%= u.role==='user'?'selected':'' %>>user</option>
+                      <option value="manager" <%= u.role==='manager'?'selected':'' %>>manager</option>
+                      <option value="admin" <%= u.role==='admin'?'selected':'' %>>admin</option>
+                    </select>
+                  </td>
+                  <td><span class="badge <%= u.is_active?'approved':'rejected' %>"><%= u.is_active?'Attivo':'Disattivo' %></span></td>
+                  <td>
+                    <% if (u.id !== user.id) { %>
+                      <button type="button" class="btn-sm toggle" data-id="<%= u.id %>"><%= u.is_active?'Disattiva':'Attiva' %></button>
+                      <button type="button" class="btn-sm reset" data-id="<%= u.id %>">Reset pwd</button>
+                      <button type="button" class="btn-sm del" data-id="<%= u.id %>">Elimina</button>
+                    <% } else { %>—<% } %>
+                  </td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-
-      <!-- Card: mobile -->
-      <div class="users-cards">
-        <% users.forEach(u => { %>
-        <div class="user-card" data-user-id="<%= u.id %>">
-          <div class="user-card__header">
-            <span class="user-card__name"><%= u.username %></span>
-            <span class="badge <%= u.is_active ? 'approved' : 'rejected' %>">
-              <%= u.is_active ? 'Attivo' : 'Disattivato' %>
-            </span>
-          </div>
-          <p class="user-card__meta"><%= u.full_name %> · <%= u.email %></p>
-          <div class="user-card__row">
-            <span class="user-card__label">Ruolo</span>
-            <select class="role-select" data-user-id="<%= u.id %>" <%= u.id === user.id ? 'disabled' : '' %>>
-              <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>User</option>
-              <option value="manager" <%= u.role === 'manager' ? 'selected' : '' %>>Manager</option>
-              <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
-            </select>
-          </div>
-          <div class="user-card__row">
-            <span class="user-card__label">Accesso</span>
-            <span><%= u.last_login ? new Date(u.last_login).toLocaleString('it-IT') : 'Mai' %></span>
-          </div>
-          <% if (u.id !== user.id) { %>
-            <div class="user-card__actions cell-actions">
-              <button class="btn-small toggle-btn" data-user-id="<%= u.id %>">
-                <%= u.is_active ? 'Disattiva' : 'Attiva' %>
-              </button>
-              <button class="btn-small reset-btn" data-user-id="<%= u.id %>">Reset Password</button>
-              <button class="btn-small delete-btn" data-user-id="<%= u.id %>">Elimina</button>
-            </div>
-          <% } else { %>
-            <div class="user-card__actions"><span class="text-muted">Tu</span></div>
-          <% } %>
-        </div>
-        <% }); %>
-      </div>
-    </div>
       </div>
     </main>
   </div>
   <script>
-    const csrfToken = '<%= csrfToken %>';
-    
-    // Cambia ruolo
-    document.querySelectorAll('.role-select').forEach(select => {
-      select.addEventListener('change', async (e) => {
-        const userId = e.target.dataset.userId;
-        const newRole = e.target.value;
-        
-        if (!confirm(`Cambiare ruolo a ${newRole}?`)) {
-          e.target.value = e.target.dataset.oldValue;
-          return;
-        }
-        
-        try {
-          const res = await fetch(`/admin/users/${userId}/role`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role: newRole, _csrf: csrfToken })
-          });
-          const result = await res.json();
-          
-          if (result.success) {
-            alert(result.message);
-            e.target.dataset.oldValue = newRole;
-          } else {
-            alert(result.error);
-            e.target.value = e.target.dataset.oldValue;
-          }
-        } catch (err) {
-          alert('Errore di connessione');
-        }
-      });
-      
-      select.dataset.oldValue = select.value;
+    var csrf='<%= csrfToken %>';
+    document.querySelectorAll('.role-select').forEach(function(s){
+      if(s.disabled)return;
+      s.onchange=async function(){
+        var id=this.dataset.id,r=await fetch('/admin/users/'+id+'/role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:this.value,_csrf:csrf})});
+        var j=await r.json();alert(j.message||j.error);
+      };
     });
-    
-    // Toggle attivo/disattivato
-    document.querySelectorAll('.toggle-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const userId = e.target.dataset.userId;
-        
-        if (!confirm('Confermi l\'operazione?')) return;
-        
-        try {
-          const res = await fetch(`/admin/users/${userId}/toggle`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ _csrf: csrfToken })
-          });
-          const result = await res.json();
-          
-          if (result.success) {
-            alert(result.message);
-            window.location.reload();
-          } else {
-            alert(result.error);
-          }
-        } catch (err) {
-          alert('Errore di connessione');
-        }
-      });
+    document.querySelectorAll('.toggle').forEach(function(b){
+      b.onclick=async function(){if(!confirm('Confermi?'))return;var id=this.dataset.id,r=await fetch('/admin/users/'+id+'/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({_csrf:csrf})});var j=await r.json();alert(j.message||j.error);if(j.success)location.reload();};
     });
-    
-    // Reset password
-    document.querySelectorAll('.reset-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const userId = e.target.dataset.userId;
-        const newPassword = prompt('Inserisci la nuova password (min 8 caratteri):');
-        
-        if (!newPassword) return;
-        
-        try {
-          const res = await fetch(`/admin/users/${userId}/reset-password`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ new_password: newPassword, _csrf: csrfToken })
-          });
-          const result = await res.json();
-          
-          if (result.success) {
-            alert(result.message);
-          } else {
-            alert(result.error);
-          }
-        } catch (err) {
-          alert('Errore di connessione');
-        }
-      });
+    document.querySelectorAll('.reset').forEach(function(b){
+      b.onclick=async function(){var p=prompt('Nuova password (min 8 caratteri)');if(!p)return;var id=this.dataset.id,r=await fetch('/admin/users/'+id+'/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_password:p,_csrf:csrf})});var j=await r.json();alert(j.message||j.error);};
     });
-    
-    // Elimina utente
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const userId = e.target.dataset.userId;
-        
-        if (!confirm('ATTENZIONE: Eliminare definitivamente questo utente?')) return;
-        
-        try {
-          const res = await fetch(`/admin/users/${userId}`, {
-            method: 'DELETE',
-            headers: { 
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': csrfToken
-            }
-          });
-          const result = await res.json();
-          
-          if (result.success) {
-            alert(result.message);
-            window.location.reload();
-          } else {
-            alert(result.error);
-          }
-        } catch (err) {
-          alert('Errore di connessione');
-        }
-      });
+    document.querySelectorAll('.del').forEach(function(b){
+      b.onclick=async function(){if(!confirm('Eliminare utente?'))return;var id=this.dataset.id,r=await fetch('/admin/users/'+id,{method:'DELETE',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}});var j=await r.json();alert(j.message||j.error);if(j.success)location.reload();};
     });
   </script>
 </body>

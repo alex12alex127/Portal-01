@@ -5,10 +5,22 @@ const { requireAuth } = require('../middleware/auth');
 const { validateFerie } = require('../middleware/validation');
 const { apiLimiter } = require('../middleware/security');
 
+function soloData (val) {
+  if (val == null) return '';
+  if (typeof val === 'string') return val.slice(0, 10);
+  if (typeof val.toISOString === 'function') return val.toISOString().slice(0, 10);
+  return String(val).slice(0, 10);
+}
+
 router.get('/', requireAuth, async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM ferie WHERE user_id = $1 ORDER BY data_inizio DESC', [req.session.userId]);
-    res.render('ferie/index', { title: 'Ferie - Portal-01', activePage: 'ferie', ferie: result.rows });
+    const ferie = result.rows.map(r => ({
+      ...r,
+      data_inizio: soloData(r.data_inizio),
+      data_fine: soloData(r.data_fine)
+    }));
+    res.render('ferie/index', { title: 'Ferie - Portal-01', activePage: 'ferie', ferie });
   } catch (err) {
     console.error(err);
     res.status(500).send('Errore del server');

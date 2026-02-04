@@ -102,11 +102,22 @@ router.get('/ferie', requireAuth, requireManager, async (req, res) => {
       ORDER BY f.created_at DESC
       LIMIT $1 OFFSET $2
     `, [limit, offset]);
+    const soloData = (val) => {
+      if (val == null) return '';
+      if (typeof val === 'string') return val.slice(0, 10);
+      if (typeof val.toISOString === 'function') return val.toISOString().slice(0, 10);
+      return String(val).slice(0, 10);
+    };
+    const ferie = result.rows.map(r => ({
+      ...r,
+      data_inizio: soloData(r.data_inizio),
+      data_fine: soloData(r.data_fine)
+    }));
     const totalPages = Math.ceil(total / limit) || 1;
     res.render('admin/ferie', {
       title: 'Richieste Ferie - Portal-01',
       activePage: 'adminFerie',
-      ferie: result.rows,
+      ferie,
       pagination: { page, limit, total, totalPages }
     });
   } catch (err) {

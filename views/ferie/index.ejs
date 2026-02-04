@@ -49,7 +49,7 @@
     btn.disabled=true; if(txt) txt.textContent='Invio in corso...';
     try{
       var r=await fetch('/ferie/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
-      var j=await r.json();
+      var j; try{j=await r.json();}catch(_){j={};}
       if(j.success){ msg.textContent=j.message||'Richiesta inviata'; msg.className='message-ok'; location.reload(); return; }
       msg.textContent=j.error||'Errore'; msg.className='message-error';
     }catch(x){ msg.textContent='Errore'; msg.className='message-error'; }

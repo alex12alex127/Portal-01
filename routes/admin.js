@@ -30,10 +30,11 @@ router.get('/users', requireAuth, requireAdmin, async (req, res) => {
 });
 
 router.post('/users/:id/role', requireAuth, requireAdmin, apiLimiter, async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id, 10);
   const { role } = req.body;
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID utente non valido' });
   if (!['admin', 'manager', 'user'].includes(role)) return res.status(400).json({ error: 'Ruolo non valido' });
-  if (parseInt(id) === req.session.userId) return res.status(400).json({ error: 'Non puoi cambiare il tuo ruolo' });
+  if (id === Number(req.session.userId)) return res.status(400).json({ error: 'Non puoi cambiare il tuo ruolo' });
   try {
     await db.query('UPDATE users SET role = $1 WHERE id = $2', [role, id]);
     res.json({ success: true, message: 'Ruolo aggiornato' });
@@ -44,8 +45,9 @@ router.post('/users/:id/role', requireAuth, requireAdmin, apiLimiter, async (req
 });
 
 router.post('/users/:id/toggle', requireAuth, requireAdmin, apiLimiter, async (req, res) => {
-  const { id } = req.params;
-  if (parseInt(id) === req.session.userId) return res.status(400).json({ error: 'Non puoi disattivare il tuo account' });
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID utente non valido' });
+  if (id === Number(req.session.userId)) return res.status(400).json({ error: 'Non puoi disattivare il tuo account' });
   try {
     const r = await db.query('UPDATE users SET is_active = NOT is_active WHERE id = $1 RETURNING is_active', [id]);
     res.json({ success: true, message: r.rows[0].is_active ? 'Utente attivato' : 'Utente disattivato', is_active: r.rows[0].is_active });
@@ -56,8 +58,9 @@ router.post('/users/:id/toggle', requireAuth, requireAdmin, apiLimiter, async (r
 });
 
 router.delete('/users/:id', requireAuth, requireAdmin, apiLimiter, async (req, res) => {
-  const { id } = req.params;
-  if (parseInt(id) === req.session.userId) return res.status(400).json({ error: 'Non puoi eliminare il tuo account' });
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID utente non valido' });
+  if (id === Number(req.session.userId)) return res.status(400).json({ error: 'Non puoi eliminare il tuo account' });
   try {
     await db.query('DELETE FROM users WHERE id = $1', [id]);
     res.json({ success: true, message: 'Utente eliminato' });
@@ -68,8 +71,9 @@ router.delete('/users/:id', requireAuth, requireAdmin, apiLimiter, async (req, r
 });
 
 router.post('/users/:id/reset-password', requireAuth, requireAdmin, apiLimiter, async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id, 10);
   const new_password = req.body.new_password;
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID utente non valido' });
   if (!new_password || new_password.length < 8) return res.status(400).json({ error: 'Password almeno 8 caratteri' });
   if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(new_password)) return res.status(400).json({ error: 'Password: maiuscole, minuscole e numeri' });
   try {
@@ -112,7 +116,8 @@ router.get('/ferie', requireAuth, requireManager, async (req, res) => {
 });
 
 router.post('/ferie/:id/approve', requireAuth, requireManager, apiLimiter, async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID richiesta non valido' });
   try {
     const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id', ['approved', id, 'pending']);
     if (r.rows.length === 0) return res.status(400).json({ error: 'Richiesta non trovata o già gestita' });
@@ -124,7 +129,8 @@ router.post('/ferie/:id/approve', requireAuth, requireManager, apiLimiter, async
 });
 
 router.post('/ferie/:id/reject', requireAuth, requireManager, apiLimiter, async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID richiesta non valido' });
   try {
     const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id', ['rejected', id, 'pending']);
     if (r.rows.length === 0) return res.status(400).json({ error: 'Richiesta non trovata o già gestita' });

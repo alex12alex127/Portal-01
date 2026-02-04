@@ -23,8 +23,9 @@
       btn.disabled=true; if(txt) txt.textContent='Registrazione...';
       try{
         var r=await fetch('/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
-        var j=await r.json();
-        if(j.success){ location.href=j.redirect; return; }
+        var j;
+        try{j=await r.json();}catch(_){j={};}
+        if(j.success&&j.redirect){ location.href=j.redirect; return; }
         msg.textContent=j.error||'Errore'; msg.className='message-error';
       }catch(x){ msg.textContent='Errore di connessione'; msg.className='message-error'; }
       btn.disabled=false; if(txt) txt.textContent='Registrati';

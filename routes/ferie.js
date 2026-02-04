@@ -15,6 +15,42 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
+// Calendario: chi è in ferie (approvate) per ogni giorno del mese — tutti i dipendenti
+router.get('/calendar', requireAuth, async (req, res) => {
+  try {
+    const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+    const month = parseInt(req.query.month, 10) || new Date().getMonth() + 1;
+    if (month < 1 || month > 12) return res.status(400).json({ error: 'Mese non valido' });
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
+    const start = firstDay.toISOString().slice(0, 10);
+    const end = lastDay.toISOString().slice(0, 10);
+    const result = await db.query(`
+      SELECT f.data_inizio, f.data_fine, u.full_name, u.username
+      FROM ferie f
+      JOIN users u ON u.id = f.user_id
+      WHERE f.stato = 'approved'
+        AND f.data_inizio <= $1 AND f.data_fine >= $2
+    `, [end, start]);
+    const byDate = {};
+    for (const row of result.rows) {
+      const [sy, sm, sd] = row.data_inizio.split('-').map(Number);
+      const [ey, em, ed] = row.data_fine.split('-').map(Number);
+      const dStart = new Date(sy, sm - 1, sd);
+      const dEnd = new Date(ey, em - 1, ed);
+      for (let d = new Date(dStart); d <= dEnd; d.setDate(d.getDate() + 1)) {
+        const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        if (!byDate[key]) byDate[key] = [];
+        byDate[key].push({ full_name: row.full_name, username: row.username });
+      }
+    }
+    res.json({ year, month, byDate });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore del server' });
+  }
+});
+
 router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) => {
   const { data_inizio, data_fine, note } = req.body;
   const tipo = req.body.tipo || 'ferie';

@@ -311,7 +311,7 @@ tr:hover td { background: #f8fafc; }
 .modal-overlay--open { display: flex; }
 .modal { background: #fff; border-radius: var(--radius-lg); padding: var(--space-lg); max-width: 400px; width: 100%; box-shadow: var(--shadow-lg); }
 .modal__title { margin-bottom: 0.5rem; font-size: 1.125rem; }
-.modal__text { color: #64748b; margin-bottom: var(--space-lg); font-size: 0.9375rem; }
+.modal__text { color: #64748b; margin-bottom: var(--space-lg); font-size: 0.9375rem; white-space: pre-wrap; }
 .modal__actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
 .modal__input { width: 100%; padding: 0.65rem 1rem; border: 1px solid #e2e8f0; border-radius: var(--radius); font-size: 1rem; margin-top: 0.5rem; }
 .btn--secondary { background: #e2e8f0; color: #334155; }
@@ -322,6 +322,21 @@ tr:hover td { background: #f8fafc; }
 .pagination__links { display: flex; gap: 0.5rem; }
 .pagination .btn-sm { padding: 0.5rem 1rem; }
 
+/* Calendario ferie */
+.card--calendar .calendar-hint { font-size: 0.875rem; color: #64748b; margin-bottom: var(--space); }
+.calendar-nav { display: flex; align-items: center; justify-content: center; gap: var(--space); margin-bottom: var(--space); }
+.calendar-title { font-size: 1.125rem; font-weight: 600; margin: 0; min-width: 180px; text-align: center; }
+.calendar-wrap { max-width: 100%; }
+.calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #64748b; text-align: center; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.calendar-day { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 48px; padding: 4px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; cursor: pointer; font-family: inherit; font-size: 0.875rem; transition: background var(--transition), border-color var(--transition); }
+.calendar-day:hover:not(:disabled) { background: #f8fafc; border-color: var(--primary); }
+.calendar-day--empty { cursor: default; border-color: transparent; background: transparent; }
+.calendar-day--has { background: var(--primary-light); border-color: var(--primary); color: var(--primary-hover); font-weight: 500; }
+.calendar-day--has:hover { background: #bfdbfe; }
+.calendar-day__num { display: block; }
+.calendar-day__label { font-size: 0.65rem; margin-top: 2px; opacity: .9; }
+
 /* Focus accessibilità */
-.sidebar__link:focus-visible, .btn:focus-visible, .btn-sm:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-light); }
+.sidebar__link:focus-visible, .btn:focus-visible, .btn-sm:focus-visible, .calendar-day:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-light); }
 .sidebar__close:focus-visible, .sidebar__toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255,255,255,.5); }

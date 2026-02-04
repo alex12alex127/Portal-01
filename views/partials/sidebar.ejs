@@ -53,4 +53,9 @@
   function close(){s.classList.remove('open');if(b)b.classList.remove('open');}
   t.onclick=open;if(c)c.onclick=close;if(b)b.onclick=close;
 })();
+(function(){
+  var urls=['/dashboard','/ferie','/profile','/admin/users'<% if (user && (user.role === 'admin' || user.role === 'manager')) { %>,'/admin/ferie'<% } %>];
+  function prefetch(){ urls.forEach(function(u){ var l=document.createElement('link'); l.rel='prefetch'; l.href=u; document.head.appendChild(l); }); }
+  if(document.readyState==='complete') setTimeout(prefetch,300); else window.addEventListener('load',function(){ setTimeout(prefetch,300); });
+})();
 </script>

@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const compression = require('compression');
 const session = require('express-session');
 const path = require('path');
 const db = require('./config/database');
@@ -8,14 +9,17 @@ const { sanitizeInput } = require('./middleware/validation');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isProd = process.env.NODE_ENV === 'production';
 
 app.set('trust proxy', 1);
+app.use(compression());
 app.use(helmetConfig);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: isProd ? '1d' : 0 }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+if (isProd) app.set('view cache', true);
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'change-me-in-production',
@@ -33,10 +37,12 @@ app.use(session({
 app.use(csrfProtection);
 app.use(sanitizeInput);
 
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-});
+if (!isProd) {
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    next();
+  });
+}
 
 app.use('/', require('./routes/index'));
 app.use('/auth', require('./routes/auth'));

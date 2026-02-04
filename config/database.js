@@ -44,7 +44,10 @@ async function initDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('Tabelle create/verificate');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_ferie_user_id ON ferie(user_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_ferie_created_at ON ferie(created_at DESC)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_ferie_stato ON ferie(stato)');
+    console.log('Tabelle e indici create/verificate');
   } catch (err) {
     throw err;
   } finally {

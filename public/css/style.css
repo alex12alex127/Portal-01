@@ -294,47 +294,100 @@ input[type="time"] {
   }
 }
 
-/* Form ferie: campi data a tutta larghezza e allineati a sinistra */
+/* ========== Gestione Ferie — layout e form ========== */
+.ferie-page { min-width: 0; }
+.ferie-layout {
+  display: grid;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+@media (min-width: 768px) {
+  .ferie-layout { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+@media (max-width: 767px) {
+  .ferie-layout { grid-template-columns: 1fr; }
+}
+
+.card--ferie-form .ferie-form { display: flex; flex-direction: column; gap: 0; }
 .ferie-dates {
+  display: grid;
+  gap: var(--space);
+  margin-bottom: var(--space);
   width: 100%;
   min-width: 0;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
 }
-.ferie-dates label { text-align: left; }
-.ferie-dates input[type="date"] {
+@media (min-width: 600px) {
+  .ferie-dates { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 599px) {
+  .ferie-dates { grid-template-columns: 1fr; }
+}
+.ferie-dates__field { min-width: 0; }
+.ferie-dates__field label { display: block; margin-bottom: 0.35rem; }
+.ferie-dates__field input[type="date"] {
   display: block;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  margin-left: 0;
-  margin-right: 0;
+  margin: 0;
 }
+.ferie-form__row { margin-bottom: var(--space); }
+.ferie-form__row label { display: block; margin-bottom: 0.35rem; }
+.label-optional { font-weight: 400; color: var(--text-muted); font-size: 0.8125rem; }
+.ferie-form .btn { margin-top: 0.25rem; }
 @media (max-width: 767px) {
-  .ferie-form { overflow: hidden; min-width: 0; width: 100%; }
-  .ferie-dates {
-    max-width: 100%;
-    width: 100%;
-    overflow: hidden;
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-    padding-right: 0;
-  }
-  .ferie-dates input[type="date"] {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+  .btn--full-mobile { width: 100%; }
+  .ferie-dates__field input[type="date"] {
     padding-left: 1rem;
     padding-right: 1rem;
+    font-size: 16px;
   }
 }
+
+/* Le mie richieste — card (mobile e desktop) */
+.ferie-requests-list { display: flex; flex-direction: column; gap: var(--space); }
+.ferie-request-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: var(--space);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.ferie-request-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow); }
+.ferie-request-card__dates {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 0;
+}
+.ferie-request-card__sep { color: var(--text-muted); font-weight: 400; }
+.ferie-request-card__to { font-weight: 600; }
+.ferie-request-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+.ferie-request-card__days { font-weight: 500; color: var(--text); }
+.ferie-request-card__tipo { text-transform: capitalize; }
+.ferie-request-card .badge { margin-left: auto; flex-shrink: 0; }
+@media (max-width: 767px) {
+  .ferie-request-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+  .ferie-request-card .badge { margin-left: 0; }
+}
+.badge--ferie { font-size: 0.8125rem; }
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary);
@@ -495,8 +548,28 @@ tr:hover td { background: var(--border-light); }
 
 /* Calendario ferie */
 .card--calendar .calendar-hint { font-size: 0.875rem; color: var(--text-muted); margin-bottom: var(--space); }
-.calendar-nav { display: flex; align-items: center; justify-content: center; gap: var(--space); margin-bottom: var(--space); flex-wrap: wrap; }
-.calendar-title { font-size: 1.125rem; font-weight: 600; margin: 0; min-width: 0; text-align: center; color: var(--text); }
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space);
+  margin-bottom: var(--space);
+  flex-wrap: nowrap;
+}
+.calendar-nav .btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: var(--touch-min);
+  padding: 0.5rem 0.85rem;
+}
+.calendar-nav__arrow { font-size: 1.25rem; line-height: 1; }
+.calendar-nav__label { font-size: 0.8125rem; }
+@media (max-width: 480px) {
+  .calendar-nav__label { display: none; }
+  .calendar-nav .btn-sm { padding: 0.5rem; }
+}
+.calendar-title { font-size: 1.125rem; font-weight: 600; margin: 0; min-width: 0; text-align: center; color: var(--text); flex: 1; }
 .calendar-wrap { max-width: 100%; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); text-align: center; min-width: 0; }
 .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; min-width: 0; }
@@ -509,6 +582,10 @@ tr:hover td { background: var(--border-light); }
 .calendar-day__dot { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin: 2px auto 0; flex-shrink: 0; }
 .calendar-day--has .calendar-day__dot { background: var(--primary-dark); }
 .calendar-day__label { font-size: 0.65rem; margin-top: 2px; opacity: .9; }
+@media (min-width: 768px) {
+  .card--calendar .calendar-grid { gap: 6px; }
+  .calendar-day { min-height: 52px; }
+}
 
 /* Focus e accessibilità */
 .sidebar__link:focus-visible, .btn:focus-visible, .btn-sm:focus-visible, .calendar-day:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-light); }

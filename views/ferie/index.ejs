@@ -12,14 +12,34 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="ferie-dates">
             <div class="ferie-dates__field">
-              <label for="data_inizio">Data inizio</label>
-              <input id="data_inizio" type="date" name="data_inizio" required>
+              <label>Data inizio</label>
+              <input type="hidden" id="data_inizio" name="data_inizio" required>
+              <button type="button" class="ferie-date-trigger" data-field="data_inizio" aria-label="Scegli data inizio">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                <span class="ferie-date-trigger__text">Seleziona data</span>
+              </button>
             </div>
             <div class="ferie-dates__field">
-              <label for="data_fine">Data fine</label>
-              <input id="data_fine" type="date" name="data_fine" required>
+              <label>Data fine</label>
+              <input type="hidden" id="data_fine" name="data_fine" required>
+              <button type="button" class="ferie-date-trigger" data-field="data_fine" aria-label="Scegli data fine">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                <span class="ferie-date-trigger__text">Seleziona data</span>
+              </button>
             </div>
           </div>
+          <div id="ferieDatepicker" class="ferie-datepicker" role="dialog" aria-label="Scegli data" aria-modal="true" hidden>
+            <div class="ferie-datepicker__header">
+              <button type="button" class="ferie-datepicker__prev" aria-label="Mese precedente">‹</button>
+              <span class="ferie-datepicker__title"></span>
+              <button type="button" class="ferie-datepicker__next" aria-label="Mese successivo">›</button>
+            </div>
+            <div class="ferie-datepicker__weekdays">
+              <span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span>
+            </div>
+            <div class="ferie-datepicker__grid" id="ferieDatepickerGrid"></div>
+          </div>
+          <div id="ferieDatepickerBackdrop" class="ferie-datepicker__backdrop" aria-hidden="true" hidden></div>
           <div class="ferie-form__row">
             <label for="tipo">Tipo</label>
             <select id="tipo" name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select>
@@ -76,18 +96,109 @@
   </div>
 </div>
 <script>
+(function(){
+  var monthNames = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  var picker = document.getElementById('ferieDatepicker');
+  var backdrop = document.getElementById('ferieDatepickerBackdrop');
+  var gridEl = document.getElementById('ferieDatepickerGrid');
+  var titleEl = picker && picker.querySelector('.ferie-datepicker__title');
+  var currentField = null;
+  var pickerYear = new Date().getFullYear();
+  var pickerMonth = new Date().getMonth() + 1;
+
+  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  function toYMD(y, m, d) { return y + '-' + pad(m) + '-' + pad(d); }
+  function toDisplay(ymd) {
+    if (!ymd) return 'Seleziona data';
+    var p = ymd.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+  function firstDayOffset(y, m) { return ((new Date(y, m - 1, 1).getDay() + 6) % 7); }
+  function daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+
+  function openPicker(field) {
+    currentField = field;
+    var input = document.getElementById(field);
+    if (input && input.value) {
+      var p = input.value.split('-').map(Number);
+      pickerYear = p[0];
+      pickerMonth = p[1];
+    } else {
+      pickerYear = new Date().getFullYear();
+      pickerMonth = new Date().getMonth() + 1;
+    }
+    renderPickerGrid();
+    picker.removeAttribute('hidden');
+    backdrop.removeAttribute('hidden');
+  }
+
+  function closePicker() {
+    picker.setAttribute('hidden', '');
+    backdrop.setAttribute('hidden', '');
+    currentField = null;
+  }
+
+  function setDate(ymd) {
+    if (!currentField) return;
+    var input = document.getElementById(currentField);
+    var trigger = document.querySelector('.ferie-date-trigger[data-field="' + currentField + '"]');
+    if (input) input.value = ymd;
+    if (trigger) {
+      var t = trigger.querySelector('.ferie-date-trigger__text');
+      if (t) t.textContent = toDisplay(ymd);
+    }
+    closePicker();
+  }
+
+  function renderPickerGrid() {
+    if (!gridEl || !titleEl) return;
+    titleEl.textContent = monthNames[pickerMonth - 1] + ' ' + pickerYear;
+    var offset = firstDayOffset(pickerYear, pickerMonth);
+    var days = daysInMonth(pickerYear, pickerMonth);
+    var dataInizioVal = document.getElementById('data_inizio') && document.getElementById('data_inizio').value;
+    var minTime = dataInizioVal && currentField === 'data_fine' ? new Date(dataInizioVal).getTime() : null;
+    var html = '';
+    for (var i = 0; i < offset; i++) html += '<span class="ferie-datepicker__day ferie-datepicker__day--empty"></span>';
+    for (var d = 1; d <= days; d++) {
+      var ymd = toYMD(pickerYear, pickerMonth, d);
+      var dayTime = new Date(pickerYear, pickerMonth - 1, d).getTime();
+      var disabled = minTime && dayTime < minTime;
+      html += '<button type="button" class="ferie-datepicker__day" data-ymd="' + ymd + '"' + (disabled ? ' disabled' : '') + '>' + d + '</button>';
+    }
+    gridEl.innerHTML = html;
+    gridEl.querySelectorAll('.ferie-datepicker__day:not(.ferie-datepicker__day--empty):not([disabled])').forEach(function(btn) {
+      btn.addEventListener('click', function() { setDate(this.dataset.ymd); });
+    });
+  }
+
+  if (picker && backdrop && gridEl) {
+    document.querySelectorAll('.ferie-date-trigger').forEach(function(btn) {
+      btn.addEventListener('click', function() { openPicker(this.dataset.field); });
+    });
+    picker.querySelector('.ferie-datepicker__prev').addEventListener('click', function() {
+      pickerMonth--; if (pickerMonth < 1) { pickerMonth = 12; pickerYear--; }
+      renderPickerGrid();
+    });
+    picker.querySelector('.ferie-datepicker__next').addEventListener('click', function() {
+      pickerMonth++; if (pickerMonth > 12) { pickerMonth = 1; pickerYear++; }
+      renderPickerGrid();
+    });
+    backdrop.addEventListener('click', closePicker);
+  }
+})();
+
   document.getElementById('frm').onsubmit=async function(e){
     e.preventDefault();
-    var btn=this.querySelector('button'), txt=btn.querySelector('.btn-text'), msg=document.getElementById('ferieMsg');
+    var btn=this.querySelector('button[type="submit"]'), txt=btn ? btn.querySelector('.btn-text') : null, msg=document.getElementById('ferieMsg');
     msg.textContent=''; msg.className=''; msg.removeAttribute('class');
-    btn.disabled=true; if(txt) txt.textContent='Invio in corso...';
+    if(btn) btn.disabled=true; if(txt) txt.textContent='Invio in corso...';
     try{
       var r=await fetch((window.APP_BASE||'')+'/ferie/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
       var j; try{j=await r.json();}catch(_){j={};}
       if(j.success){ msg.textContent=j.message||'Richiesta inviata'; msg.className='message-ok'; location.reload(); return; }
       msg.textContent=j.error||'Errore'; msg.className='message-error';
     }catch(x){ msg.textContent='Errore'; msg.className='message-error'; }
-    btn.disabled=false; if(txt) txt.textContent='Invia';
+    if(btn) btn.disabled=false; if(txt) txt.textContent='Invia richiesta';
   };
 
 (function(){

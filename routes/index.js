@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
 });
 
 router.get('/dashboard', requireAuth, (req, res) => {
-  res.render('dashboard', { user: req.session.user, csrfToken: req.session.csrfToken });
+  res.render('dashboard', { title: 'Dashboard - Portal-01', activePage: 'dashboard' });
 });
 
 module.exports = router;

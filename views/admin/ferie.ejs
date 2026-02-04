@@ -1,86 +1,78 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Richieste Ferie - Portal-01</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-  <div class="app-wrap">
-    <%- include('../partials/sidebar', { user: user, activePage: 'adminFerie' }) %>
-    <main class="main">
-      <div class="container">
-        <h1 class="page-title">
-          <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
-          Richieste Ferie
-        </h1>
-        <div class="card">
-          <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg> Tutte le richieste (<%= ferie.length %>)</h2>
-          <% if (ferie.length === 0) { %>
-            <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> Nessuna richiesta di ferie.</p>
-          <% } else { %>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr><th>Dipendente</th><th>Da</th><th>A</th><th>Giorni</th><th>Tipo</th><th>Stato</th><th>Azioni</th></tr>
-                </thead>
-                <tbody>
-                  <% ferie.forEach(function(f) { %>
-                  <tr data-id="<%= f.id %>">
-                    <td><strong><%= f.username %></strong><br><span style="color:#64748b;font-size:0.875rem"><%= f.full_name %></span></td>
-                    <td><%= f.data_inizio %></td>
-                    <td><%= f.data_fine %></td>
-                    <td><%= f.giorni_totali %></td>
-                    <td><%= f.tipo %></td>
-                    <td><span class="badge <%= f.stato %>"><%= f.stato %></span></td>
-                    <td>
-                      <% if (f.stato === 'pending') { %>
-                        <button type="button" class="btn-sm approve-btn" data-id="<%= f.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Approva</button>
-                        <button type="button" class="btn-sm reject-btn" data-id="<%= f.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> Rifiuta</button>
-                      <% } else { %>
-                        —
-                      <% } %>
-                    </td>
-                  </tr>
-                  <% }); %>
-                </tbody>
-              </table>
-            </div>
-          <% } %>
-        </div>
+<h1 class="page-title">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+  Richieste Ferie
+</h1>
+<div class="card">
+  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg> Tutte le richieste (<%= typeof pagination !== 'undefined' ? pagination.total : ferie.length %>)</h2>
+  <% if (ferie.length === 0) { %>
+    <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> Nessuna richiesta di ferie.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Dipendente</th><th>Da</th><th>A</th><th>Giorni</th><th>Tipo</th><th>Stato</th><th>Azioni</th></tr>
+        </thead>
+        <tbody>
+          <% ferie.forEach(function(f) { %>
+          <tr data-id="<%= f.id %>">
+            <td><strong><%= f.username %></strong><br><span class="text-muted"><%= f.full_name %></span></td>
+            <td><%= f.data_inizio %></td>
+            <td><%= f.data_fine %></td>
+            <td><%= f.giorni_totali %></td>
+            <td><%= f.tipo %></td>
+            <td><span class="badge <%= f.stato %>"><%= f.stato === 'pending' ? 'In attesa' : f.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span></td>
+            <td>
+              <% if (f.stato === 'pending') { %>
+                <button type="button" class="btn-sm approve-btn" data-id="<%= f.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Approva</button>
+                <button type="button" class="btn-sm reject-btn" data-id="<%= f.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> Rifiuta</button>
+              <% } else { %>
+                —
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+    <nav class="pagination" aria-label="Paginazione">
+      <span class="pagination__info">Pagina <%= pagination.page %> di <%= pagination.totalPages %> (<%= pagination.total %> totali)</span>
+      <div class="pagination__links">
+        <% if (pagination.page > 1) { %><a href="?page=<%= pagination.page - 1 %>&limit=<%= pagination.limit %>" class="btn btn-sm">Precedente</a><% } %>
+        <% if (pagination.page < pagination.totalPages) { %><a href="?page=<%= pagination.page + 1 %>&limit=<%= pagination.limit %>" class="btn btn-sm">Successivo</a><% } %>
       </div>
-    </main>
-  </div>
-  <script>
-    var csrf = '<%= csrfToken %>';
-    document.querySelectorAll('.approve-btn').forEach(function(b) {
-      b.onclick = async function() {
-        var id = this.dataset.id;
-        this.disabled = true;
-        try {
-          var r = await fetch('/admin/ferie/' + id + '/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
-          var j = await r.json();
-          alert(j.message || j.error);
-          if (j.success) location.reload();
-        } catch (x) { alert('Errore di connessione'); }
-        this.disabled = false;
-      };
-    });
-    document.querySelectorAll('.reject-btn').forEach(function(b) {
-      b.onclick = async function() {
-        if (!confirm('Rifiutare questa richiesta?')) return;
-        var id = this.dataset.id;
-        this.disabled = true;
+    </nav>
+    <% } %>
+  <% } %>
+</div>
+<script>
+  var csrf = '<%= csrfToken %>';
+  document.querySelectorAll('.approve-btn').forEach(function(b) {
+    b.onclick = async function() {
+      var id = this.dataset.id;
+      this.disabled = true;
+      try {
+        var r = await fetch('/admin/ferie/' + id + '/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
+        var j = await r.json();
+        window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+        if (j.success) location.reload();
+      } catch (x) { window.showToast('Errore di connessione', 'error'); }
+      this.disabled = false;
+    };
+  });
+  document.querySelectorAll('.reject-btn').forEach(function(b) {
+    b.onclick = function() {
+      window.showModal({ title: 'Rifiuta richiesta', text: 'Rifiutare questa richiesta di ferie?', onConfirm: async function() {
+        var id = b.dataset.id;
+        b.disabled = true;
         try {
           var r = await fetch('/admin/ferie/' + id + '/reject', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
           var j = await r.json();
-          alert(j.message || j.error);
+          window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
           if (j.success) location.reload();
-        } catch (x) { alert('Errore di connessione'); }
-        this.disabled = false;
-      };
-    });
-  </script>
-</body>
-</html>
+        } catch (x) { window.showToast('Errore di connessione', 'error'); }
+        b.disabled = false;
+      }});
+    };
+  });
+</script>

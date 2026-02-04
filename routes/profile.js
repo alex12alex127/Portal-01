@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const validator = require('validator');
 const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/security');
@@ -12,7 +13,7 @@ router.get('/', requireAuth, async (req, res) => {
       [req.session.userId]
     );
     if (result.rows.length === 0) return res.redirect('/auth/logout');
-    res.render('profile/index', { profile: result.rows[0], user: req.session.user, csrfToken: req.session.csrfToken });
+    res.render('profile/index', { title: 'Profilo - Portal-01', activePage: 'profile', profile: result.rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).send('Errore del server');
@@ -22,7 +23,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.post('/update', requireAuth, apiLimiter, (req, res, next) => {
   const { full_name, email } = req.body;
   if (!full_name || full_name.length < 2) return res.status(400).json({ error: 'Nome richiesto' });
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Email non valida' });
+  if (!email || !validator.isEmail(email)) return res.status(400).json({ error: 'Email non valida' });
   req._profileUpdate = { full_name, email };
   next();
 }, async (req, res) => {
@@ -50,6 +51,7 @@ router.post('/change-password', requireAuth, apiLimiter, async (req, res) => {
   }
   try {
     const r = await db.query('SELECT password FROM users WHERE id = $1', [req.session.userId]);
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Utente non trovato' });
     const ok = await bcrypt.compare(current_password, r.rows[0].password);
     if (!ok) return res.status(401).json({ error: 'Password corrente errata' });
     const hash = await bcrypt.hash(new_password, 12);

@@ -6,7 +6,7 @@ const { validateRegister, validateLogin } = require('../middleware/validation');
 const { loginLimiter, registerLimiter, checkLoginAttempts, recordLoginAttempt, logLoginAttempt } = require('../middleware/security');
 
 router.get('/login', (req, res) => {
-  res.render('auth/login', { csrfToken: req.session.csrfToken });
+  res.render('auth/login', { layout: 'layouts/auth', title: 'Login - Portal-01' });
 });
 
 router.post('/login', loginLimiter, checkLoginAttempts, validateLogin, async (req, res) => {
@@ -44,7 +44,7 @@ router.post('/login', loginLimiter, checkLoginAttempts, validateLogin, async (re
 });
 
 router.get('/register', (req, res) => {
-  res.render('auth/register', { csrfToken: req.session.csrfToken });
+  res.render('auth/register', { layout: 'layouts/auth', title: 'Registrazione - Portal-01' });
 });
 
 router.post('/register', registerLimiter, validateRegister, async (req, res) => {

@@ -37,10 +37,17 @@ function validateFerie(req, res, next) {
   next();
 }
 
+const PASSWORD_KEYS = ['password', 'current_password', 'new_password', 'confirm_password'];
+
 function sanitizeInput(req, res, next) {
   if (req.body && typeof req.body === 'object') {
     Object.keys(req.body).forEach(k => {
-      if (typeof req.body[k] === 'string') req.body[k] = validator.escape(req.body[k].trim());
+      if (typeof req.body[k] !== 'string') return;
+      if (PASSWORD_KEYS.includes(k)) {
+        req.body[k] = req.body[k].trim();
+      } else {
+        req.body[k] = validator.escape(req.body[k].trim());
+      }
     });
   }
   next();

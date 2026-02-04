@@ -1,70 +1,58 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ferie - Portal-01</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-  <div class="app-wrap">
-    <%- include('../partials/sidebar', { user: user, activePage: 'ferie' }) %>
-    <main class="main">
-      <div class="container">
-        <h1 class="page-title">
-          <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
-          Gestione Ferie
-        </h1>
-        <div class="card">
-          <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> Nuova richiesta</h2>
-          <form id="frm">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <label>Data inizio <input type="date" name="data_inizio" required></label>
-            <label>Data fine <input type="date" name="data_fine" required></label>
-            <label>Tipo <select name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select></label>
-            <label>Note <textarea name="note" rows="2"></textarea></label>
-            <button type="submit" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg> Invia</button>
-          </form>
-          <div id="ferieMsg"></div>
-        </div>
-        <div class="card">
-          <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg> Le mie richieste</h2>
-          <% if (ferie.length === 0) { %>
-            <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> Nessuna richiesta. Usa il modulo sopra.</p>
-          <% } else { %>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Da</th><th>A</th><th>Giorni</th><th>Tipo</th><th>Stato</th></tr></thead>
-                <tbody>
-                  <% ferie.forEach(function(f) { %>
-                  <tr>
-                    <td><%= f.data_inizio %></td>
-                    <td><%= f.data_fine %></td>
-                    <td><%= f.giorni_totali %></td>
-                    <td><%= f.tipo %></td>
-                    <td><span class="badge <%= f.stato %>"><%= f.stato %></span></td>
-                  </tr>
-                  <% }); %>
-                </tbody>
-              </table>
-            </div>
-          <% } %>
-        </div>
-      </div>
-    </main>
-  </div>
-  <script>
-    document.getElementById('frm').onsubmit=async function(e){
-      e.preventDefault();
-      var btn=this.querySelector('button'),msg=document.getElementById('ferieMsg');
-      msg.textContent='';btn.disabled=true;
-      try{
-        var r=await fetch('/ferie/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
-        var j=await r.json();
-        if(j.success)location.reload();else msg.textContent=j.error||'Errore';
-      }catch(x){msg.textContent='Errore';}
-      btn.disabled=false;
-    };
-  </script>
-</body>
-</html>
+<h1 class="page-title">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+  Gestione Ferie
+</h1>
+<div class="card">
+  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> Nuova richiesta</h2>
+  <form id="frm">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="data_inizio">Data inizio</label>
+    <input id="data_inizio" type="date" name="data_inizio" required>
+    <label for="data_fine">Data fine</label>
+    <input id="data_fine" type="date" name="data_fine" required>
+    <label for="tipo">Tipo</label>
+    <select id="tipo" name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select>
+    <label for="note">Note</label>
+    <textarea id="note" name="note" rows="2"></textarea>
+    <button type="submit" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg> <span class="btn-text">Invia</span></button>
+  </form>
+  <div id="ferieMsg" role="status" aria-live="polite"></div>
+</div>
+<div class="card">
+  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg> Le mie richieste</h2>
+  <% if (ferie.length === 0) { %>
+    <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> Nessuna richiesta. Usa il modulo sopra.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Da</th><th>A</th><th>Giorni</th><th>Tipo</th><th>Stato</th></tr></thead>
+        <tbody>
+          <% ferie.forEach(function(f) { %>
+          <tr>
+            <td><%= f.data_inizio %></td>
+            <td><%= f.data_fine %></td>
+            <td><%= f.giorni_totali %></td>
+            <td><%= f.tipo %></td>
+            <td><span class="badge <%= f.stato %>"><%= f.stato === 'pending' ? 'In attesa' : f.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+<script>
+  document.getElementById('frm').onsubmit=async function(e){
+    e.preventDefault();
+    var btn=this.querySelector('button'), txt=btn.querySelector('.btn-text'), msg=document.getElementById('ferieMsg');
+    msg.textContent=''; msg.className=''; msg.removeAttribute('class');
+    btn.disabled=true; if(txt) txt.textContent='Invio in corso...';
+    try{
+      var r=await fetch('/ferie/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
+      var j=await r.json();
+      if(j.success){ msg.textContent=j.message||'Richiesta inviata'; msg.className='message-ok'; location.reload(); return; }
+      msg.textContent=j.error||'Errore'; msg.className='message-error';
+    }catch(x){ msg.textContent='Errore'; msg.className='message-error'; }
+    btn.disabled=false; if(txt) txt.textContent='Invia';
+  };
+</script>

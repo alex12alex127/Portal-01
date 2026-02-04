@@ -36,13 +36,21 @@ const helmetConfig = helmet({
   }
 });
 
+const CSRF_SKIP_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+
 function csrfProtection(req, res, next) {
   if (!req.session.csrfToken) {
     req.session.csrfToken = crypto.randomBytes(32).toString('hex');
   }
   res.locals.csrfToken = req.session.csrfToken;
-  if (req.method === 'GET') return next();
-  return next();
+  if (CSRF_SKIP_METHODS.includes(req.method)) return next();
+  const token = (req.body && req.body._csrf) || req.get('X-CSRF-Token');
+  if (!token || token !== req.session.csrfToken) {
+    const accept = req.headers.accept || '';
+    if (accept.indexOf('json') !== -1) return res.status(403).json({ error: 'Token CSRF non valido' });
+    return res.status(403).send('Accesso negato. Ricarica la pagina e riprova.');
+  }
+  next();
 }
 
 const loginAttempts = new Map();
@@ -75,7 +83,11 @@ function recordLoginAttempt(key, success) {
 }
 
 function logLoginAttempt(username, success, ip) {
-  console.log(`[${new Date().toISOString()}] Login ${username} success=${success} ip=${ip}`);
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`[${new Date().toISOString()}] Login ${success ? 'success' : 'fail'} ip=${ip}`);
+  } else {
+    console.log(`[${new Date().toISOString()}] Login ${username} success=${success} ip=${ip}`);
+  }
 }
 
 module.exports = {

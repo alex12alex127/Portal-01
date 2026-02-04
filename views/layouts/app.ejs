@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title><%= typeof title !== 'undefined' ? title : 'Portal-01' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app-wrap">
+    <%- include('../partials/sidebar', { activePage: typeof activePage !== 'undefined' ? activePage : '' }) %>
+    <main class="main">
+      <div class="container">
+        <%- body %>
+      </div>
+    </main>
+  </div>
+  <script src="/js/app.js"></script>
+</body>
+</html>

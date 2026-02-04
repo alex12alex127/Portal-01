@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const expressLayouts = require('express-ejs-layouts');
 const compression = require('compression');
 const session = require('express-session');
 const path = require('path');
@@ -19,6 +20,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: isProd ? '1d' : 0 }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(expressLayouts);
+app.set('layout', 'layouts/app');
 if (isProd) app.set('view cache', true);
 
 app.use(session({
@@ -36,6 +39,11 @@ app.use(session({
 
 app.use(csrfProtection);
 app.use(sanitizeInput);
+
+app.use((req, res, next) => {
+  if (req.session && req.session.user) res.locals.user = req.session.user;
+  next();
+});
 
 if (!isProd) {
   app.use((req, res, next) => {
@@ -61,7 +69,7 @@ app.use((req, res) => {
   }
 });
 
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('[Error]', err);
   res.status(500).json({ error: process.env.NODE_ENV === 'production' ? 'Errore server' : err.message });
 });

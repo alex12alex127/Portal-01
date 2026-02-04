@@ -1,38 +1,33 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrazione - Portal-01</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body class="auth-page">
-  <div class="auth-box">
-    <h1><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg> Portal-01</h1>
-    <h2>Registrazione</h2>
-    <form id="regForm">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <input type="text" name="username" placeholder="Username" required>
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="text" name="full_name" placeholder="Nome completo" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <button type="submit" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg> Registrati</button>
-    </form>
-    <p><a href="/auth/login">Hai già un account? Accedi</a></p>
-    <div id="msg"></div>
-  </div>
+<div class="auth-box">
+  <h1><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg> Portal-01</h1>
+  <h2>Registrazione</h2>
+  <form id="regForm">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="reg-username">Username</label>
+    <input id="reg-username" type="text" name="username" placeholder="Username" required>
+    <label for="reg-email">Email</label>
+    <input id="reg-email" type="email" name="email" placeholder="Email" required>
+    <label for="reg-full_name">Nome completo</label>
+    <input id="reg-full_name" type="text" name="full_name" placeholder="Nome completo" required>
+    <label for="reg-password">Password</label>
+    <input id="reg-password" type="password" name="password" placeholder="Password" required>
+    <button type="submit" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg> <span class="btn-text">Registrati</span></button>
+  </form>
+  <p><a href="/auth/login">Hai già un account? Accedi</a></p>
+  <div id="msg" role="status" aria-live="polite"></div>
   <script>
     document.getElementById('regForm').onsubmit=async function(e){
       e.preventDefault();
-      var btn=this.querySelector('button'),msg=document.getElementById('msg');
-      msg.textContent='';btn.disabled=true;
+      var btn=this.querySelector('button'), txt=btn.querySelector('.btn-text'), msg=document.getElementById('msg');
+      msg.textContent=''; msg.className=''; msg.removeAttribute('class');
+      btn.disabled=true; if(txt) txt.textContent='Registrazione...';
       try{
         var r=await fetch('/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
         var j=await r.json();
-        if(j.success)location.href=j.redirect;else msg.textContent=j.error||'Errore';
-      }catch(x){msg.textContent='Errore di connessione';}
-      btn.disabled=false;
+        if(j.success){ location.href=j.redirect; return; }
+        msg.textContent=j.error||'Errore'; msg.className='message-error';
+      }catch(x){ msg.textContent='Errore di connessione'; msg.className='message-error'; }
+      btn.disabled=false; if(txt) txt.textContent='Registrati';
     };
   </script>
-</body>
-</html>
+</div>

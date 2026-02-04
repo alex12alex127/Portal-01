@@ -7,7 +7,8 @@ if (!process.env.DATABASE_URL) {
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  connectionTimeoutMillis: 10000
+  connectionTimeoutMillis: 10000,
+  max: process.env.NODE_ENV === 'production' ? 10 : undefined
 });
 
 async function initDatabase() {
@@ -48,8 +49,6 @@ async function initDatabase() {
     await client.query('CREATE INDEX IF NOT EXISTS idx_ferie_created_at ON ferie(created_at DESC)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_ferie_stato ON ferie(stato)');
     console.log('Tabelle e indici create/verificate');
-  } catch (err) {
-    throw err;
   } finally {
     client.release();
   }

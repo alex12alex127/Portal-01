@@ -7,10 +7,22 @@ const { apiLimiter } = require('../middleware/security');
 
 router.get('/users', requireAuth, requireAdmin, async (req, res) => {
   try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = (page - 1) * limit;
+    const countResult = await db.query('SELECT COUNT(*)::int AS total FROM users');
+    const total = countResult.rows[0].total;
     const result = await db.query(
-      'SELECT id, username, email, full_name, role, is_active, last_login, created_at FROM users ORDER BY created_at DESC'
+      'SELECT id, username, email, full_name, role, is_active, last_login, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+      [limit, offset]
     );
-    res.render('admin/users', { users: result.rows, user: req.session.user, csrfToken: req.session.csrfToken });
+    const totalPages = Math.ceil(total / limit) || 1;
+    res.render('admin/users', {
+      title: 'Gestione Utenti - Portal-01',
+      activePage: 'admin',
+      users: result.rows,
+      pagination: { page, limit, total, totalPages }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('Errore del server');
@@ -59,6 +71,7 @@ router.post('/users/:id/reset-password', requireAuth, requireAdmin, apiLimiter, 
   const { id } = req.params;
   const new_password = req.body.new_password;
   if (!new_password || new_password.length < 8) return res.status(400).json({ error: 'Password almeno 8 caratteri' });
+  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(new_password)) return res.status(400).json({ error: 'Password: maiuscole, minuscole e numeri' });
   try {
     const hash = await bcrypt.hash(new_password, 12);
     await db.query('UPDATE users SET password = $1 WHERE id = $2', [hash, id]);
@@ -72,14 +85,26 @@ router.post('/users/:id/reset-password', requireAuth, requireAdmin, apiLimiter, 
 // Richieste ferie — admin/manager possono approvare o rifiutare
 router.get('/ferie', requireAuth, requireManager, async (req, res) => {
   try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = (page - 1) * limit;
+    const countResult = await db.query('SELECT COUNT(*)::int AS total FROM ferie f JOIN users u ON u.id = f.user_id');
+    const total = countResult.rows[0].total;
     const result = await db.query(`
       SELECT f.id, f.user_id, f.data_inizio, f.data_fine, f.giorni_totali, f.tipo, f.stato, f.note, f.created_at,
              u.username, u.full_name
       FROM ferie f
       JOIN users u ON u.id = f.user_id
       ORDER BY f.created_at DESC
-    `);
-    res.render('admin/ferie', { ferie: result.rows, user: req.session.user, csrfToken: req.session.csrfToken });
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
+    const totalPages = Math.ceil(total / limit) || 1;
+    res.render('admin/ferie', {
+      title: 'Richieste Ferie - Portal-01',
+      activePage: 'adminFerie',
+      ferie: result.rows,
+      pagination: { page, limit, total, totalPages }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('Errore del server');

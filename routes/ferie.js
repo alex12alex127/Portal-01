@@ -8,7 +8,7 @@ const { apiLimiter } = require('../middleware/security');
 router.get('/', requireAuth, async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM ferie WHERE user_id = $1 ORDER BY data_inizio DESC', [req.session.userId]);
-    res.render('ferie/index', { ferie: result.rows, user: req.session.user, csrfToken: req.session.csrfToken });
+    res.render('ferie/index', { title: 'Ferie - Portal-01', activePage: 'ferie', ferie: result.rows });
   } catch (err) {
     console.error(err);
     res.status(500).send('Errore del server');

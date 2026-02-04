@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requireAdmin, requireManager } = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/security');
 
 router.get('/users', requireAuth, requireAdmin, async (req, res) => {
@@ -63,6 +63,47 @@ router.post('/users/:id/reset-password', requireAuth, requireAdmin, apiLimiter, 
     const hash = await bcrypt.hash(new_password, 12);
     await db.query('UPDATE users SET password = $1 WHERE id = $2', [hash, id]);
     res.json({ success: true, message: 'Password reimpostata' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
+// Richieste ferie — admin/manager possono approvare o rifiutare
+router.get('/ferie', requireAuth, requireManager, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT f.id, f.user_id, f.data_inizio, f.data_fine, f.giorni_totali, f.tipo, f.stato, f.note, f.created_at,
+             u.username, u.full_name
+      FROM ferie f
+      JOIN users u ON u.id = f.user_id
+      ORDER BY f.created_at DESC
+    `);
+    res.render('admin/ferie', { ferie: result.rows, user: req.session.user, csrfToken: req.session.csrfToken });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+router.post('/ferie/:id/approve', requireAuth, requireManager, apiLimiter, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id', ['approved', id, 'pending']);
+    if (r.rows.length === 0) return res.status(400).json({ error: 'Richiesta non trovata o già gestita' });
+    res.json({ success: true, message: 'Richiesta approvata' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
+router.post('/ferie/:id/reject', requireAuth, requireManager, apiLimiter, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id', ['rejected', id, 'pending']);
+    if (r.rows.length === 0) return res.status(400).json({ error: 'Richiesta non trovata o già gestita' });
+    res.json({ success: true, message: 'Richiesta rifiutata' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Errore' });

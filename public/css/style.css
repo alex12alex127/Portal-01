@@ -210,6 +210,8 @@ a.module-card { text-decoration: none; color: inherit; display: block; }
 }
 .btn-sm .icon { width: 16px; height: 16px; }
 .btn-sm.toggle { background: var(--success); color: #fff; }
+.btn-sm.approve-btn { background: var(--success); color: #fff; }
+.btn-sm.reject-btn { background: var(--danger); color: #fff; }
 .btn-sm.reset { background: var(--warn); color: #fff; }
 .btn-sm.del { background: var(--danger); color: #fff; }
 .btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }

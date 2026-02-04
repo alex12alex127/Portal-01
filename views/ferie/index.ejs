@@ -4,12 +4,14 @@
 </h1>
 <div class="card">
   <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> Nuova richiesta</h2>
-  <form id="frm">
+  <form id="frm" class="ferie-form">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <label for="data_inizio">Data inizio</label>
-    <input id="data_inizio" type="date" name="data_inizio" required>
-    <label for="data_fine">Data fine</label>
-    <input id="data_fine" type="date" name="data_fine" required>
+    <div class="ferie-dates">
+      <label for="data_inizio">Data inizio</label>
+      <input id="data_inizio" type="date" name="data_inizio" required>
+      <label for="data_fine">Data fine</label>
+      <input id="data_fine" type="date" name="data_fine" required>
+    </div>
     <label for="tipo">Tipo</label>
     <select id="tipo" name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select>
     <label for="note">Note</label>

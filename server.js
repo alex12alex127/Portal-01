@@ -40,6 +40,15 @@ app.use(session({
 app.use(csrfProtection);
 app.use(sanitizeInput);
 
+// Normalizza trailing slash (evita 404 su mobile quando il browser richiede es. /dashboard/)
+app.use((req, res, next) => {
+  if (req.path.length > 1 && req.path.endsWith('/')) {
+    const target = req.path.slice(0, -1) + (req.url.slice(req.path.length) || '');
+    return res.redirect(301, target);
+  }
+  next();
+});
+
 app.use((req, res, next) => {
   if (req.session && req.session.user) res.locals.user = req.session.user;
   next();
@@ -60,10 +69,11 @@ app.use('/admin', require('./routes/admin'));
 
 app.use((req, res) => {
   res.status(404);
-  const accept = req.headers.accept || '';
-  if (accept.indexOf('text/html') !== -1) {
+  const accept = (req.headers.accept || '').toLowerCase();
+  const wantsHtml = accept.indexOf('text/html') !== -1 || accept.indexOf('*/*') !== -1;
+  if (wantsHtml) {
     res.set('Content-Type', 'text/html; charset=utf-8');
-    res.send('<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><title>404 - Portal-01</title><link rel="stylesheet" href="/css/style.css"></head><body><div class="container" style="padding:2rem;text-align:center"><h1>404</h1><p>Pagina non trovata.</p><a href="/" class="btn">Torna alla home</a></div></body></html>');
+    res.send('<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 - Portal-01</title><link rel="stylesheet" href="/css/style.css"></head><body><div class="container" style="padding:2rem;text-align:center"><h1>404</h1><p>Pagina non trovata.</p><a href="/" class="btn">Torna alla home</a></div></body></html>');
   } else {
     res.json({ error: 'Non trovato' });
   }

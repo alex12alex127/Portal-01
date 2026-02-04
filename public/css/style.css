@@ -294,29 +294,45 @@ input[type="time"] {
   }
 }
 
-/* Form ferie: contenimento campi data su mobile */
+/* Form ferie: campi data a tutta larghezza e allineati a sinistra */
 .ferie-dates {
   width: 100%;
   min-width: 0;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
+.ferie-dates label { text-align: left; }
 .ferie-dates input[type="date"] {
+  display: block;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  margin-left: 0;
+  margin-right: 0;
 }
 @media (max-width: 767px) {
-  .ferie-form { overflow: hidden; min-width: 0; }
+  .ferie-form { overflow: hidden; min-width: 0; width: 100%; }
   .ferie-dates {
     max-width: 100%;
+    width: 100%;
     overflow: hidden;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
   }
   .ferie-dates input[type="date"] {
+    display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
 input:focus, select:focus, textarea:focus {

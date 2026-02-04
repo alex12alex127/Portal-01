@@ -11,13 +11,17 @@ const { sanitizeInput } = require('./middleware/validation');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const isProd = process.env.NODE_ENV === 'production';
+const BASE_PATH = (process.env.BASE_PATH || '').replace(/\/+$/, ''); // es. '' o '/portal'
 
 app.set('trust proxy', 1);
+app.set('basePath', BASE_PATH);
 app.use(compression());
 app.use(helmetConfig);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: isProd ? '1d' : 0 }));
+
+// Static e route sotto BASE_PATH così funziona anche con proxy (es. app in /portal/)
+app.use(BASE_PATH || '/', express.static(path.join(__dirname, 'public'), { maxAge: isProd ? '1d' : 0 }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts);
@@ -40,6 +44,12 @@ app.use(session({
 app.use(csrfProtection);
 app.use(sanitizeInput);
 
+// Base path per view e redirect
+app.use((req, res, next) => {
+  res.locals.basePath = BASE_PATH;
+  next();
+});
+
 // Normalizza trailing slash (evita 404 su mobile quando il browser richiede es. /dashboard/)
 app.use((req, res, next) => {
   if (req.path.length > 1 && req.path.endsWith('/')) {
@@ -56,28 +66,36 @@ app.use((req, res, next) => {
 
 if (!isProd) {
   app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}${req.path !== req.originalUrl ? ' (original: ' + req.originalUrl + ')' : ''}`);
     next();
   });
 }
 
-app.use('/', require('./routes/index'));
-app.use('/auth', require('./routes/auth'));
-app.use('/ferie', require('./routes/ferie'));
-app.use('/profile', require('./routes/profile'));
-app.use('/admin', require('./routes/admin'));
+app.use(BASE_PATH || '/', require('./routes/index'));
+app.use(BASE_PATH + '/auth', require('./routes/auth'));
+app.use(BASE_PATH + '/ferie', require('./routes/ferie'));
+app.use(BASE_PATH + '/profile', require('./routes/profile'));
+app.use(BASE_PATH + '/admin', require('./routes/admin'));
 
 app.use((req, res) => {
+  const requestPath = req.originalUrl || req.url || req.path;
+  if (!isProd) console.warn('[404]', req.method, requestPath, 'Host:', req.get('Host'));
   res.status(404);
   const accept = (req.headers.accept || '').toLowerCase();
   const wantsHtml = accept.indexOf('text/html') !== -1 || accept.indexOf('*/*') !== -1;
+  const base = BASE_PATH || '';
   if (wantsHtml) {
     res.set('Content-Type', 'text/html; charset=utf-8');
-    res.send('<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 - Portal-01</title><link rel="stylesheet" href="/css/style.css"></head><body><div class="container" style="padding:2rem;text-align:center"><h1>404</h1><p>Pagina non trovata.</p><a href="/" class="btn">Torna alla home</a></div></body></html>');
+    res.send('<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 - Portal-01</title><link rel="stylesheet" href="' + base + '/css/style.css"></head><body><div class="container" style="padding:2rem;text-align:center"><h1>404</h1><p>Pagina non trovata.</p><p style="font-size:0.9rem;color:var(--muted, #666);word-break:break-all">Path richiesto: ' + escapeHtml(requestPath) + '</p><a href="' + base + '/" class="btn">Torna alla home</a></div></body></html>');
   } else {
-    res.json({ error: 'Non trovato' });
+    res.json({ error: 'Non trovato', path: requestPath });
   }
 });
+
+function escapeHtml(s) {
+  if (typeof s !== 'string') return '';
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 app.use((err, req, res, _next) => {
   console.error('[Error]', err);

@@ -9,22 +9,23 @@
     <input id="login-password" type="password" name="password" placeholder="Password" required>
     <button type="submit" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v3.75M15.75 9L12 12.75m0 0L8.25 9m3.75 3.75V21" /></svg> <span class="btn-text">Accedi</span></button>
   </form>
-  <p><a href="/auth/register">Registrati</a></p>
+  <p><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/auth/register">Registrati</a></p>
   <div id="msg" role="status" aria-live="polite"></div>
   <script>
+    (function(){ var base='<%= typeof basePath !== "undefined" ? basePath : "" %>';
     document.getElementById('loginForm').onsubmit=async function(e){
       e.preventDefault();
       var btn=this.querySelector('button'), txt=btn.querySelector('.btn-text'), msg=document.getElementById('msg');
       msg.textContent=''; msg.className=''; msg.removeAttribute('class');
       btn.disabled=true; if(txt) txt.textContent='Accesso in corso...';
       try{
-        var r=await fetch('/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
+        var r=await fetch(base+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
         var j;
         try{j=await r.json();}catch(_){j={};}
         if(j.success&&j.redirect){ location.href=j.redirect; return; }
         msg.textContent=j.error||'Errore'; msg.className='message-error';
       }catch(x){ msg.textContent='Errore di connessione'; msg.className='message-error'; }
       btn.disabled=false; if(txt) txt.textContent='Accedi';
-    };
+    }; })();
   </script>
 </div>

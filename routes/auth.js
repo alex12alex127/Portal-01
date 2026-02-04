@@ -6,7 +6,8 @@ const { validateRegister, validateLogin } = require('../middleware/validation');
 const { loginLimiter, registerLimiter, checkLoginAttempts, recordLoginAttempt, logLoginAttempt } = require('../middleware/security');
 
 router.get('/login', (req, res) => {
-  if (req.session && req.session.userId) return res.redirect('/dashboard');
+  const base = req.app.get('basePath') || '';
+  if (req.session && req.session.userId) return res.redirect(base + '/dashboard');
   res.render('auth/login', { layout: 'layouts/auth', title: 'Login - Portal-01' });
 });
 
@@ -37,7 +38,7 @@ router.post('/login', loginLimiter, checkLoginAttempts, validateLogin, async (re
     await db.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
     req.session.userId = user.id;
     req.session.user = { id: user.id, username: user.username, role: user.role, full_name: user.full_name, email: user.email };
-    res.json({ success: true, redirect: '/dashboard' });
+    res.json({ success: true, redirect: (req.app.get('basePath') || '') + '/dashboard' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Errore del server' });
@@ -45,7 +46,8 @@ router.post('/login', loginLimiter, checkLoginAttempts, validateLogin, async (re
 });
 
 router.get('/register', (req, res) => {
-  if (req.session && req.session.userId) return res.redirect('/dashboard');
+  const base = req.app.get('basePath') || '';
+  if (req.session && req.session.userId) return res.redirect(base + '/dashboard');
   res.render('auth/register', { layout: 'layouts/auth', title: 'Registrazione - Portal-01' });
 });
 
@@ -59,7 +61,7 @@ router.post('/register', registerLimiter, validateRegister, async (req, res) => 
     }
     const hash = await bcrypt.hash(password, 12);
     await db.query('INSERT INTO users (username, email, password, full_name) VALUES ($1, $2, $3, $4)', [username, email, hash, full_name]);
-    res.json({ success: true, redirect: '/auth/login' });
+    res.json({ success: true, redirect: (req.app.get('basePath') || '') + '/auth/login' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Errore durante la registrazione' });
@@ -67,7 +69,7 @@ router.post('/register', registerLimiter, validateRegister, async (req, res) => 
 });
 
 router.get('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/auth/login'));
+  req.session.destroy(() => res.redirect((req.app.get('basePath') || '') + '/auth/login'));
 });
 
 module.exports = router;

@@ -61,7 +61,7 @@
     msg.textContent=''; msg.className=''; msg.removeAttribute('class');
     btn.disabled=true; if(txt) txt.textContent='Invio in corso...';
     try{
-      var r=await fetch('/ferie/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
+      var r=await fetch((window.APP_BASE||'')+'/ferie/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
       var j; try{j=await r.json();}catch(_){j={};}
       if(j.success){ msg.textContent=j.message||'Richiesta inviata'; msg.className='message-ok'; location.reload(); return; }
       msg.textContent=j.error||'Errore'; msg.className='message-error';
@@ -107,7 +107,7 @@
   }
 
   function load() {
-    fetch('/ferie/calendar?year=' + year + '&month=' + month).then(function(r){ return r.json(); }).then(function(j){
+    fetch((window.APP_BASE||'')+'/ferie/calendar?year=' + year + '&month=' + month).then(function(r){ return r.json(); }).then(function(j){
       byDate = (j && typeof j.byDate === 'object' && j.byDate !== null) ? j.byDate : {};
       render();
     }).catch(function(){ byDate = {}; render(); });

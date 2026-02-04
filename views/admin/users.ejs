@@ -57,7 +57,7 @@
       var id=this.dataset.id, sel=this, prev=this.value;
       this.disabled=true;
       try{
-        var r=await fetch('/admin/users/'+id+'/role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:this.value,_csrf:csrf})});
+        var r=await fetch((window.APP_BASE||'')+'/admin/users/'+id+'/role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:this.value,_csrf:csrf})});
         var j=await r.json();
         window.showToast(j.message||j.error, j.success?'ok':'error');
       }catch(x){ window.showToast('Errore di connessione','error'); }
@@ -70,7 +70,7 @@
       window.showModal({ title: 'Conferma', text: 'Attivare o disattivare questo utente?', onConfirm: async function(){
         btn.disabled=true;
         try{
-          var r=await fetch('/admin/users/'+id+'/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({_csrf:csrf})});
+          var r=await fetch((window.APP_BASE||'')+'/admin/users/'+id+'/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({_csrf:csrf})});
           var j=await r.json();
           window.showToast(j.message||j.error, j.success?'ok':'error');
           if(j.success) location.reload();
@@ -85,7 +85,7 @@
         if(!p) return;
         var id=btn.dataset.id; btn.disabled=true;
         try{
-          var r=await fetch('/admin/users/'+id+'/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_password:p,_csrf:csrf})});
+          var r=await fetch((window.APP_BASE||'')+'/admin/users/'+id+'/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_password:p,_csrf:csrf})});
           var j=await r.json();
           window.showToast(j.message||j.error, j.success?'ok':'error');
         }catch(x){ window.showToast('Errore','error'); }
@@ -98,7 +98,7 @@
       window.showModal({ title: 'Elimina utente', text: 'Eliminare definitivamente questo utente?', onConfirm: async function(){
         var id=btn.dataset.id; btn.disabled=true;
         try{
-          var r=await fetch('/admin/users/'+id,{method:'DELETE',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}});
+          var r=await fetch((window.APP_BASE||'')+'/admin/users/'+id,{method:'DELETE',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}});
           var j=await r.json();
           window.showToast(j.message||j.error, j.success?'ok':'error');
           if(j.success) location.reload();

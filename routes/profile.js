@@ -12,7 +12,7 @@ router.get('/', requireAuth, async (req, res) => {
       'SELECT id, username, email, full_name, role, last_login, created_at FROM users WHERE id = $1',
       [req.session.userId]
     );
-    if (result.rows.length === 0) return res.redirect('/auth/logout');
+    if (result.rows.length === 0) return res.redirect((req.app.get('basePath') || '') + '/auth/logout');
     res.render('profile/index', { title: 'Profilo - Portal-01', activePage: 'profile', profile: result.rows[0] });
   } catch (err) {
     console.error(err);

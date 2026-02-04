@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title><%= typeof title !== 'undefined' ? title : 'Portal-01' %></title>
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/css/style.css">
 </head>
 <body>
+  <script>window.APP_BASE='<%= typeof basePath !== "undefined" ? basePath : "" %>';</script>
   <div class="app-wrap">
     <%- include('../partials/sidebar', { activePage: typeof activePage !== 'undefined' ? activePage : '' }) %>
     <main class="main">
@@ -15,6 +16,6 @@
       </div>
     </main>
   </div>
-  <script src="/js/app.js"></script>
+  <script src="<%= typeof basePath !== 'undefined' ? basePath : '' %>/js/app.js"></script>
 </body>
 </html>

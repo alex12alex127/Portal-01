@@ -13,22 +13,23 @@
     <input id="reg-password" type="password" name="password" placeholder="Password" required>
     <button type="submit" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg> <span class="btn-text">Registrati</span></button>
   </form>
-  <p><a href="/auth/login">Hai già un account? Accedi</a></p>
+  <p><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/auth/login">Hai già un account? Accedi</a></p>
   <div id="msg" role="status" aria-live="polite"></div>
   <script>
+    (function(){ var base='<%= typeof basePath !== "undefined" ? basePath : "" %>';
     document.getElementById('regForm').onsubmit=async function(e){
       e.preventDefault();
       var btn=this.querySelector('button'), txt=btn.querySelector('.btn-text'), msg=document.getElementById('msg');
       msg.textContent=''; msg.className=''; msg.removeAttribute('class');
       btn.disabled=true; if(txt) txt.textContent='Registrazione...';
       try{
-        var r=await fetch('/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
+        var r=await fetch(base+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
         var j;
         try{j=await r.json();}catch(_){j={};}
         if(j.success&&j.redirect){ location.href=j.redirect; return; }
         msg.textContent=j.error||'Errore'; msg.className='message-error';
       }catch(x){ msg.textContent='Errore di connessione'; msg.className='message-error'; }
       btn.disabled=false; if(txt) txt.textContent='Registrati';
-    };
+    }; })();
   </script>
 </div>

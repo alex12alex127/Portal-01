@@ -4,8 +4,9 @@ const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 
 router.get('/', (req, res) => {
-  if (req.session && req.session.userId) return res.redirect('/dashboard');
-  res.redirect('/auth/login');
+  const base = req.app.get('basePath') || '';
+  if (req.session && req.session.userId) return res.redirect(base + '/dashboard');
+  res.redirect(base + '/auth/login');
 });
 
 router.get('/health', (req, res) => {

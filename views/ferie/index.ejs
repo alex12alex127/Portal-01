@@ -90,7 +90,8 @@
       var people = byDate[key] || [];
       var hasFerie = people.length > 0;
       var label = hasFerie ? people.length + ' in ferie' : '';
-      html += '<button type="button" class="calendar-day' + (hasFerie ? ' calendar-day--has' : '') + '" data-date="' + key + '" title="Clicca per vedere chi è in ferie"><span class="calendar-day__num">' + d + '</span>' + (label ? '<span class="calendar-day__label">' + label + '</span>' : '') + '</button>';
+      var dot = hasFerie ? '<span class="calendar-day__dot" aria-hidden="true"></span>' : '';
+      html += '<button type="button" class="calendar-day' + (hasFerie ? ' calendar-day--has' : '') + '" data-date="' + key + '" title="' + (hasFerie ? 'Clicca: ' + people.length + ' in ferie' : 'Clicca per dettaglio') + '"><span class="calendar-day__num">' + d + '</span>' + dot + (label ? '<span class="calendar-day__label">' + label + '</span>' : '') + '</button>';
     }
     gridEl.innerHTML = html;
     gridEl.querySelectorAll('.calendar-day:not(.calendar-day--empty)').forEach(function(btn){
@@ -107,9 +108,9 @@
 
   function load() {
     fetch('/ferie/calendar?year=' + year + '&month=' + month).then(function(r){ return r.json(); }).then(function(j){
-      byDate = j.byDate || {};
+      byDate = (j && typeof j.byDate === 'object' && j.byDate !== null) ? j.byDate : {};
       render();
-    }).catch(function(){ render(); });
+    }).catch(function(){ byDate = {}; render(); });
   }
 
   document.querySelector('.calendar-prev').addEventListener('click', function(){

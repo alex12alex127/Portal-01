@@ -34,11 +34,13 @@ router.get('/calendar', requireAuth, async (req, res) => {
     `, [end, start]);
     const byDate = {};
     for (const row of result.rows) {
-      const [sy, sm, sd] = row.data_inizio.split('-').map(Number);
-      const [ey, em, ed] = row.data_fine.split('-').map(Number);
+      const startStr = typeof row.data_inizio === 'string' ? row.data_inizio : row.data_inizio.toISOString().slice(0, 10);
+      const endStr = typeof row.data_fine === 'string' ? row.data_fine : row.data_fine.toISOString().slice(0, 10);
+      const [sy, sm, sd] = startStr.split('-').map(Number);
+      const [ey, em, ed] = endStr.split('-').map(Number);
       const dStart = new Date(sy, sm - 1, sd);
       const dEnd = new Date(ey, em - 1, ed);
-      for (let d = new Date(dStart); d <= dEnd; d.setDate(d.getDate() + 1)) {
+      for (let d = new Date(dStart.getTime()); d.getTime() <= dEnd.getTime(); d.setDate(d.getDate() + 1)) {
         const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         if (!byDate[key]) byDate[key] = [];
         byDate[key].push({ full_name: row.full_name, username: row.username });

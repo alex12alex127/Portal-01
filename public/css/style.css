@@ -335,6 +335,8 @@ tr:hover td { background: #f8fafc; }
 .calendar-day--has { background: var(--primary-light); border-color: var(--primary); color: var(--primary-hover); font-weight: 500; }
 .calendar-day--has:hover { background: #bfdbfe; }
 .calendar-day__num { display: block; }
+.calendar-day__dot { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin: 2px auto 0; flex-shrink: 0; }
+.calendar-day--has .calendar-day__dot { background: var(--primary-hover); }
 .calendar-day__label { font-size: 0.65rem; margin-top: 2px; opacity: .9; }
 
 /* Focus accessibilità */

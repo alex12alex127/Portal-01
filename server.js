@@ -3,6 +3,7 @@ const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const compression = require('compression');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const path = require('path');
 const db = require('./config/database');
 const { helmetConfig, csrfProtection } = require('./middleware/security');
@@ -28,7 +29,7 @@ app.use(expressLayouts);
 app.set('layout', 'layouts/app');
 if (isProd) app.set('view cache', true);
 
-app.use(session({
+const sessionOpts = {
   secret: process.env.SESSION_SECRET || 'change-me-in-production',
   resave: false,
   saveUninitialized: false,
@@ -39,7 +40,11 @@ app.use(session({
     sameSite: 'lax'
   },
   name: 'sessionId'
-}));
+};
+if (process.env.DATABASE_URL) {
+  sessionOpts.store = new pgSession({ pool: db.pool, tableName: 'session' });
+}
+app.use(session(sessionOpts));
 
 app.use(csrfProtection);
 app.use(sanitizeInput);
@@ -99,7 +104,16 @@ function escapeHtml(s) {
 
 app.use((err, req, res, _next) => {
   console.error('[Error]', err);
-  res.status(500).json({ error: process.env.NODE_ENV === 'production' ? 'Errore server' : err.message });
+  res.status(500);
+  const accept = (req.headers.accept || '').toLowerCase();
+  if (accept.indexOf('text/html') !== -1) {
+    res.render('500', { title: 'Errore - Portal-01', basePath: req.app.get('basePath') || '' }, (renderErr, html) => {
+      if (renderErr) res.send('Errore del server.');
+      else res.send(html || 'Errore del server.');
+    });
+  } else {
+    res.json({ error: process.env.NODE_ENV === 'production' ? 'Errore server' : err.message });
+  }
 });
 
 app.listen(PORT, '0.0.0.0', () => {

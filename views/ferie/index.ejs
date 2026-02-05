@@ -57,6 +57,16 @@
     <div class="ferie-layout__list">
       <div class="card card--ferie-requests">
         <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg> Le mie richieste</h2>
+        <% if (typeof filtri !== 'undefined') { %>
+        <form method="get" action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/ferie" class="ferie-filtri">
+          <label>Stato <select name="stato"><option value="">Tutte</option><option value="pending"<%= filtri.stato === 'pending' ? ' selected' : '' %>>In attesa</option><option value="approved"<%= filtri.stato === 'approved' ? ' selected' : '' %>>Approvate</option><option value="rejected"<%= filtri.stato === 'rejected' ? ' selected' : '' %>>Rifiutate</option></select></label>
+          <% if (typeof anni !== 'undefined' && anni.length) { %>
+          <label>Anno <select name="anno"><option value="">Tutti</option><% anni.forEach(function(y) { %><option value="<%= y %>"<%= filtri.anno === String(y) ? ' selected' : '' %>><%= y %></option><% }); %></select></label>
+          <% } %>
+          <label>Tipo <select name="tipo"><option value="">Tutti</option><option value="ferie"<%= filtri.tipo === 'ferie' ? ' selected' : '' %>>Ferie</option><option value="permesso"<%= filtri.tipo === 'permesso' ? ' selected' : '' %>>Permesso</option><option value="malattia"<%= filtri.tipo === 'malattia' ? ' selected' : '' %>>Malattia</option></select></label>
+          <button type="submit" class="btn btn-sm">Filtra</button>
+        </form>
+        <% } %>
         <% if (ferie.length === 0) { %>
           <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> Nessuna richiesta. Compila il modulo per inviarne una.</p>
         <% } else { %>
@@ -73,11 +83,34 @@
                 <span class="ferie-request-card__tipo"><%= f.tipo %></span>
               </div>
               <span class="badge badge--ferie <%= f.stato %>"><%= f.stato === 'pending' ? 'In attesa' : f.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span>
+              <% if (f.stato === 'pending') { %>
+              <div class="ferie-request-card__actions">
+                <button type="button" class="btn-sm ferie-edit-btn" data-id="<%= f.id %>" data-inizio="<%= f.data_inizio %>" data-fine="<%= f.data_fine %>" data-tipo="<%= f.tipo %>" data-note="<%= (f.note || '') %>">Modifica</button>
+                <button type="button" class="btn-sm ferie-withdraw-btn" data-id="<%= f.id %>">Ritira</button>
+              </div>
+              <% } %>
             </div>
             <% }); %>
           </div>
         <% } %>
       </div>
+    </div>
+  </div>
+
+  <div id="ferieEditOverlay" class="modal-overlay admin-ferie-modal" aria-hidden="true" hidden>
+    <div class="modal admin-ferie-modal__box admin-ferie-modal__box--form" role="dialog" aria-modal="true">
+      <h3 class="modal__title">Modifica richiesta</h3>
+      <form id="ferieEditForm" class="admin-ferie-edit-form">
+        <input type="hidden" id="ferieEditId" name="id">
+        <label>Data inizio <input type="date" id="ferieEditInizio" name="data_inizio" required></label>
+        <label>Data fine <input type="date" id="ferieEditFine" name="data_fine" required></label>
+        <label>Tipo <select id="ferieEditTipo" name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select></label>
+        <label>Note <textarea id="ferieEditNote" name="note" rows="2"></textarea></label>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary" id="ferieEditCancel">Annulla</button>
+          <button type="submit" class="btn">Salva</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -199,6 +232,49 @@
       msg.textContent=j.error||'Errore'; msg.className='message-error';
     }catch(x){ msg.textContent='Errore'; msg.className='message-error'; }
     if(btn) btn.disabled=false; if(txt) txt.textContent='Invia richiesta';
+  };
+
+  var base = window.APP_BASE || '', csrf = '<%= csrfToken %>';
+  function openFerieEdit(id, inizio, fine, tipo, note) {
+    document.getElementById('ferieEditId').value = id;
+    document.getElementById('ferieEditInizio').value = inizio;
+    document.getElementById('ferieEditFine').value = fine;
+    document.getElementById('ferieEditTipo').value = tipo || 'ferie';
+    document.getElementById('ferieEditNote').value = note || '';
+    document.getElementById('ferieEditOverlay').removeAttribute('hidden');
+    document.getElementById('ferieEditOverlay').setAttribute('aria-hidden', 'false');
+  }
+  function closeFerieEdit() {
+    document.getElementById('ferieEditOverlay').setAttribute('hidden', '');
+    document.getElementById('ferieEditOverlay').setAttribute('aria-hidden', 'true');
+  }
+  document.querySelectorAll('.ferie-edit-btn').forEach(function(btn) {
+    btn.onclick = function() { openFerieEdit(this.dataset.id, this.dataset.inizio, this.dataset.fine, this.dataset.tipo, this.dataset.note); };
+  });
+  document.querySelectorAll('.ferie-withdraw-btn').forEach(function(btn) {
+    btn.onclick = function() {
+      var doWithdraw = function() {
+        fetch(base + '/ferie/' + btn.dataset.id + '/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) }).then(function(r) { return r.json(); }).then(function(j) {
+          if (typeof window.showToast === 'function') window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+          if (j.success) location.reload();
+        });
+      };
+      if (typeof window.showModal === 'function') window.showModal({ title: 'Ritira richiesta', text: 'Ritirare questa richiesta? Non potrai più modificarla.', onConfirm: doWithdraw });
+      else if (confirm('Ritirare questa richiesta?')) doWithdraw();
+    };
+  });
+  document.getElementById('ferieEditCancel').onclick = closeFerieEdit;
+  document.getElementById('ferieEditOverlay').onclick = function(e) { if (e.target === this) closeFerieEdit(); };
+  document.getElementById('ferieEditForm').onsubmit = async function(e) {
+    e.preventDefault();
+    var id = document.getElementById('ferieEditId').value;
+    var payload = { _csrf: csrf, data_inizio: document.getElementById('ferieEditInizio').value, data_fine: document.getElementById('ferieEditFine').value, tipo: document.getElementById('ferieEditTipo').value, note: document.getElementById('ferieEditNote').value };
+    try {
+      var r = await fetch(base + '/ferie/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      var j = await r.json();
+      if (typeof window.showToast === 'function') window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+      if (j.success) { closeFerieEdit(); location.reload(); }
+    } catch (x) { if (typeof window.showToast === 'function') window.showToast('Errore', 'error'); }
   };
 
 (function(){

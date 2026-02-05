@@ -14,16 +14,62 @@ function soloData (val) {
 
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM ferie WHERE user_id = $1 ORDER BY data_inizio DESC', [req.session.userId]);
+    const { stato, anno, tipo } = req.query;
+    let query = 'SELECT * FROM ferie WHERE user_id = $1';
+    const params = [req.session.userId];
+    let n = 2;
+    if (stato && ['pending', 'approved', 'rejected'].includes(stato)) {
+      query += ` AND stato = $${n}`;
+      params.push(stato);
+      n++;
+    }
+    if (anno && /^\d{4}$/.test(anno)) {
+      query += ` AND EXTRACT(YEAR FROM data_inizio) = $${n}`;
+      params.push(parseInt(anno, 10));
+      n++;
+    }
+    if (tipo && ['ferie', 'permesso', 'malattia'].includes(tipo)) {
+      query += ` AND tipo = $${n}`;
+      params.push(tipo);
+      n++;
+    }
+    query += ' ORDER BY data_inizio DESC';
+    const result = await db.query(query, params);
     const ferie = result.rows.map(r => ({
       ...r,
       data_inizio: soloData(r.data_inizio),
       data_fine: soloData(r.data_fine)
     }));
-    res.render('ferie/index', { title: 'Ferie - Portal-01', activePage: 'ferie', ferie });
+    const anni = await db.query('SELECT DISTINCT EXTRACT(YEAR FROM data_inizio)::int AS y FROM ferie WHERE user_id = $1 ORDER BY y DESC', [req.session.userId]);
+    res.render('ferie/index', {
+      title: 'Ferie - Portal-01',
+      activePage: 'ferie',
+      ferie,
+      filtri: { stato: stato || '', anno: anno || '', tipo: tipo || '' },
+      anni: anni.rows.map(r => r.y)
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('Errore del server');
+  }
+});
+
+router.get('/summary', requireAuth, async (req, res) => {
+  try {
+    const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+    const r = await db.query(
+      `SELECT stato, COUNT(*)::int AS n, COALESCE(SUM(giorni_totali), 0)::int AS giorni FROM ferie WHERE user_id = $1 AND EXTRACT(YEAR FROM data_inizio) = $2 GROUP BY stato`,
+      [req.session.userId, year]
+    );
+    const summary = { pending: 0, approved: 0, rejected: 0, giorniPending: 0, giorniApproved: 0, giorniRejected: 0 };
+    r.rows.forEach(row => {
+      summary[row.stato] = row.n;
+      summary['giorni' + row.stato.charAt(0).toUpperCase() + row.stato.slice(1)] = row.giorni;
+    });
+    res.json({ year, ...summary });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
   }
 });
 
@@ -86,6 +132,45 @@ router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) 
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Errore durante la creazione' });
+  }
+});
+
+router.put('/:id', requireAuth, apiLimiter, validateFerie, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
+  const { data_inizio, data_fine, tipo, note } = req.body;
+  try {
+    const check = await db.query('SELECT id FROM ferie WHERE id = $1 AND user_id = $2 AND stato = $3', [id, req.session.userId, 'pending']);
+    if (check.rows.length === 0) return res.status(403).json({ error: 'Richiesta non trovata o non modificabile' });
+    const overlap = await db.query(
+      `SELECT * FROM ferie WHERE user_id = $1 AND id != $2 AND stato != 'rejected'
+       AND ( (data_inizio <= $3 AND data_fine >= $3) OR (data_inizio <= $4 AND data_fine >= $4) OR (data_inizio >= $3 AND data_fine <= $4) )`,
+      [req.session.userId, id, data_inizio, data_fine]
+    );
+    if (overlap.rows.length > 0) return res.status(400).json({ error: 'Hai già una richiesta per questo periodo' });
+    const tipoVal = ['ferie', 'permesso', 'malattia'].includes(tipo) ? tipo : 'ferie';
+    const giorni = Math.ceil((new Date(data_fine) - new Date(data_inizio)) / (1000 * 60 * 60 * 24)) + 1;
+    await db.query(
+      'UPDATE ferie SET data_inizio = $1, data_fine = $2, giorni_totali = $3, tipo = $4, note = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6',
+      [data_inizio, data_fine, giorni, tipoVal, note || null, id]
+    );
+    res.json({ success: true, message: 'Richiesta aggiornata' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
+router.post('/:id/withdraw', requireAuth, apiLimiter, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
+  try {
+    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3 AND stato = $4 RETURNING id', ['rejected', id, req.session.userId, 'pending']);
+    if (r.rows.length === 0) return res.status(403).json({ error: 'Richiesta non trovata o non ritirabile' });
+    res.json({ success: true, message: 'Richiesta ritirata' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
   }
 });
 

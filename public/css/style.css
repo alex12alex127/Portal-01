@@ -57,6 +57,19 @@ img, video { max-width: 100%; display: block; }
   --touch-min: 44px;
 }
 
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --border-light: #1e293b;
+  --primary-light: #134e4a;
+  --success-bg: #064e3b;
+  --danger-bg: #7f1d1d;
+  --warn-bg: #78350f;
+}
+
 /* Layout — mobile-first */
 .app-wrap { display: flex; min-height: 100vh; min-height: 100dvh; overflow-x: hidden; }
 .main { flex: 1; min-width: 0; overflow-x: hidden; }
@@ -102,6 +115,10 @@ img, video { max-width: 100%; display: block; }
   min-width: 0;
 }
 .sidebar__link .icon { flex-shrink: 0; opacity: .9; }
+.sidebar__link.theme-toggle { background: none; border: none; cursor: pointer; font: inherit; color: inherit; width: 100%; text-align: left; padding: 0.75rem 1rem; }
+.theme-toggle .icon--theme-dark { display: none; }
+[data-theme="dark"] .theme-toggle .icon--theme-light { display: none; }
+[data-theme="dark"] .theme-toggle .icon--theme-dark { display: block; }
 .sidebar__link:hover { background: var(--side-hover); color: #fff; }
 .sidebar__link.active {
   background: var(--side-active);
@@ -197,6 +214,21 @@ h2 .icon { color: var(--text-muted); flex-shrink: 0; }
 .card form { min-width: 0; }
 .card:hover { box-shadow: var(--shadow-md); border-color: var(--border); }
 .card.disabled { opacity: .6; }
+.dashboard-stats { display: flex; flex-wrap: wrap; gap: var(--space); margin-bottom: var(--space-lg); padding: var(--space); background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); }
+.dashboard-stats__item { display: flex; flex-direction: column; gap: 0.25rem; }
+.dashboard-stats__value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+.dashboard-stats__label { font-size: 0.875rem; color: var(--text-muted); }
+.dashboard-notifiche { margin-bottom: var(--space-lg); }
+.dashboard-notifiche__list { list-style: none; padding: 0; margin: 0; }
+.dashboard-notifiche__item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9375rem; }
+.dashboard-notifiche__item.letta { opacity: 0.8; }
+.dashboard-notifiche__item p { margin: 0.25rem 0 0; color: var(--text-muted); font-size: 0.875rem; }
+.dashboard-notifiche__date { font-size: 0.75rem; color: var(--text-muted); }
+.dashboard-ultime { margin-bottom: var(--space-lg); }
+.dashboard-ultime__list { list-style: none; padding: 0; margin: 0 0 var(--space); font-size: 0.9375rem; }
+.dashboard-ultime__list li { padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
+.dashboard-ultime__list .badge { font-size: 0.75rem; margin-left: 0.35rem; }
+
 .modules { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-lg); min-width: 0; }
 .module-card {
   background: var(--surface);
@@ -479,6 +511,10 @@ input[type="time"] {
 .ferie-request-card__days { font-weight: 500; color: var(--text); }
 .ferie-request-card__tipo { text-transform: capitalize; }
 .ferie-request-card .badge { margin-left: auto; flex-shrink: 0; }
+.ferie-request-card__actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+.ferie-filtri { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-bottom: var(--space); }
+.ferie-filtri label { display: flex; align-items: center; gap: 0.35rem; font-size: 0.875rem; }
+.ferie-filtri select { padding: 0.35rem 0.5rem; border-radius: var(--radius); border: 1px solid var(--border); }
 @media (max-width: 767px) {
   .ferie-request-card {
     flex-direction: column;
@@ -630,6 +666,7 @@ tr:hover td { background: var(--border-light); }
 .auth-box .btn { width: 100%; margin-top: 0.5rem; padding: 0.85rem; min-height: var(--touch-min); }
 .auth-box p { margin-top: 1.25rem; text-align: center; font-size: 0.9375rem; color: var(--text-muted); }
 .auth-box a { color: var(--primary); font-weight: 600; }
+.auth-hint { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; text-align: center; }
 #msg, #ferieMsg, #pfMsg, #pwMsg { margin-top: 0.75rem; padding: 0.75rem; border-radius: var(--radius); font-size: 0.875rem; }
 #msg:empty, #ferieMsg:empty, #pfMsg:empty, #pwMsg:empty { display: none; }
 #msg.message-ok, #ferieMsg.message-ok, #pfMsg.message-ok, #pwMsg.message-ok { background: var(--success-bg); color: var(--success); }

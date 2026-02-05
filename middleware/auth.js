@@ -16,8 +16,10 @@ function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Non autorizzato' });
     if (!req.session.user || !roles.includes(req.session.user.role)) {
-      const accept = req.headers.accept || '';
-      if (accept.indexOf('text/html') !== -1) return res.redirect((req.app.get('basePath') || '') + '/dashboard');
+      const accept = (req.headers.accept || '').toLowerCase();
+      if (accept.indexOf('text/html') !== -1) {
+        return res.status(403).render('403', { title: 'Accesso negato - Portal-01' });
+      }
       return res.status(403).json({ error: 'Accesso negato' });
     }
     next();

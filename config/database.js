@@ -31,6 +31,7 @@ async function initDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false');
     await client.query(`
       CREATE TABLE IF NOT EXISTS ferie (
         id SERIAL PRIMARY KEY,
@@ -48,6 +49,49 @@ async function initDatabase() {
     await client.query('CREATE INDEX IF NOT EXISTS idx_ferie_user_id ON ferie(user_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_ferie_created_at ON ferie(created_at DESC)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_ferie_stato ON ferie(stato)');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS session (
+        sid VARCHAR NOT NULL PRIMARY KEY,
+        sess JSON NOT NULL,
+        expire TIMESTAMP(6) NOT NULL
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_session_expire ON session(expire)');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS notifiche (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        tipo VARCHAR(50) NOT NULL,
+        titolo VARCHAR(255),
+        messaggio TEXT,
+        letta BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_notifiche_user_id ON notifiche(user_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_notifiche_letta ON notifiche(letta)');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token VARCHAR(255) NOT NULL UNIQUE,
+        expire_at TIMESTAMP NOT NULL,
+        used BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS audit_log (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        azione VARCHAR(100) NOT NULL,
+        dettaglio TEXT,
+        ip VARCHAR(45),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_audit_log_user_id ON audit_log(user_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC)');
     console.log('Tabelle e indici create/verificate');
   } finally {
     client.release();

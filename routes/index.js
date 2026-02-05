@@ -23,8 +23,39 @@ router.get('/health/db', async (req, res) => {
   }
 });
 
-router.get('/dashboard', requireAuth, (req, res) => {
-  res.render('dashboard', { title: 'Dashboard - Portal-01', activePage: 'dashboard' });
+router.get('/dashboard', requireAuth, async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+    const summaryResult = await db.query(
+      `SELECT stato, COUNT(*)::int AS n, COALESCE(SUM(giorni_totali), 0)::int AS giorni FROM ferie WHERE user_id = $1 AND EXTRACT(YEAR FROM data_inizio) = $2 GROUP BY stato`,
+      [req.session.userId, year]
+    );
+    const summary = { pending: 0, approved: 0, rejected: 0, giorniPending: 0, giorniApproved: 0, giorniRejected: 0 };
+    summaryResult.rows.forEach(row => {
+      summary[row.stato] = row.n;
+      summary['giorni' + row.stato.charAt(0).toUpperCase() + row.stato.slice(1)] = row.giorni;
+    });
+    const ultimeRichieste = await db.query(
+      'SELECT id, data_inizio, data_fine, tipo, stato, giorni_totali FROM ferie WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5',
+      [req.session.userId]
+    );
+    const soloData = (val) => (val == null ? '' : typeof val === 'string' ? val.slice(0, 10) : val.toISOString ? val.toISOString().slice(0, 10) : String(val).slice(0, 10));
+    const notificheResult = await db.query(
+      'SELECT id, tipo, titolo, messaggio, letta, created_at FROM notifiche WHERE user_id = $1 ORDER BY created_at DESC LIMIT 15',
+      [req.session.userId]
+    );
+    const notifiche = notificheResult.rows.map(n => ({ ...n, created_at: n.created_at ? new Date(n.created_at).toLocaleDateString('it-IT') : '' }));
+    res.render('dashboard', {
+      title: 'Dashboard - Portal-01',
+      activePage: 'dashboard',
+      summary: { year, ...summary },
+      ultimeRichieste: ultimeRichieste.rows.map(r => ({ ...r, data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine) })),
+      notifiche
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Errore del server');
+  }
 });
 
 module.exports = router;

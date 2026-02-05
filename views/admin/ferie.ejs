@@ -4,6 +4,14 @@
 </h1>
 <div class="card">
   <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg> Tutte le richieste (<%= typeof pagination !== 'undefined' ? pagination.total : ferie.length %>)</h2>
+  <% if (typeof filtri !== 'undefined' && (typeof usersList !== 'undefined' && usersList.length)) { %>
+  <form method="get" action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/ferie" class="ferie-filtri" style="margin-bottom:1rem">
+    <label>Stato <select name="stato"><option value="">Tutte</option><option value="pending"<%= filtri.stato === 'pending' ? ' selected' : '' %>>In attesa</option><option value="approved"<%= filtri.stato === 'approved' ? ' selected' : '' %>>Approvate</option><option value="rejected"<%= filtri.stato === 'rejected' ? ' selected' : '' %>>Rifiutate</option></select></label>
+    <label>Dipendente <select name="user_id"><option value="">Tutti</option><% (usersList || []).forEach(function(u) { %><option value="<%= u.id %>"<%= filtri.user_id == u.id ? ' selected' : '' %>><%= u.username %></option><% }); %></select></label>
+    <input type="hidden" name="page" value="1">
+    <button type="submit" class="btn btn-sm">Filtra</button>
+  </form>
+  <% } %>
   <% if (ferie.length === 0) { %>
     <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> Nessuna richiesta di ferie.</p>
   <% } else { %>

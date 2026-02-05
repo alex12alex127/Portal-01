@@ -4,24 +4,46 @@ const bcrypt = require('bcryptjs');
 const db = require('../config/database');
 const { requireAuth, requireAdmin, requireManager } = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/security');
+const { creaNotifica } = require('../lib/notifiche');
+const { logAudit } = require('../lib/audit');
 
 router.get('/users', requireAuth, requireAdmin, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const offset = (page - 1) * limit;
-    const countResult = await db.query('SELECT COUNT(*)::int AS total FROM users');
+    const q = (req.query.q && String(req.query.q).trim()) || '';
+    const roleFilter = (req.query.role && ['admin', 'manager', 'user'].includes(req.query.role)) ? req.query.role : '';
+    let where = '';
+    const countParams = [];
+    const listParams = [];
+    let n = 1;
+    if (q) {
+      where = ' WHERE (username ILIKE $' + n + ' OR full_name ILIKE $' + n + ' OR email ILIKE $' + n + ')';
+      countParams.push('%' + q + '%');
+      listParams.push('%' + q + '%');
+      n++;
+    }
+    if (roleFilter) {
+      where += (where ? ' AND' : ' WHERE') + ' role = $' + n;
+      countParams.push(roleFilter);
+      listParams.push(roleFilter);
+      n++;
+    }
+    const countResult = await db.query('SELECT COUNT(*)::int AS total FROM users' + where, countParams);
     const total = countResult.rows[0].total;
+    listParams.push(limit, offset);
     const result = await db.query(
-      'SELECT id, username, email, full_name, role, is_active, last_login, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2',
-      [limit, offset]
+      'SELECT id, username, email, full_name, role, is_active, last_login, created_at FROM users' + where + ' ORDER BY created_at DESC LIMIT $' + n + ' OFFSET $' + (n + 1),
+      listParams
     );
     const totalPages = Math.ceil(total / limit) || 1;
     res.render('admin/users', {
       title: 'Gestione Utenti - Portal-01',
       activePage: 'admin',
       users: result.rows,
-      pagination: { page, limit, total, totalPages }
+      pagination: { page, limit, total, totalPages },
+      filtri: { q, role: roleFilter }
     });
   } catch (err) {
     console.error(err);
@@ -36,7 +58,9 @@ router.post('/users/:id/role', requireAuth, requireAdmin, apiLimiter, async (req
   if (!['admin', 'manager', 'user'].includes(role)) return res.status(400).json({ error: 'Ruolo non valido' });
   if (id === Number(req.session.userId)) return res.status(400).json({ error: 'Non puoi cambiare il tuo ruolo' });
   try {
+    const prev = await db.query('SELECT username, role FROM users WHERE id = $1', [id]);
     await db.query('UPDATE users SET role = $1 WHERE id = $2', [role, id]);
+    if (prev.rows.length) await logAudit(req.session.userId, 'ruolo_cambiato', `user_id=${id} ${prev.rows[0].username} -> ${role}`, req.ip);
     res.json({ success: true, message: 'Ruolo aggiornato' });
   } catch (err) {
     console.error(err);
@@ -92,16 +116,31 @@ router.get('/ferie', requireAuth, requireManager, async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const offset = (page - 1) * limit;
-    const countResult = await db.query('SELECT COUNT(*)::int AS total FROM ferie f JOIN users u ON u.id = f.user_id');
+    const statoFilter = (req.query.stato && ['pending', 'approved', 'rejected'].includes(req.query.stato)) ? req.query.stato : '';
+    const userIdFilter = parseInt(req.query.user_id, 10);
+    let where = '';
+    const countParams = [];
+    const listParams = [];
+    let n = 1;
+    if (statoFilter) {
+      where = ' WHERE f.stato = $' + n;
+      countParams.push(statoFilter);
+      listParams.push(statoFilter);
+      n++;
+    }
+    if (!Number.isNaN(userIdFilter) && userIdFilter > 0) {
+      where += (where ? ' AND' : ' WHERE') + ' f.user_id = $' + n;
+      countParams.push(userIdFilter);
+      listParams.push(userIdFilter);
+      n++;
+    }
+    const countResult = await db.query('SELECT COUNT(*)::int AS total FROM ferie f JOIN users u ON u.id = f.user_id' + where, countParams);
     const total = countResult.rows[0].total;
-    const result = await db.query(`
-      SELECT f.id, f.user_id, f.data_inizio, f.data_fine, f.giorni_totali, f.tipo, f.stato, f.note, f.created_at,
-             u.username, u.full_name
-      FROM ferie f
-      JOIN users u ON u.id = f.user_id
-      ORDER BY f.created_at DESC
-      LIMIT $1 OFFSET $2
-    `, [limit, offset]);
+    listParams.push(limit, offset);
+    const result = await db.query(
+      'SELECT f.id, f.user_id, f.data_inizio, f.data_fine, f.giorni_totali, f.tipo, f.stato, f.note, f.created_at, u.username, u.full_name FROM ferie f JOIN users u ON u.id = f.user_id' + where + ' ORDER BY f.created_at DESC LIMIT $' + n + ' OFFSET $' + (n + 1),
+      listParams
+    );
     const soloData = (val) => {
       if (val == null) return '';
       if (typeof val === 'string') return val.slice(0, 10);
@@ -114,11 +153,14 @@ router.get('/ferie', requireAuth, requireManager, async (req, res) => {
       data_fine: soloData(r.data_fine)
     }));
     const totalPages = Math.ceil(total / limit) || 1;
+    const usersList = await db.query('SELECT id, username, full_name FROM users ORDER BY username');
     res.render('admin/ferie', {
       title: 'Richieste Ferie - Portal-01',
       activePage: 'adminFerie',
       ferie,
-      pagination: { page, limit, total, totalPages }
+      pagination: { page, limit, total, totalPages },
+      filtri: { stato: statoFilter, user_id: Number.isNaN(userIdFilter) ? '' : userIdFilter },
+      usersList: usersList.rows
     });
   } catch (err) {
     console.error(err);
@@ -130,8 +172,13 @@ router.post('/ferie/:id/approve', requireAuth, requireManager, apiLimiter, async
   const id = parseInt(req.params.id, 10);
   if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID richiesta non valido' });
   try {
-    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id', ['approved', id, 'pending']);
+    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id, user_id, data_inizio, data_fine', ['approved', id, 'pending']);
     if (r.rows.length === 0) return res.status(400).json({ error: 'Richiesta non trovata o già gestita' });
+    const row = r.rows[0];
+    const dataInizio = row.data_inizio ? String(row.data_inizio).slice(0, 10) : '';
+    const dataFine = row.data_fine ? String(row.data_fine).slice(0, 10) : '';
+    await creaNotifica(row.user_id, 'ferie_approvata', 'Richiesta ferie approvata', `La tua richiesta dal ${dataInizio} al ${dataFine} è stata approvata.`);
+    await logAudit(req.session.userId, 'ferie_approvata', `id=${id} user_id=${row.user_id}`, req.ip);
     res.json({ success: true, message: 'Richiesta approvata' });
   } catch (err) {
     console.error(err);
@@ -143,8 +190,13 @@ router.post('/ferie/:id/reject', requireAuth, requireManager, apiLimiter, async 
   const id = parseInt(req.params.id, 10);
   if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID richiesta non valido' });
   try {
-    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id', ['rejected', id, 'pending']);
+    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id, user_id, data_inizio, data_fine', ['rejected', id, 'pending']);
     if (r.rows.length === 0) return res.status(400).json({ error: 'Richiesta non trovata o già gestita' });
+    const row = r.rows[0];
+    const dataInizio = row.data_inizio ? String(row.data_inizio).slice(0, 10) : '';
+    const dataFine = row.data_fine ? String(row.data_fine).slice(0, 10) : '';
+    await creaNotifica(row.user_id, 'ferie_rifiutata', 'Richiesta ferie rifiutata', `La tua richiesta dal ${dataInizio} al ${dataFine} è stata rifiutata.`);
+    await logAudit(req.session.userId, 'ferie_rifiutata', `id=${id} user_id=${row.user_id}`, req.ip);
     res.json({ success: true, message: 'Richiesta rifiutata' });
   } catch (err) {
     console.error(err);

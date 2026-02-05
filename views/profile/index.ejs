@@ -30,6 +30,11 @@
   </form>
   <div id="pwMsg" role="status" aria-live="polite"></div>
 </div>
+<div class="card">
+  <h2>Dati e privacy</h2>
+  <p>Scarica una copia dei tuoi dati (profilo e richieste ferie) in formato JSON.</p>
+  <a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/profile/export" class="btn btn--secondary" download>Esporta i miei dati</a>
+</div>
 <script>
   document.getElementById('pf').onsubmit=async function(e){ e.preventDefault(); var m=document.getElementById('pfMsg'); m.textContent=''; m.className=''; var btn=this.querySelector('button'), txt=btn.querySelector('.btn-text'); btn.disabled=true; if(txt) txt.textContent='Salvataggio...'; try{ var r=await fetch((window.APP_BASE||'')+'/profile/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))}); var j; try{j=await r.json();}catch(_){j={};} m.textContent=j.success?j.message:j.error; m.className=j.success?'message-ok':'message-error'; }catch(x){ m.textContent='Errore'; m.className='message-error'; } btn.disabled=false; if(txt) txt.textContent='Aggiorna'; };
   document.getElementById('pw').onsubmit=async function(e){ e.preventDefault(); var m=document.getElementById('pwMsg'); m.textContent=''; m.className=''; var btn=this.querySelector('button'), txt=btn.querySelector('.btn-text'); btn.disabled=true; if(txt) txt.textContent='Salvataggio...'; try{ var r=await fetch((window.APP_BASE||'')+'/profile/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))}); var j; try{j=await r.json();}catch(_){j={};} m.textContent=j.success?j.message:j.error; m.className=j.success?'message-ok':'message-error'; if(j.success) this.reset(); }catch(x){ m.textContent='Errore'; m.className='message-error'; } btn.disabled=false; if(txt) txt.textContent='Cambia password'; };

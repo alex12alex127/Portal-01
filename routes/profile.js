@@ -63,4 +63,33 @@ router.post('/change-password', requireAuth, apiLimiter, async (req, res) => {
   }
 });
 
+router.post('/notifiche-read', requireAuth, async (req, res) => {
+  try {
+    await db.query('UPDATE notifiche SET letta = true WHERE user_id = $1', [req.session.userId]);
+    res.redirect((req.app.get('basePath') || '') + '/dashboard');
+  } catch (err) {
+    console.error(err);
+    res.redirect((req.app.get('basePath') || '') + '/dashboard');
+  }
+});
+
+router.get('/export', requireAuth, async (req, res) => {
+  try {
+    const user = await db.query('SELECT id, username, email, full_name, role, created_at FROM users WHERE id = $1', [req.session.userId]);
+    const ferie = await db.query('SELECT data_inizio, data_fine, giorni_totali, tipo, stato, note, created_at FROM ferie WHERE user_id = $1 ORDER BY data_inizio DESC', [req.session.userId]);
+    const soloData = (val) => (val == null ? '' : typeof val === 'string' ? val.slice(0, 10) : val.toISOString ? val.toISOString().slice(0, 10) : String(val).slice(0, 10));
+    const exportData = {
+      exportato_il: new Date().toISOString(),
+      utente: user.rows[0] ? { username: user.rows[0].username, email: user.rows[0].email, full_name: user.rows[0].full_name } : null,
+      ferie: ferie.rows.map(r => ({ data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine), giorni_totali: r.giorni_totali, tipo: r.tipo, stato: r.stato, note: r.note }))
+    };
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', 'attachment; filename="portal-01-dati-' + req.session.userId + '.json"');
+    res.send(JSON.stringify(exportData, null, 2));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
 module.exports = router;

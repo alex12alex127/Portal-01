@@ -191,6 +191,14 @@ img, video { max-width: 100%; display: block; }
 .main { flex: 1; min-width: 0; overflow-x: hidden; }
 .container { max-width: 960px; margin: 0 auto; padding: var(--space-lg); width: 100%; min-width: 0; }
 
+.breadcrumb { margin-bottom: var(--space); }
+.breadcrumb__list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; font-size: 0.875rem; color: var(--text-muted); }
+.breadcrumb__item { display: inline-flex; align-items: center; gap: 0.5rem; }
+.breadcrumb__item:not(:last-child)::after { content: ' \203a'; color: var(--text-muted); }
+.breadcrumb__link { color: var(--primary); text-decoration: none; }
+.breadcrumb__link:hover { text-decoration: underline; }
+.breadcrumb__current { color: var(--text); font-weight: 500; }
+
 /* Sidebar — scuro professionale */
 .sidebar {
   position: fixed; left: 0; top: 0; width: var(--side-w); height: 100vh; height: 100dvh;
@@ -219,6 +227,9 @@ img, video { max-width: 100%; display: block; }
 }
 .sidebar__close:hover { color: #fff; background: var(--side-hover); }
 .sidebar__nav { flex: 1; padding: var(--space) 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.sidebar__group-label {
+  display: block; padding: 0.75rem 1rem 0.35rem; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--side-muted);
+}
 .sidebar__link {
   display: flex; align-items: center; gap: 0.75rem;
   padding: 0.75rem var(--space-lg);
@@ -344,6 +355,10 @@ h2 .icon { color: var(--text-muted); flex-shrink: 0; }
 .dashboard-ultime__list { list-style: none; padding: 0; margin: 0 0 var(--space); font-size: 0.9375rem; }
 .dashboard-ultime__list li { padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
 .dashboard-ultime__list .badge { font-size: 0.75rem; margin-left: 0.35rem; }
+
+.dashboard-actions { margin-top: var(--space-lg); padding-top: var(--space); border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 1rem; }
+.dashboard-actions__link { font-size: 0.9375rem; color: var(--primary); text-decoration: none; }
+.dashboard-actions__link:hover { text-decoration: underline; }
 
 .modules { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-lg); min-width: 0; }
 .module-card {

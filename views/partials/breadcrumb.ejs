@@ -1,0 +1,16 @@
+<% const bp = typeof basePath !== 'undefined' ? basePath : ''; %>
+<% if (typeof breadcrumbs !== 'undefined' && Array.isArray(breadcrumbs) && breadcrumbs.length > 0) { %>
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol class="breadcrumb__list">
+    <% breadcrumbs.forEach(function(item) { %>
+    <li class="breadcrumb__item">
+      <% if (item.url) { %>
+      <a href="<%= bp %><%= item.url %>" class="breadcrumb__link"><%= item.label %></a>
+      <% } else { %>
+      <span class="breadcrumb__current" aria-current="page"><%= item.label %></span>
+      <% } %>
+    </li>
+    <% }); %>
+  </ol>
+</nav>
+<% } %>

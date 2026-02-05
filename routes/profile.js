@@ -13,7 +13,12 @@ router.get('/', requireAuth, async (req, res) => {
       [req.session.userId]
     );
     if (result.rows.length === 0) return res.redirect((req.app.get('basePath') || '') + '/auth/logout');
-    res.render('profile/index', { title: 'Profilo - Portal-01', activePage: 'profile', profile: result.rows[0] });
+    res.render('profile/index', {
+      title: 'Profilo - Portal-01',
+      activePage: 'profile',
+      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Profilo' }],
+      profile: result.rows[0]
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('Errore del server');

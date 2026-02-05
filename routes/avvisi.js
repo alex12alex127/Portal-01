@@ -38,6 +38,7 @@ router.get('/', requireAuth, async (req, res) => {
     res.render('avvisi/index', {
       title: 'Avvisi - Portal-01',
       activePage: 'avvisi',
+      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Avvisi' }],
       avvisi
     });
   } catch (err) {

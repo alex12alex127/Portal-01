@@ -41,6 +41,7 @@ router.get('/users', requireAuth, requireAdmin, async (req, res) => {
     res.render('admin/users', {
       title: 'Gestione Utenti - Portal-01',
       activePage: 'admin',
+      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Gestione Utenti' }],
       users: result.rows,
       pagination: { page, limit, total, totalPages },
       filtri: { q, role: roleFilter }
@@ -157,6 +158,7 @@ router.get('/ferie', requireAuth, requireManager, async (req, res) => {
     res.render('admin/ferie', {
       title: 'Richieste Ferie - Portal-01',
       activePage: 'adminFerie',
+      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Approva Ferie' }],
       ferie,
       pagination: { page, limit, total, totalPages },
       filtri: { stato: statoFilter, user_id: Number.isNaN(userIdFilter) ? '' : userIdFilter },
@@ -326,6 +328,7 @@ router.get('/avvisi', requireAuth, requireManager, async (req, res) => {
     res.render('admin/avvisi', {
       title: 'Gestione Avvisi - Portal-01',
       activePage: 'adminAvvisi',
+      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Gestione Avvisi' }],
       avvisi,
       filtri: { tipo: tipoFilter, evidenza: evidenzaFilter }
     });
@@ -339,6 +342,7 @@ router.get('/avvisi/nuovo', requireAuth, requireManager, (req, res) => {
   res.render('admin/avvisi-form', {
     title: 'Nuovo avviso - Portal-01',
     activePage: 'adminAvvisi',
+    breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Gestione Avvisi', url: '/admin/avvisi' }, { label: 'Nuovo avviso' }],
     avviso: null,
     tipi: TIPI_AVVISO
   });
@@ -373,6 +377,7 @@ router.get('/avvisi/:id/modifica', requireAuth, requireManager, async (req, res)
     res.render('admin/avvisi-form', {
       title: 'Modifica avviso - Portal-01',
       activePage: 'adminAvvisi',
+      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Gestione Avvisi', url: '/admin/avvisi' }, { label: 'Modifica avviso' }],
       avviso: {
         ...a,
         visibile_da: a.visibile_da ? String(a.visibile_da).slice(0, 10) : '',

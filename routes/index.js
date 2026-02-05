@@ -54,6 +54,7 @@ router.get('/dashboard', requireAuth, async (req, res) => {
     res.render('dashboard', {
       title: 'Dashboard - Portal-01',
       activePage: 'dashboard',
+      breadcrumbs: [{ label: 'Dashboard' }],
       summary: { year, ...summary },
       ultimeRichieste: ultimeRichieste.rows.map(r => ({ ...r, data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine) })),
       notifiche,

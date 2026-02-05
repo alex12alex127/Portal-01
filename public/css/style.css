@@ -651,6 +651,30 @@ tr:hover td { background: var(--border-light); }
 .btn--secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
 .btn--secondary:hover { background: var(--border); }
 
+/* Admin ferie: modali calendario (dettaglio giorno + modifica) */
+.modal-overlay.admin-ferie-modal { display: none; position: fixed; inset: 0; z-index: 400; align-items: center; justify-content: center; padding: var(--space); background: rgba(0,0,0,.45); backdrop-filter: blur(4px); }
+.modal-overlay.admin-ferie-modal:not([hidden]) { display: flex !important; }
+.admin-ferie-modal__box { background: var(--surface); border-radius: var(--radius-lg); padding: var(--space-lg); max-width: 420px; width: 100%; min-width: 0; box-shadow: var(--shadow-lg); border: 1px solid var(--border); }
+.admin-ferie-modal__box--form { max-width: 380px; }
+.admin-ferie-day-list { max-height: 60vh; overflow-y: auto; margin-bottom: var(--space); }
+.admin-ferie-day-entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.admin-ferie-day-entry:last-child { border-bottom: none; }
+.admin-ferie-day-entry__info { font-size: 0.875rem; color: var(--text); min-width: 0; }
+.admin-ferie-day-entry__info .badge { font-size: 0.75rem; margin-left: 0.25rem; }
+.admin-ferie-day-entry__actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+.admin-ferie-edit-form label { display: block; margin-bottom: var(--space); }
+.admin-ferie-edit-form label:last-of-type { margin-bottom: var(--space-lg); }
+.admin-ferie-edit-form input[type="date"], .admin-ferie-edit-form select, .admin-ferie-edit-form textarea { width: 100%; max-width: 100%; min-width: 0; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font: inherit; box-sizing: border-box; margin-top: 0.25rem; }
+.admin-ferie-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+
 .pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space); margin-top: var(--space-lg); padding-top: var(--space); border-top: 1px solid var(--border); min-width: 0; }
 .pagination__info { font-size: 0.875rem; color: var(--text-muted); word-break: break-word; }
 .pagination__links { display: flex; flex-wrap: wrap; gap: 0.5rem; }

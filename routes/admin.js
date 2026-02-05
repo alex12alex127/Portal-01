@@ -152,4 +152,99 @@ router.post('/ferie/:id/reject', requireAuth, requireManager, apiLimiter, async 
   }
 });
 
+// Calendario ferie admin: per ogni giorno le richieste (approvate + in attesa) con id per modifica/cancella
+router.get('/ferie/calendar', requireAuth, requireManager, async (req, res) => {
+  try {
+    const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+    const month = parseInt(req.query.month, 10) || new Date().getMonth() + 1;
+    if (month < 1 || month > 12) return res.status(400).json({ error: 'Mese non valido' });
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
+    const start = firstDay.toISOString().slice(0, 10);
+    const end = lastDay.toISOString().slice(0, 10);
+    const result = await db.query(`
+      SELECT f.id, f.user_id, f.data_inizio, f.data_fine, f.giorni_totali, f.tipo, f.stato, f.note,
+             u.username, u.full_name
+      FROM ferie f
+      JOIN users u ON u.id = f.user_id
+      WHERE f.stato IN ('approved', 'pending')
+        AND f.data_inizio <= $1 AND f.data_fine >= $2
+    `, [end, start]);
+    const soloData = (val) => {
+      if (val == null) return '';
+      if (typeof val === 'string') return val.slice(0, 10);
+      if (typeof val.toISOString === 'function') return val.toISOString().slice(0, 10);
+      return String(val).slice(0, 10);
+    };
+    const byDate = {};
+    for (const row of result.rows) {
+      const startStr = soloData(row.data_inizio);
+      const endStr = soloData(row.data_fine);
+      const [sy, sm, sd] = startStr.split('-').map(Number);
+      const [ey, em, ed] = endStr.split('-').map(Number);
+      const dStart = new Date(sy, sm - 1, sd);
+      const dEnd = new Date(ey, em - 1, ed);
+      const entry = {
+        id: row.id,
+        user_id: row.user_id,
+        username: row.username,
+        full_name: row.full_name,
+        data_inizio: startStr,
+        data_fine: endStr,
+        giorni_totali: row.giorni_totali,
+        tipo: row.tipo,
+        stato: row.stato,
+        note: row.note || ''
+      };
+      for (let d = new Date(dStart.getTime()); d.getTime() <= dEnd.getTime(); d.setDate(d.getDate() + 1)) {
+        const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        if (!byDate[key]) byDate[key] = [];
+        byDate[key].push(entry);
+      }
+    }
+    res.json({ year, month, byDate });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore del server' });
+  }
+});
+
+// Modifica richiesta ferie (admin/manager)
+router.put('/ferie/:id', requireAuth, requireManager, apiLimiter, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID richiesta non valido' });
+  const { data_inizio, data_fine, tipo, note } = req.body || {};
+  if (!data_inizio || !data_fine) return res.status(400).json({ error: 'Data inizio e data fine richieste' });
+  const inizio = new Date(data_inizio);
+  const fine = new Date(data_fine);
+  if (inizio > fine) return res.status(400).json({ error: 'Data inizio deve essere prima della data fine' });
+  const tipoVal = ['ferie', 'permesso', 'malattia'].includes(tipo) ? tipo : 'ferie';
+  const giorni = Math.ceil((fine - inizio) / (1000 * 60 * 60 * 24)) + 1;
+  try {
+    const r = await db.query(
+      'UPDATE ferie SET data_inizio = $1, data_fine = $2, giorni_totali = $3, tipo = $4, note = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING id',
+      [data_inizio, data_fine, giorni, tipoVal, note || null, id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Richiesta non trovata' });
+    res.json({ success: true, message: 'Richiesta aggiornata' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
+// Cancella (elimina) richiesta ferie (admin/manager)
+router.delete('/ferie/:id', requireAuth, requireManager, apiLimiter, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID richiesta non valido' });
+  try {
+    const r = await db.query('DELETE FROM ferie WHERE id = $1 RETURNING id', [id]);
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Richiesta non trovata' });
+    res.json({ success: true, message: 'Richiesta cancellata' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
 module.exports = router;

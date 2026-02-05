@@ -21,13 +21,13 @@
             <td><%= f.giorni_totali %></td>
             <td><%= f.tipo %></td>
             <td><span class="badge <%= f.stato %>"><%= f.stato === 'pending' ? 'In attesa' : f.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span></td>
-            <td>
+            <td class="admin-ferie-actions">
               <% if (f.stato === 'pending') { %>
                 <button type="button" class="btn-sm approve-btn" data-id="<%= f.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Approva</button>
                 <button type="button" class="btn-sm reject-btn" data-id="<%= f.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> Rifiuta</button>
-              <% } else { %>
-                —
               <% } %>
+              <button type="button" class="btn-sm admin-ferie-edit-btn" data-id="<%= f.id %>" data-inizio="<%= f.data_inizio %>" data-fine="<%= f.data_fine %>" data-tipo="<%= f.tipo %>" data-note="<%= f.note || '' %>" title="Modifica"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg> Modifica</button>
+              <button type="button" class="btn-sm admin-ferie-delete-btn" data-id="<%= f.id %>" title="Cancella"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> Cancella</button>
             </td>
           </tr>
           <% }); %>
@@ -45,14 +45,60 @@
     <% } %>
   <% } %>
 </div>
+
+<div class="card card--calendar admin-ferie-calendar">
+  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> Calendario ferie</h2>
+  <p class="calendar-hint">Clicca su un giorno per vedere le richieste (approvate e in attesa) e modificarle o cancellarle.</p>
+  <div class="calendar-nav">
+    <button type="button" class="btn btn-sm calendar-prev" aria-label="Mese precedente"><span class="calendar-nav__arrow">‹</span><span class="calendar-nav__label">Prec</span></button>
+    <h3 class="calendar-title" id="adminCalendarMonthTitle">—</h3>
+    <button type="button" class="btn btn-sm calendar-next" aria-label="Mese successivo"><span class="calendar-nav__label">Succ</span><span class="calendar-nav__arrow">›</span></button>
+  </div>
+  <div class="calendar-wrap">
+    <div class="calendar-weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
+    <div class="calendar-grid" id="adminCalendarGrid"></div>
+  </div>
+</div>
+
+<!-- Modale dettaglio giorno: elenco richieste con Modifica / Cancella -->
+<div id="adminFerieOverlay" class="modal-overlay admin-ferie-modal" aria-hidden="true" hidden>
+  <div class="modal admin-ferie-modal__box" role="dialog" aria-modal="true">
+    <h3 class="modal__title" id="adminFerieDayTitle">Ferie</h3>
+    <div class="admin-ferie-day-list" id="adminFerieDayList"></div>
+    <div class="modal__actions">
+      <button type="button" class="btn btn--secondary" id="adminFerieDayClose">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale modifica richiesta -->
+<div id="adminFerieEditOverlay" class="modal-overlay admin-ferie-modal" aria-hidden="true" hidden>
+  <div class="modal admin-ferie-modal__box admin-ferie-modal__box--form" role="dialog" aria-modal="true">
+    <h3 class="modal__title">Modifica richiesta</h3>
+    <form id="adminFerieEditForm" class="admin-ferie-edit-form">
+      <input type="hidden" id="adminFerieEditId" name="id">
+      <label>Data inizio <input type="date" id="adminFerieEditInizio" name="data_inizio" required></label>
+      <label>Data fine <input type="date" id="adminFerieEditFine" name="data_fine" required></label>
+      <label>Tipo <select id="adminFerieEditTipo" name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select></label>
+      <label>Note <textarea id="adminFerieEditNote" name="note" rows="2" placeholder="Opzionale"></textarea></label>
+      <div class="modal__actions">
+        <button type="button" class="btn btn--secondary" id="adminFerieEditCancel">Annulla</button>
+        <button type="submit" class="btn">Salva</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
   var csrf = '<%= csrfToken %>';
+  var base = window.APP_BASE || '';
+
   document.querySelectorAll('.approve-btn').forEach(function(b) {
     b.onclick = async function() {
       var id = this.dataset.id;
       this.disabled = true;
       try {
-        var r = await fetch((window.APP_BASE||'')+'/admin/ferie/' + id + '/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
+        var r = await fetch(base + '/admin/ferie/' + id + '/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
         var j = await r.json();
         window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
         if (j.success) location.reload();
@@ -66,7 +112,7 @@
         var id = b.dataset.id;
         b.disabled = true;
         try {
-          var r = await fetch((window.APP_BASE||'')+'/admin/ferie/' + id + '/reject', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
+          var r = await fetch(base + '/admin/ferie/' + id + '/reject', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
           var j = await r.json();
           window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
           if (j.success) location.reload();
@@ -75,4 +121,153 @@
       }});
     };
   });
+
+  function openEditModal(entry) {
+    var id = entry.id || entry.getAttribute('data-id');
+    var inizio = entry.data_inizio || entry.getAttribute('data-inizio');
+    var fine = entry.data_fine || entry.getAttribute('data-fine');
+    var tipo = entry.tipo || entry.getAttribute('data-tipo') || 'ferie';
+    var note = (entry.note != null ? entry.note : entry.getAttribute('data-note')) || '';
+    document.getElementById('adminFerieEditId').value = id;
+    document.getElementById('adminFerieEditInizio').value = inizio;
+    document.getElementById('adminFerieEditFine').value = fine;
+    document.getElementById('adminFerieEditTipo').value = tipo;
+    document.getElementById('adminFerieEditNote').value = note;
+    document.getElementById('adminFerieEditOverlay').removeAttribute('hidden');
+    document.getElementById('adminFerieEditOverlay').setAttribute('aria-hidden', 'false');
+  }
+  function closeEditModal() {
+    document.getElementById('adminFerieEditOverlay').setAttribute('hidden', '');
+    document.getElementById('adminFerieEditOverlay').setAttribute('aria-hidden', 'true');
+  }
+  function doDelete(id, onDone) {
+    window.showModal({
+      title: 'Cancella richiesta',
+      text: 'Eliminare definitivamente questa richiesta di ferie?',
+      onConfirm: async function() {
+        try {
+          var r = await fetch(base + '/admin/ferie/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
+          var j = await r.json();
+          window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+          if (j.success && onDone) onDone();
+        } catch (x) { window.showToast('Errore di connessione', 'error'); }
+      }
+    });
+  }
+
+  document.querySelectorAll('.admin-ferie-edit-btn').forEach(function(btn) {
+    btn.onclick = function() {
+      document.getElementById('adminFerieOverlay').setAttribute('hidden', '');
+      openEditModal({ id: this.dataset.id, data_inizio: this.dataset.inizio, data_fine: this.dataset.fine, tipo: this.dataset.tipo, note: this.dataset.note || '' });
+    };
+  });
+  document.querySelectorAll('.admin-ferie-delete-btn').forEach(function(btn) {
+    btn.onclick = function() { doDelete(this.dataset.id, function() { location.reload(); }); };
+  });
+
+  document.getElementById('adminFerieEditCancel').onclick = closeEditModal;
+  document.getElementById('adminFerieEditForm').onsubmit = async function(e) {
+    e.preventDefault();
+    var id = document.getElementById('adminFerieEditId').value;
+    var payload = { _csrf: csrf, data_inizio: document.getElementById('adminFerieEditInizio').value, data_fine: document.getElementById('adminFerieEditFine').value, tipo: document.getElementById('adminFerieEditTipo').value, note: document.getElementById('adminFerieEditNote').value };
+    try {
+      var r = await fetch(base + '/admin/ferie/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      var j = await r.json();
+      window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+      if (j.success) { closeEditModal(); location.reload(); }
+    } catch (x) { window.showToast('Errore di connessione', 'error'); }
+  };
+
+  document.getElementById('adminFerieDayClose').onclick = function() {
+    document.getElementById('adminFerieOverlay').setAttribute('hidden', '');
+    document.getElementById('adminFerieOverlay').setAttribute('aria-hidden', 'true');
+  };
+  document.getElementById('adminFerieOverlay').onclick = function(e) {
+    if (e.target === this) { this.setAttribute('hidden', ''); this.setAttribute('aria-hidden', 'true'); }
+  };
+  document.getElementById('adminFerieEditOverlay').onclick = function(e) {
+    if (e.target === this) closeEditModal();
+  };
+
+  (function() {
+    var monthNames = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+    var year = new Date().getFullYear(), month = new Date().getMonth() + 1;
+    var gridEl = document.getElementById('adminCalendarGrid');
+    var titleEl = document.getElementById('adminCalendarMonthTitle');
+    var byDate = {};
+    var dayModal = document.getElementById('adminFerieOverlay');
+    var dayTitle = document.getElementById('adminFerieDayTitle');
+    var dayList = document.getElementById('adminFerieDayList');
+
+    function firstDayOffset(y, m) { return ((new Date(y, m - 1, 1).getDay() + 6) % 7); }
+    function daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+
+    function render() {
+      titleEl.textContent = monthNames[month - 1] + ' ' + year;
+      var offset = firstDayOffset(year, month);
+      var days = daysInMonth(year, month);
+      var html = '';
+      for (var i = 0; i < offset; i++) html += '<span class="calendar-day calendar-day--empty"></span>';
+      for (var d = 1; d <= days; d++) {
+        var key = year + '-' + String(month).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+        var entries = byDate[key] || [];
+        var hasFerie = entries.length > 0;
+        var label = hasFerie ? entries.length + ' richieste' : '';
+        var dot = hasFerie ? '<span class="calendar-day__dot" aria-hidden="true"></span>' : '';
+        html += '<button type="button" class="calendar-day' + (hasFerie ? ' calendar-day--has' : '') + '" data-date="' + key + '" title="' + (hasFerie ? 'Clicca: ' + entries.length + ' richieste' : 'Clicca') + '"><span class="calendar-day__num">' + d + '</span>' + dot + (label ? '<span class="calendar-day__label">' + label + '</span>' : '') + '</button>';
+      }
+      gridEl.innerHTML = html;
+      gridEl.querySelectorAll('.calendar-day:not(.calendar-day--empty)').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var date = this.dataset.date;
+          if (!date) return;
+          var parts = date.split('-');
+          var entries = byDate[date] || [];
+          dayTitle.textContent = 'Ferie il ' + parts[2] + '/' + parts[1] + '/' + parts[0];
+          dayList.innerHTML = '';
+          if (entries.length === 0) {
+            dayList.innerHTML = '<p class="empty">Nessuna richiesta in questo giorno.</p>';
+          } else {
+            var seen = {};
+            entries.forEach(function(entry) {
+              if (seen[entry.id]) return;
+              seen[entry.id] = true;
+              var statoLabel = entry.stato === 'pending' ? 'In attesa' : entry.stato === 'approved' ? 'Approvato' : 'Rifiutato';
+              var div = document.createElement('div');
+              div.className = 'admin-ferie-day-entry';
+              div.innerHTML = '<div class="admin-ferie-day-entry__info"><strong>' + (entry.full_name || entry.username) + '</strong> ' + entry.data_inizio + ' → ' + entry.data_fine + ' · ' + entry.tipo + ' · <span class="badge ' + entry.stato + '">' + statoLabel + '</span></div><div class="admin-ferie-day-entry__actions"><button type="button" class="btn-sm admin-ferie-edit-btn" data-id="' + entry.id + '" data-inizio="' + entry.data_inizio + '" data-fine="' + entry.data_fine + '" data-tipo="' + entry.tipo + '" data-note="' + (entry.note || '') + '">Modifica</button><button type="button" class="btn-sm admin-ferie-delete-btn" data-id="' + entry.id + '">Cancella</button></div>';
+              dayList.appendChild(div);
+              div.querySelector('.admin-ferie-edit-btn').onclick = function() {
+                dayModal.setAttribute('hidden', '');
+                openEditModal({ id: entry.id, data_inizio: entry.data_inizio, data_fine: entry.data_fine, tipo: entry.tipo, note: entry.note || '' });
+              };
+              div.querySelector('.admin-ferie-delete-btn').onclick = function() {
+                dayModal.setAttribute('hidden', '');
+                doDelete(entry.id, function() { location.reload(); });
+              };
+            });
+          }
+          dayModal.removeAttribute('hidden');
+          dayModal.setAttribute('aria-hidden', 'false');
+        });
+      });
+    }
+
+    function load() {
+      fetch(base + '/admin/ferie/calendar?year=' + year + '&month=' + month).then(function(r) { return r.json(); }).then(function(j) {
+        byDate = (j && typeof j.byDate === 'object' && j.byDate !== null) ? j.byDate : {};
+        render();
+      }).catch(function() { byDate = {}; render(); });
+    }
+
+    document.querySelector('.admin-ferie-calendar .calendar-prev').addEventListener('click', function() {
+      month--; if (month < 1) { month = 12; year--; }
+      load();
+    });
+    document.querySelector('.admin-ferie-calendar .calendar-next').addEventListener('click', function() {
+      month++; if (month > 12) { month = 1; year++; }
+      load();
+    });
+    load();
+  })();
 </script>

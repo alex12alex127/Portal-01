@@ -299,4 +299,127 @@ router.delete('/ferie/:id', requireAuth, requireManager, apiLimiter, async (req,
   }
 });
 
+// ========== AVVISI (admin/manager) ==========
+const TIPI_AVVISO = ['info', 'warning', 'urgent', 'manutenzione'];
+
+router.get('/avvisi', requireAuth, requireManager, async (req, res) => {
+  try {
+    const tipoFilter = (req.query.tipo && TIPI_AVVISO.includes(req.query.tipo)) ? req.query.tipo : '';
+    const evidenzaFilter = req.query.evidenza === '1';
+    let where = '';
+    const params = [];
+    if (tipoFilter) { where = ' WHERE a.tipo = $1'; params.push(tipoFilter); }
+    if (evidenzaFilter) { where += (where ? ' AND' : ' WHERE') + ' a.in_evidenza = true'; }
+    const result = await db.query(`
+      SELECT a.id, a.titolo, a.contenuto, a.tipo, a.in_evidenza, a.visibile_da, a.visibile_fino, a.created_at, a.updated_at,
+             u.full_name AS autore_nome
+      FROM avvisi a
+      LEFT JOIN users u ON u.id = a.created_by
+      ${where}
+      ORDER BY a.in_evidenza DESC, a.created_at DESC
+    `, params);
+    const avvisi = result.rows.map(r => ({
+      ...r,
+      visibile_da: r.visibile_da ? String(r.visibile_da).slice(0, 10) : null,
+      visibile_fino: r.visibile_fino ? String(r.visibile_fino).slice(0, 10) : null
+    }));
+    res.render('admin/avvisi', {
+      title: 'Gestione Avvisi - Portal-01',
+      activePage: 'adminAvvisi',
+      avvisi,
+      filtri: { tipo: tipoFilter, evidenza: evidenzaFilter }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+router.get('/avvisi/nuovo', requireAuth, requireManager, (req, res) => {
+  res.render('admin/avvisi-form', {
+    title: 'Nuovo avviso - Portal-01',
+    activePage: 'adminAvvisi',
+    avviso: null,
+    tipi: TIPI_AVVISO
+  });
+});
+
+router.post('/avvisi', requireAuth, requireManager, apiLimiter, async (req, res) => {
+  const { titolo, contenuto, tipo, in_evidenza, visibile_da, visibile_fino } = req.body || {};
+  if (!titolo || !String(titolo).trim()) return res.status(400).json({ error: 'Titolo obbligatorio' });
+  if (!contenuto || !String(contenuto).trim()) return res.status(400).json({ error: 'Contenuto obbligatorio' });
+  const tipoVal = TIPI_AVVISO.includes(tipo) ? tipo : 'info';
+  const evidenza = in_evidenza === 'on' || in_evidenza === '1' || in_evidenza === true;
+  try {
+    await db.query(
+      'INSERT INTO avvisi (titolo, contenuto, tipo, in_evidenza, visibile_da, visibile_fino, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [String(titolo).trim(), String(contenuto).trim(), tipoVal, evidenza, visibile_da || null, visibile_fino || null, req.session.userId]
+    );
+    await logAudit(req.session.userId, 'avviso_creato', titolo.slice(0, 50), req.ip);
+    res.redirect((req.app.get('basePath') || '') + '/admin/avvisi');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+router.get('/avvisi/:id/modifica', requireAuth, requireManager, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.redirect((req.app.get('basePath') || '') + '/admin/avvisi');
+  try {
+    const r = await db.query('SELECT id, titolo, contenuto, tipo, in_evidenza, visibile_da, visibile_fino FROM avvisi WHERE id = $1', [id]);
+    if (r.rows.length === 0) return res.redirect((req.app.get('basePath') || '') + '/admin/avvisi');
+    const a = r.rows[0];
+    res.render('admin/avvisi-form', {
+      title: 'Modifica avviso - Portal-01',
+      activePage: 'adminAvvisi',
+      avviso: {
+        ...a,
+        visibile_da: a.visibile_da ? String(a.visibile_da).slice(0, 10) : '',
+        visibile_fino: a.visibile_fino ? String(a.visibile_fino).slice(0, 10) : ''
+      },
+      tipi: TIPI_AVVISO
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+router.put('/avvisi/:id', requireAuth, requireManager, apiLimiter, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
+  const { titolo, contenuto, tipo, in_evidenza, visibile_da, visibile_fino } = req.body || {};
+  if (!titolo || !String(titolo).trim()) return res.status(400).json({ error: 'Titolo obbligatorio' });
+  if (!contenuto || !String(contenuto).trim()) return res.status(400).json({ error: 'Contenuto obbligatorio' });
+  const tipoVal = TIPI_AVVISO.includes(tipo) ? tipo : 'info';
+  const evidenza = in_evidenza === 'on' || in_evidenza === '1' || in_evidenza === true;
+  try {
+    const r = await db.query(
+      'UPDATE avvisi SET titolo = $1, contenuto = $2, tipo = $3, in_evidenza = $4, visibile_da = $5, visibile_fino = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING id',
+      [String(titolo).trim(), String(contenuto).trim(), tipoVal, evidenza, visibile_da || null, visibile_fino || null, id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Avviso non trovato' });
+    await logAudit(req.session.userId, 'avviso_modificato', `id=${id}`, req.ip);
+    res.json({ success: true, message: 'Avviso aggiornato' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
+router.delete('/avvisi/:id', requireAuth, requireManager, apiLimiter, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
+  try {
+    const r = await db.query('DELETE FROM avvisi WHERE id = $1 RETURNING id', [id]);
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Avviso non trovato' });
+    await logAudit(req.session.userId, 'avviso_eliminato', `id=${id}`, req.ip);
+    res.json({ success: true, message: 'Avviso eliminato' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
 module.exports = router;

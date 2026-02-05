@@ -1,0 +1,70 @@
+<h1 class="page-title">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+  Gestione Avvisi
+</h1>
+<div class="card">
+  <div class="admin-avvisi-header">
+    <h2>Tutti gli avvisi (<%= avvisi.length %>)</h2>
+    <a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/avvisi/nuovo" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> Nuovo avviso</a>
+  </div>
+  <% if (typeof filtri !== 'undefined') { %>
+  <form method="get" action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/avvisi" class="ferie-filtri" style="margin-bottom:1rem">
+    <label>Tipo <select name="tipo"><option value="">Tutti</option><option value="info"<%= filtri.tipo === 'info' ? ' selected' : '' %>>Informazione</option><option value="warning"<%= filtri.tipo === 'warning' ? ' selected' : '' %>>Attenzione</option><option value="urgent"<%= filtri.tipo === 'urgent' ? ' selected' : '' %>>Urgente</option><option value="manutenzione"<%= filtri.tipo === 'manutenzione' ? ' selected' : '' %>>Manutenzione</option></select></label>
+    <label><input type="checkbox" name="evidenza" value="1"<%= filtri.evidenza ? ' checked' : '' %>> Solo in evidenza</label>
+    <button type="submit" class="btn btn-sm">Filtra</button>
+  </form>
+  <% } %>
+  <% if (avvisi.length === 0) { %>
+  <p class="empty">Nessun avviso. <a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/avvisi/nuovo">Creane uno</a>.</p>
+  <% } else { %>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Titolo</th>
+          <th>Tipo</th>
+          <th>Periodo</th>
+          <th>Evidenza</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% avvisi.forEach(function(a) { %>
+        <tr data-id="<%= a.id %>">
+          <td><strong><%= a.titolo %></strong></td>
+          <td><span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : 'Manutenzione' %></span></td>
+          <td><%= a.visibile_da || '—' %> / <%= a.visibile_fino || '—' %></td>
+          <td><%= a.in_evidenza ? '📌 Sì' : '—' %></td>
+          <td>
+            <a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/avvisi/<%= a.id %>/modifica" class="btn-sm">Modifica</a>
+            <button type="button" class="btn-sm admin-avvisi-delete" data-id="<%= a.id %>" data-titolo="<%= a.titolo %>">Elimina</button>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+<script>
+(function(){
+  var base = window.APP_BASE || '', csrf = '<%= csrfToken %>';
+  document.querySelectorAll('.admin-avvisi-delete').forEach(function(btn) {
+    btn.onclick = function() {
+      var id = this.dataset.id, titolo = this.dataset.titolo || 'questo avviso';
+      if (typeof window.showModal === 'function') {
+        window.showModal({ title: 'Elimina avviso', text: 'Eliminare definitivamente "' + titolo + '"?', onConfirm: function() {
+          fetch(base + '/admin/avvisi/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) })
+            .then(function(r) { return r.json(); })
+            .then(function(j) {
+              if (typeof window.showToast === 'function') window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+              if (j.success) location.reload();
+            });
+        }});
+      } else if (confirm('Eliminare questo avviso?')) {
+        fetch(base + '/admin/avvisi/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) }).then(function(r) { return r.json(); }).then(function(j) { if (j.success) location.reload(); });
+      }
+    };
+  });
+})();
+</script>

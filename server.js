@@ -79,6 +79,7 @@ if (!isProd) {
 app.use(BASE_PATH || '/', require('./routes/index'));
 app.use(BASE_PATH + '/auth', require('./routes/auth'));
 app.use(BASE_PATH + '/ferie', require('./routes/ferie'));
+app.use(BASE_PATH + '/avvisi', require('./routes/avvisi'));
 app.use(BASE_PATH + '/profile', require('./routes/profile'));
 app.use(BASE_PATH + '/admin', require('./routes/admin'));
 

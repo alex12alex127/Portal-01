@@ -1,0 +1,65 @@
+<div class="avvisi-page">
+  <h1 class="page-title">
+    <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+    Avvisi
+  </h1>
+  <p class="avvisi-intro">Qui trovi tutti gli avvisi pubblicati. Clicca su un avviso per leggerlo e segnarlo come letto.</p>
+
+  <% if (avvisi.length === 0) { %>
+  <div class="card">
+    <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg> Nessun avviso al momento.</p>
+  </div>
+  <% } else { %>
+  <div class="avvisi-list">
+    <% avvisi.forEach(function(a) { %>
+    <article class="avviso-card avviso-card--<%= a.tipo %> <%= a.in_evidenza ? 'avviso-card--evidenza' : '' %> <%= a.letto ? 'avviso-card--letto' : '' %>" data-id="<%= a.id %>">
+      <header class="avviso-card__head">
+        <div class="avviso-card__meta">
+          <span class="avviso-card__tipo badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Informazione' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : 'Manutenzione' %></span>
+          <% if (a.in_evidenza) { %><span class="avviso-card__pin" title="In evidenza">📌</span><% } %>
+          <time class="avviso-card__date" datetime="<%= a.created_at %>"><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '' %></time>
+          <% if (a.autore_nome) { %><span class="avviso-card__autore">— <%= a.autore_nome %></span><% } %>
+        </div>
+        <h2 class="avviso-card__titolo"><%= a.titolo %></h2>
+        <% if (a.visibile_da || a.visibile_fino) { %>
+        <p class="avviso-card__periodo text-muted">
+          Visibile <%= a.visibile_da ? 'dal ' + a.visibile_da : '' %><%= a.visibile_da && a.visibile_fino ? ' ' : '' %><%= a.visibile_fino ? 'al ' + a.visibile_fino : '' %>
+        </p>
+        <% } %>
+      </header>
+      <div class="avviso-card__body">
+        <div class="avviso-card__contenuto avviso-card__contenuto--pre"><%= a.contenuto %></div>
+        <div class="avviso-card__actions">
+          <% if (!a.letto) { %>
+          <button type="button" class="btn btn-sm btn--secondary avviso-segna-letto" data-id="<%= a.id %>">Segna come letto</button>
+          <% } else { %>
+          <span class="avviso-card__letto-badge">✓ Letto</span>
+          <% } %>
+        </div>
+      </div>
+    </article>
+    <% }); %>
+  </div>
+  <% } %>
+</div>
+<script>
+(function(){
+  var base = window.APP_BASE || '', csrf = '<%= csrfToken %>';
+  document.querySelectorAll('.avviso-segna-letto').forEach(function(btn) {
+    btn.onclick = function() {
+      var id = this.dataset.id;
+      if (!id) return;
+      var card = document.querySelector('.avviso-card[data-id="' + id + '"]');
+      fetch(base + '/avvisi/' + id + '/letta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) })
+        .then(function(r) { return r.json(); })
+        .then(function(j) {
+          if (j.success && card) {
+            card.classList.add('avviso-card--letto');
+            var actions = card.querySelector('.avviso-card__actions');
+            if (actions) { actions.innerHTML = '<span class="avviso-card__letto-badge">✓ Letto</span>'; }
+          }
+        });
+    };
+  });
+})();
+</script>

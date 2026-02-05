@@ -92,6 +92,32 @@ async function initDatabase() {
     `);
     await client.query('CREATE INDEX IF NOT EXISTS idx_audit_log_user_id ON audit_log(user_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC)');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS avvisi (
+        id SERIAL PRIMARY KEY,
+        titolo VARCHAR(255) NOT NULL,
+        contenuto TEXT NOT NULL,
+        tipo VARCHAR(50) DEFAULT 'info',
+        in_evidenza BOOLEAN DEFAULT false,
+        visibile_da DATE,
+        visibile_fino DATE,
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_avvisi_created_at ON avvisi(created_at DESC)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_avvisi_tipo ON avvisi(tipo)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_avvisi_in_evidenza ON avvisi(in_evidenza) WHERE in_evidenza = true');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS avvisi_letti (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        avviso_id INTEGER NOT NULL REFERENCES avvisi(id) ON DELETE CASCADE,
+        letto_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, avviso_id)
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_avvisi_letti_user ON avvisi_letti(user_id)');
     console.log('Tabelle e indici create/verificate');
   } finally {
     client.release();

@@ -735,6 +735,53 @@ tr:hover td { background: var(--border-light); }
 .badge.pending { background: var(--warn-bg); color: var(--warn); }
 .badge.approved { background: var(--success-bg); color: var(--success); }
 .badge.rejected { background: var(--danger-bg); color: var(--danger); }
+.badge--avviso.badge--info { background: var(--primary-light); color: var(--primary-dark); }
+.badge--avviso.badge--warning { background: var(--warn-bg); color: var(--warn); }
+.badge--avviso.badge--urgent { background: var(--danger-bg); color: var(--danger); }
+.badge--avviso.badge--manutenzione { background: var(--border); color: var(--text-muted); }
+
+/* Avvisi — pagina utente */
+.avvisi-intro { color: var(--text-muted); font-size: 0.9375rem; margin-bottom: var(--space-lg); }
+.avvisi-list { display: flex; flex-direction: column; gap: var(--space); }
+.avviso-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.avviso-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-md); }
+.avviso-card--evidenza { border-left: 4px solid var(--primary); }
+.avviso-card--letto { opacity: 0.92; }
+.avviso-card--urgent { border-left-color: var(--danger); }
+.avviso-card--warning { border-left-color: var(--warn); }
+.avviso-card__head { margin-bottom: var(--space); }
+.avviso-card__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; margin-bottom: 0.35rem; font-size: 0.8125rem; color: var(--text-muted); }
+.avviso-card__pin { font-size: 0.875rem; }
+.avviso-card__titolo { font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem; color: var(--text); }
+.avviso-card__periodo { font-size: 0.8125rem; margin: 0; }
+.avviso-card__body { color: var(--text); }
+.avviso-card__contenuto--pre { white-space: pre-line; font-size: 0.9375rem; line-height: 1.6; margin-bottom: var(--space); }
+.avviso-card__actions { margin-top: var(--space); }
+.avviso-card__letto-badge { font-size: 0.8125rem; color: var(--success); font-weight: 500; }
+
+/* Admin avvisi */
+.admin-avvisi-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space); margin-bottom: var(--space); }
+.admin-avvisi-header h2 { margin-bottom: 0; padding-bottom: 0; border: none; }
+.dashboard-avvisi { margin-bottom: var(--space-lg); }
+.dashboard-avvisi__list { list-style: none; padding: 0; margin: 0 0 var(--space); }
+.dashboard-avvisi__item { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9375rem; }
+.dashboard-avvisi__item--evidenza { font-weight: 500; }
+.dashboard-avvisi__date { font-size: 0.8125rem; color: var(--text-muted); margin-left: auto; }
+.dashboard-avvisi__item a { color: var(--primary); font-weight: 500; }
+.dashboard-avvisi__item a:hover { text-decoration: underline; }
+
+/* Form avvisi (admin) */
+.avvisi-form__checkbox { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin-bottom: var(--space); }
+.avvisi-form__dates { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space); margin-bottom: var(--space); }
+@media (max-width: 499px) { .avvisi-form__dates { grid-template-columns: 1fr; } }
+.avvisi-form__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: var(--space-lg); }
+
 .empty {
   text-align: center; padding: 2.5rem var(--space);
   color: var(--text-muted);

@@ -45,12 +45,19 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       [req.session.userId]
     );
     const notifiche = notificheResult.rows.map(n => ({ ...n, created_at: n.created_at ? new Date(n.created_at).toLocaleDateString('it-IT') : '' }));
+    const avvisiResult = await db.query(`
+      SELECT id, titolo, tipo, in_evidenza, created_at FROM avvisi
+      WHERE (visibile_da IS NULL OR visibile_da <= CURRENT_DATE) AND (visibile_fino IS NULL OR visibile_fino >= CURRENT_DATE)
+      ORDER BY in_evidenza DESC, created_at DESC LIMIT 5
+    `);
+    const avvisiDashboard = avvisiResult.rows.map(a => ({ ...a, created_at: a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' }));
     res.render('dashboard', {
       title: 'Dashboard - Portal-01',
       activePage: 'dashboard',
       summary: { year, ...summary },
       ultimeRichieste: ultimeRichieste.rows.map(r => ({ ...r, data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine) })),
-      notifiche
+      notifiche,
+      avvisiDashboard: avvisiDashboard
     });
   } catch (err) {
     console.error(err);

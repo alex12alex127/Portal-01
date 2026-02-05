@@ -65,9 +65,11 @@
 (function(){
   var s=document.getElementById('sidebar'),t=document.getElementById('sidebarToggle'),c=document.getElementById('sidebarClose'),b=document.getElementById('sidebarBackdrop');
   if(!s||!t)return;
-  function open(){s.classList.add('open');if(b)b.classList.add('open');}
-  function close(){s.classList.remove('open');if(b)b.classList.remove('open');}
-  t.onclick=open;if(c)c.onclick=close;if(b)b.onclick=close;
+  function open(){s.classList.add('open');if(b)b.classList.add('open');document.body.style.overflow='hidden';}
+  function close(){s.classList.remove('open');if(b)b.classList.remove('open');document.body.style.overflow='';}
+  t.addEventListener('click',function(e){e.preventDefault();open();});
+  if(c)c.addEventListener('click',function(e){e.preventDefault();close();});
+  if(b)b.addEventListener('click',function(e){e.preventDefault();close();});
 })();
 (function(){
   var urls=['<%= bp %>/dashboard','<%= bp %>/ferie','<%= bp %>/avvisi','<%= bp %>/profile'<% if (user && user.role === 'admin') { %>,'<%= bp %>/admin/users'<% } %><% if (user && (user.role === 'admin' || user.role === 'manager')) { %>,'<%= bp %>/admin/ferie','<%= bp %>/admin/avvisi'<% } %>];

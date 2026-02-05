@@ -763,7 +763,6 @@ tr:hover td { background: var(--border-light); }
 .avviso-card__body { color: var(--text); }
 .avviso-card__contenuto--pre { white-space: pre-line; font-size: 0.9375rem; line-height: 1.6; margin-bottom: var(--space); }
 .avviso-card__actions { margin-top: var(--space); }
-.avviso-card__letto-badge { font-size: 0.8125rem; color: var(--success); font-weight: 500; }
 
 /* Admin avvisi */
 .admin-avvisi-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space); margin-bottom: var(--space); }

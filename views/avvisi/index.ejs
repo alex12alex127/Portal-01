@@ -29,13 +29,11 @@
       </header>
       <div class="avviso-card__body">
         <div class="avviso-card__contenuto avviso-card__contenuto--pre"><%= a.contenuto %></div>
-        <div class="avviso-card__actions">
-          <% if (!a.letto) { %>
-          <button type="button" class="btn btn-sm btn--secondary avviso-segna-letto" data-id="<%= a.id %>">Segna come letto</button>
-          <% } else { %>
-          <span class="avviso-card__letto-badge">✓ Letto</span>
-          <% } %>
-        </div>
+        <% if (!a.letto) { %>
+      <div class="avviso-card__actions">
+        <button type="button" class="btn btn-sm btn--secondary avviso-segna-letto" data-id="<%= a.id %>">Segna come letto</button>
+      </div>
+      <% } %>
       </div>
     </article>
     <% }); %>
@@ -56,7 +54,7 @@
           if (j.success && card) {
             card.classList.add('avviso-card--letto');
             var actions = card.querySelector('.avviso-card__actions');
-            if (actions) { actions.innerHTML = '<span class="avviso-card__letto-badge">✓ Letto</span>'; }
+            if (actions) actions.remove();
           }
         });
     };

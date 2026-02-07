@@ -361,18 +361,54 @@ async function markAsRead(id) {
 
 async function markAllRead() {
   try {
-    const response = await fetch(`${basePath}/notifiche/read-all`, { method: 'POST' });
+    console.log('[frontend] Marcatura tutte le notifiche come lette:', {
+      basePath: basePath,
+      url: `${basePath}/notifiche/read-all`,
+      totalNotifications: notifications.length,
+      unreadCount: notifications.filter(n => !n.letta).length
+    });
+    
+    console.log('[frontend] Invio richiesta POST per marca tutte...');
+    const response = await fetch(`${basePath}/notifiche/read-all`, { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('[frontend] Risposta HTTP marca tutte:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+    
     const data = await response.json();
+    console.log('[frontend] Risposta JSON marca tutte:', data);
     
     if (data.success) {
+      // Aggiorna stato locale
       notifications.forEach(n => n.letta = true);
       renderNotifications();
       updateNotificationCount(0);
       updateActionButtons(0, notifications.length);
-      showToast('Tutte le notifiche sono state marcate come lette', 'ok');
+      
+      const message = data.updatedCount > 0 
+        ? `Tutte le notifiche (${data.updatedCount}) sono state marcate come lette`
+        : 'Nessuna notifica da marcare come letta';
+      
+      showToast(message, 'ok');
+      console.log('[frontend] Marcatura tutte completata con successo:', {
+        updatedCount: data.updatedCount
+      });
+    } else {
+      console.error('[frontend] Errore nel response marca tutte:', data);
+      showToast(data.error || 'Errore durante la marcatura delle notifiche', 'error');
     }
   } catch (err) {
-    console.error('Errore marcatura notifiche:', err);
+    console.error('[frontend] Errore marcatura tutte le notifiche:', {
+      message: err.message,
+      stack: err.stack
+    });
     showToast('Errore durante la marcatura delle notifiche', 'error');
   }
 }

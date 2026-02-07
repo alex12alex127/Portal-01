@@ -93,11 +93,27 @@ router.post('/:id/read', async (req, res) => {
 // POST /notifiche/read-all - Marca tutte come lette
 router.post('/read-all', async (req, res) => {
   try {
-    await marcaTutteComeLette(req.session.user.id);
-    res.json({ success: true, nonLette: 0 });
+    console.log('[notifiche read all] Attempting to mark all notifications as read:', {
+      userId: req.session.user.id,
+      userRole: req.session.user.role
+    });
+    
+    const updatedCount = await marcaTutteComeLette(req.session.user.id);
+    console.log('[notifiche read all] Successfully marked notifications as read:', {
+      updatedCount: updatedCount
+    });
+    
+    res.json({ success: true, nonLette: 0, updatedCount: updatedCount });
   } catch (err) {
-    console.error('[notifiche read all]', err);
-    res.status(500).json({ error: 'Errore marcatura notifiche' });
+    console.error('[notifiche read all] Error marking all notifications as read:', {
+      error: err.message,
+      stack: err.stack,
+      userId: req.session.user.id
+    });
+    res.status(500).json({ 
+      error: 'Errore marcatura notifiche',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 });
 

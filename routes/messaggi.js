@@ -175,7 +175,7 @@ router.post('/:id/letto', apiLimiter, async (req, res) => {
   }
 });
 
-// POST /messaggi/:id/archivia - Archivia conversazione
+// POST /messaggi/:id/archivia - Archivia conversazione (solo creatore)
 router.post('/:id/archivia', apiLimiter, async (req, res) => {
   try {
     await archiviaConversazione(parseInt(req.params.id, 10), req.session.user.id, true);
@@ -187,7 +187,13 @@ router.post('/:id/archivia', apiLimiter, async (req, res) => {
     res.redirect(bp + '/messaggi');
   } catch (err) {
     console.error('[messaggi archivia]', err);
-    res.status(500).json({ success: false, error: 'Errore archiviazione' });
+    const isAuth = err.message && err.message.indexOf('creatore') !== -1;
+    const accept = req.headers.accept || '';
+    if (accept.indexOf('json') !== -1) {
+      return res.status(isAuth ? 403 : 500).json({ success: false, error: err.message || 'Errore archiviazione' });
+    }
+    const bp = req.app.get('basePath') || '';
+    res.redirect(bp + '/messaggi/' + req.params.id);
   }
 });
 

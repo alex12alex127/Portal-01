@@ -18,6 +18,7 @@
       <% }); %>
     </div>
   </div>
+  <% if (conv.created_by === _userId) { %>
   <div class="msg-chat-header__actions">
     <form method="POST" action="<%= bp %>/messaggi/<%= conv.id %>/archivia" style="display:inline">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -27,6 +28,7 @@
       </button>
     </form>
   </div>
+  <% } %>
 </div>
 
 <!-- Area messaggi -->

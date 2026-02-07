@@ -5,18 +5,52 @@
   Gestione Avvisi
 </h1>
 
-<div class="admin-actions">
-  <button type="button" class="btn js-create-avviso">
-    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-    </svg> 
-    Nuovo Avviso
-  </button>
-</div>
+<p class="text-muted" style="margin-top:-0.5rem;">Crea e gestisci gli avvisi visibili ai dipendenti. Puoi impostare periodo, tipo e in evidenza.</p>
 
 <div class="card">
   <div class="card-header">
-    <h2>Tutti gli avvisi (<%= avvisi.length %>)</h2>
+    <div class="card-header__row">
+      <h2 style="margin:0;">Avvisi (<%= avvisi.length %>)</h2>
+      <button type="button" class="btn js-create-avviso">Crea avviso</button>
+    </div>
+
+    <div class="filters" role="region" aria-label="Filtri avvisi">
+      <div class="filters__row">
+        <div class="filters__item">
+          <label class="filters__label" for="filterSearch">Cerca</label>
+          <input id="filterSearch" class="filters__control" type="text" placeholder="Titolo...">
+        </div>
+        <div class="filters__item">
+          <label class="filters__label" for="filterTipo">Tipo</label>
+          <select id="filterTipo" class="filters__control">
+            <option value="">Tutti</option>
+            <option value="info">Info</option>
+            <option value="warning">Attenzione</option>
+            <option value="urgent">Urgente</option>
+            <option value="success">Successo</option>
+          </select>
+        </div>
+        <div class="filters__item">
+          <label class="filters__label" for="filterStato">Stato</label>
+          <select id="filterStato" class="filters__control">
+            <option value="">Tutti</option>
+            <option value="attivo">Attivo</option>
+            <option value="programmato">Programmato</option>
+            <option value="scaduto">Scaduto</option>
+          </select>
+        </div>
+        <div class="filters__item filters__item--checkbox">
+          <label class="filters__label" for="filterEvidenza">In evidenza</label>
+          <label class="filters__check">
+            <input id="filterEvidenza" type="checkbox">
+            Solo in evidenza
+          </label>
+        </div>
+      </div>
+      <div class="filters__row filters__row--actions">
+        <button type="button" class="btn btn-secondary js-filters-reset">Reset filtri</button>
+      </div>
+    </div>
   </div>
   
   <% if (avvisi.length === 0) { %>
@@ -33,15 +67,23 @@
           <tr>
             <th>Titolo</th>
             <th>Tipo</th>
-            <th>Evidenza</th>
-            <th>Autore</th>
-            <th>Creato il</th>
+            <th>Periodo</th>
+            <th>Stato</th>
             <th>Azioni</th>
           </tr>
         </thead>
         <tbody>
+          <% const oggi = new Date().toISOString().split('T')[0]; %>
           <% avvisi.forEach(function(a) { %>
-          <tr>
+          <% 
+            const da = a.visibile_da ? String(a.visibile_da).slice(0, 10) : '';
+            const fino = a.visibile_fino ? String(a.visibile_fino).slice(0, 10) : '';
+            let stato = 'attivo';
+            if (da && da > oggi) stato = 'programmato';
+            if (fino && fino < oggi) stato = 'scaduto';
+            const periodoLabel = (!da && !fino) ? 'Sempre' : (da ? ('Dal ' + da) : 'Da oggi') + (fino ? (' al ' + fino) : '');
+          %>
+          <tr data-tipo="<%= a.tipo %>" data-evidenza="<%= a.in_evidenza ? '1' : '0' %>" data-stato="<%= stato %>" data-titolo="<%= (a.titolo || '').toString().toLowerCase() %>">
             <td>
               <strong><%= a.titolo %></strong>
               <% if (a.contenuto && a.contenuto.length > 100) { %>
@@ -52,12 +94,16 @@
               <span class="badge badge-<%= a.tipo %>">
                 <%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo %>
               </span>
+              <% if (a.in_evidenza) { %>
+                <span class="badge badge-evidence" title="In evidenza">📌</span>
+              <% } %>
             </td>
             <td>
-              <%= a.in_evidenza ? '📌 Sì' : 'No' %>
+              <span class="text-muted"><%= periodoLabel %></span>
             </td>
-            <td><%= a.autore_nome || 'Sistema' %></td>
-            <td><%= new Date(a.created_at).toLocaleDateString('it-IT') %></td>
+            <td>
+              <span class="badge badge-stato badge-stato-<%= stato %>"><%= stato === 'attivo' ? 'Attivo' : stato === 'programmato' ? 'Programmato' : 'Scaduto' %></span>
+            </td>
             <td>
               <div class="btn-group">
                 <button class="btn btn-sm edit-btn" data-id="<%= a.id %>">Modifica</button>
@@ -135,6 +181,60 @@
 <style>
 .admin-actions {
   margin-bottom: 1.5rem;
+}
+
+.card-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.filters {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.filters__row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.filters__row--actions {
+  grid-template-columns: 1fr;
+  margin-top: 0.75rem;
+}
+
+.filters__item--checkbox {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.filters__label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.filters__control {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.filters__check {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: var(--text);
+  font-size: 0.9rem;
 }
 
 .table-responsive {
@@ -247,6 +347,12 @@
 .badge-warning { background: #f59e0b; color: white; }
 .badge-urgent { background: #ef4444; color: white; }
 .badge-success { background: #10b981; color: white; }
+.badge-evidence { background: #ff6b35; color: white; }
+
+.badge-stato { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+.badge-stato-attivo { border-color: #10b981; }
+.badge-stato-programmato { border-color: #3b82f6; }
+.badge-stato-scaduto { border-color: #ef4444; }
 
 @media (max-width: 768px) {
   .form-row {
@@ -255,6 +361,10 @@
   
   .btn-group {
     flex-direction: column;
+  }
+
+  .filters__row {
+    grid-template-columns: 1fr;
   }
 }
 </style>
@@ -279,6 +389,52 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
   });
+
+  const searchEl = document.getElementById('filterSearch');
+  const tipoEl = document.getElementById('filterTipo');
+  const statoEl = document.getElementById('filterStato');
+  const evidenzaEl = document.getElementById('filterEvidenza');
+  const resetEl = document.querySelector('.js-filters-reset');
+
+  function applyFilters() {
+    const q = (searchEl && searchEl.value ? searchEl.value : '').toString().toLowerCase().trim();
+    const tipo = tipoEl ? tipoEl.value : '';
+    const stato = statoEl ? statoEl.value : '';
+    const onlyEvidenza = evidenzaEl ? evidenzaEl.checked : false;
+
+    document.querySelectorAll('tbody tr[data-titolo]').forEach(function(row) {
+      const rowTitolo = row.getAttribute('data-titolo') || '';
+      const rowTipo = row.getAttribute('data-tipo') || '';
+      const rowStato = row.getAttribute('data-stato') || '';
+      const rowEvidenza = row.getAttribute('data-evidenza') === '1';
+
+      let ok = true;
+      if (q && rowTitolo.indexOf(q) === -1) ok = false;
+      if (tipo && rowTipo !== tipo) ok = false;
+      if (stato && rowStato !== stato) ok = false;
+      if (onlyEvidenza && !rowEvidenza) ok = false;
+
+      row.style.display = ok ? '' : 'none';
+    });
+  }
+
+  [searchEl, tipoEl, statoEl, evidenzaEl].forEach(function(el) {
+    if (!el) return;
+    el.addEventListener('input', applyFilters);
+    el.addEventListener('change', applyFilters);
+  });
+
+  if (resetEl) {
+    resetEl.addEventListener('click', function() {
+      if (searchEl) searchEl.value = '';
+      if (tipoEl) tipoEl.value = '';
+      if (statoEl) statoEl.value = '';
+      if (evidenzaEl) evidenzaEl.checked = false;
+      applyFilters();
+    });
+  }
+
+  applyFilters();
   
   // Bottoni modifica
   document.querySelectorAll('.edit-btn').forEach(function(btn) {

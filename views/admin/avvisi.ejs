@@ -26,7 +26,7 @@
           <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.25rem">
             <span style="font-weight:600;font-size:.95rem"><%= a.titolo %></span>
             <span class="badge badge--avviso badge--<%= a.tipo %>" style="font-size:.65rem"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo === 'success' ? 'Successo' : a.tipo %></span>
-            <% if (a.in_evidenza) { %><span style="background:var(--primary,#4f46e5);color:#fff;padding:.05rem .4rem;border-radius:999px;font-size:.65rem;font-weight:600">In evidenza</span><% } %>
+            <% if (a.in_evidenza) { %><span style="background:var(--primary,#1a56db);color:#fff;padding:.05rem .4rem;border-radius:999px;font-size:.65rem;font-weight:600">In evidenza</span><% } %>
           </div>
           <% if (a.contenuto && a.contenuto.length > 80) { %>
           <div style="font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.2rem"><%= a.contenuto.substring(0, 80) %>...</div>
@@ -41,7 +41,7 @@
           </div>
         </div>
         <div style="display:flex;gap:.35rem;flex-shrink:0">
-          <button type="button" class="btn-edit" data-id="<%= a.id %>" title="Modifica" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--primary,#4f46e5);transition:all .15s">
+          <button type="button" class="btn-edit" data-id="<%= a.id %>" title="Modifica" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--primary,#1a56db);transition:all .15s">
             <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg>
           </button>
           <button type="button" class="btn-del" data-id="<%= a.id %>" data-titolo="<%= a.titolo %>" title="Elimina" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--danger,#ef4444);transition:all .15s">
@@ -55,7 +55,7 @@
 </div>
 
 <style>
-.btn-edit:hover { background:var(--primary,#4f46e5) !important; color:#fff !important; border-color:var(--primary,#4f46e5) !important }
+.btn-edit:hover { background:var(--primary,#1a56db) !important; color:#fff !important; border-color:var(--primary,#1a56db) !important }
 .btn-del:hover { background:var(--danger,#ef4444) !important; color:#fff !important; border-color:var(--danger,#ef4444) !important }
 </style>
 

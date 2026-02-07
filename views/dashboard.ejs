@@ -15,7 +15,7 @@
     <div style="font-size:.8rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.03em;margin-top:.25rem">Approvate</div>
   </div>
   <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1.25rem;text-align:center">
-    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--primary,#4f46e5)"><%= summary.giorniApproved || 0 %></div>
+    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--primary,#1a56db)"><%= summary.giorniApproved || 0 %></div>
     <div style="font-size:.8rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.03em;margin-top:.25rem">Giorni usati <%= summary.year %></div>
   </div>
 </div>
@@ -35,7 +35,7 @@
     </div>
     <div style="padding:.5rem 0">
       <% avvisiDashboard.forEach(function(a) { %>
-      <a href="<%= bp %>/avvisi/<%= a.id %>" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;text-decoration:none;color:inherit;transition:background .15s;<%= a.in_evidenza ? 'background:rgba(79,70,229,.04)' : '' %>">
+      <a href="<%= bp %>/avvisi/<%= a.id %>" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;text-decoration:none;color:inherit;transition:background .15s;<%= a.in_evidenza ? 'background:rgba(26,86,219,.04)' : '' %>">
         <span class="badge badge--avviso badge--<%= a.tipo %>" style="font-size:.7rem;flex-shrink:0"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo === 'success' ? 'Successo' : a.tipo %></span>
         <span style="flex:1;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><%= a.titolo %></span>
         <span style="font-size:.75rem;color:var(--muted);flex-shrink:0"><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' %></span>

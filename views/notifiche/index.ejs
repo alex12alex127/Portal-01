@@ -25,8 +25,8 @@
   <% } else { %>
     <div id="notificheList">
       <% notifiche.forEach(function(n) { %>
-      <div class="notifiche-item rsp-list-row-start <%= n.letta ? 'letta' : 'non-letta' %>" data-id="<%= n.id %>" style="display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6);transition:all .3s;<%= !n.letta ? 'border-left:3px solid var(--primary,#4f46e5);background:rgba(79,70,229,.03)' : '' %>">
-        <div style="width:36px;height:36px;border-radius:50%;background:<%= !n.letta ? 'var(--primary,#4f46e5)' : 'var(--border,#e5e7eb)' %>;color:<%= !n.letta ? '#fff' : 'var(--muted)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <div class="notifiche-item rsp-list-row-start <%= n.letta ? 'letta' : 'non-letta' %>" data-id="<%= n.id %>" style="display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6);transition:all .3s;<%= !n.letta ? 'border-left:3px solid var(--primary,#1a56db);background:rgba(26,86,219,.04)' : '' %>">
+        <div style="width:36px;height:36px;border-radius:50%;background:<%= !n.letta ? 'var(--primary,#1a56db)' : 'var(--border,#e5e7eb)' %>;color:<%= !n.letta ? '#fff' : 'var(--muted)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg style="width:16px;height:16px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
         </div>
         <div style="flex:1;min-width:0">

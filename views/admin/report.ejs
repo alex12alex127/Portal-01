@@ -25,7 +25,7 @@
 
 <div class="rsp-grid-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem">
   <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1.25rem;text-align:center">
-    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--primary,#4f46e5)"><%= totRichieste %></div>
+    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--primary,#1a56db)"><%= totRichieste %></div>
     <div style="font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-top:.25rem">Richieste</div>
   </div>
   <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1.25rem;text-align:center">
@@ -76,7 +76,7 @@
         <% for (var mi=1; mi<=12; mi++) { var found = byMese.find(function(m){return m.mese===mi}); var g = found ? found.giorni : 0; var pct = Math.round(g/maxG*100); %>
         <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
           <span style="font-size:.7rem;color:var(--muted);font-weight:600"><%= g || '' %></span>
-          <div style="width:100%;background:var(--primary,#4f46e5);border-radius:4px 4px 0 0;min-height:2px;height:<%= pct %>%;transition:height .3s" title="<%= mesiNomi[mi] %>: <%= g %> giorni"></div>
+          <div style="width:100%;background:var(--primary,#1a56db);border-radius:4px 4px 0 0;min-height:2px;height:<%= pct %>%;transition:height .3s" title="<%= mesiNomi[mi] %>: <%= g %> giorni"></div>
           <span style="font-size:.65rem;color:var(--muted)"><%= mesiNomi[mi] %></span>
         </div>
         <% } %>
@@ -97,7 +97,7 @@
     <div>
       <% byUser.forEach(function(u) { %>
       <div class="rsp-list-row" style="display:flex;align-items:center;gap:1rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--primary,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0"><%= u.full_name ? u.full_name.charAt(0).toUpperCase() : '?' %></div>
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--primary,#1a56db);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0"><%= u.full_name ? u.full_name.charAt(0).toUpperCase() : '?' %></div>
         <div style="flex:1;min-width:0">
           <div style="font-weight:600;font-size:.9rem"><%= u.full_name %></div>
           <div style="font-size:.75rem;color:var(--muted)">@<%= u.username %> · <%= u.richieste %> richieste</div>

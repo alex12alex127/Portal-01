@@ -1,10 +1,12 @@
 /* Portal-01 — Design professionale, mobile-first (ispirato a SaaS moderni) */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { overflow-x: hidden; scroll-behavior: smooth; }
 body {
-  font-family: 'DM Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.011em;
   background: var(--bg);
   color: var(--text);
   line-height: 1.5;
@@ -17,72 +19,72 @@ a { color: inherit; text-decoration: none; }
 img, video { max-width: 100%; display: block; }
 
 :root {
-  /* Primario — blu professionale */
-  --primary: #0f766e;
-  --primary-hover: #0d9488;
-  --primary-light: #ccfbf1;
-  --primary-dark: #0d5c56;
-  /* Sidebar — scuro elegante */
-  --side: #0c4a6e;
-  --side-hover: #075985;
-  --side-active: rgba(6, 182, 212, 0.15);
-  --side-text: #e0f2fe;
-  --side-muted: #7dd3fc;
+  /* Primario — blu industriale acciaio */
+  --primary: #1a56db;
+  --primary-hover: #1e40af;
+  --primary-light: #dbeafe;
+  --primary-dark: #1e3a8a;
+  /* Sidebar — carbone industriale */
+  --side: #1e293b;
+  --side-hover: #334155;
+  --side-active: rgba(59, 130, 246, 0.15);
+  --side-text: #e2e8f0;
+  --side-muted: #94a3b8;
   /* Semantici */
-  --success: #059669;
-  --success-bg: #d1fae5;
-  --danger: #b91c1c;
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --danger: #dc2626;
   --danger-bg: #fee2e2;
-  --warn: #b45309;
+  --warn: #d97706;
   --warn-bg: #fef3c7;
   /* Neutri e superficie */
-  --bg: #f1f5f9;
+  --bg: #f0f2f5;
   --surface: #ffffff;
-  --text: #1e293b;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --border: #d1d5db;
+  --border-light: #f3f4f6;
   /* Layout */
-  --radius: 12px;
-  --radius-lg: 16px;
-  --radius-sm: 8px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-sm: 6px;
   --space: 1rem;
   --space-lg: 1.5rem;
   --side-w: 260px;
-  --shadow: 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.06);
-  --shadow-lg: 0 12px 24px rgba(0,0,0,.08);
+  --shadow: 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg: 0 12px 24px rgba(0,0,0,.1);
   --transition: 0.2s ease;
   /* Mobile — tap target minimo */
   --touch-min: 44px;
   --card-bg: #ffffff;
-  --muted: #64748b;
+  --muted: #6b7280;
   --bg-subtle: #f9fafb;
 }
 
 [data-theme="dark"] {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --text: #f1f5f9;
-  --text-muted: #94a3b8;
-  --border: #334155;
-  --border-light: #1e293b;
-  --primary: #2dd4bf;
-  --primary-hover: #5eead4;
-  --primary-light: #134e4a;
-  --primary-dark: #99f6e4;
-  --success: #34d399;
-  --success-bg: #064e3b;
+  --bg: #0c1222;
+  --surface: #162032;
+  --text: #e5e7eb;
+  --text-muted: #9ca3af;
+  --border: #2d3a4f;
+  --border-light: #1a2744;
+  --primary: #60a5fa;
+  --primary-hover: #93c5fd;
+  --primary-light: #1e3a5f;
+  --primary-dark: #bfdbfe;
+  --success: #4ade80;
+  --success-bg: #052e16;
   --danger: #f87171;
   --danger-bg: #7f1d1d;
   --warn: #fbbf24;
   --warn-bg: #78350f;
-  --shadow: 0 1px 2px rgba(0,0,0,.2);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.25);
-  --shadow-lg: 0 12px 24px rgba(0,0,0,.3);
-  --card-bg: #1e293b;
-  --muted: #94a3b8;
-  --bg-subtle: #1a2332;
+  --shadow: 0 1px 2px rgba(0,0,0,.25);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.3);
+  --shadow-lg: 0 12px 24px rgba(0,0,0,.35);
+  --card-bg: #162032;
+  --muted: #9ca3af;
+  --bg-subtle: #111b2e;
 }
 
 /* Tema scuro — elementi che devono usare sempre colori leggibili */
@@ -1086,7 +1088,7 @@ tr:hover td { background: var(--border-light); }
 .calendar-day:hover:not(:disabled) { background: var(--bg); border-color: var(--primary); }
 .calendar-day--empty { cursor: default; border-color: transparent; background: transparent; }
 .calendar-day--has { background: var(--primary-light); border-color: var(--primary); color: var(--primary-dark); font-weight: 500; }
-.calendar-day--has:hover { background: #99f6e4; }
+.calendar-day--has:hover { background: #bfdbfe; }
 .calendar-day__num { display: block; }
 .calendar-day__dot { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin: 2px auto 0; flex-shrink: 0; }
 .calendar-day--has .calendar-day__dot { background: var(--primary-dark); }

@@ -7,6 +7,11 @@
           Marca tutte come lette (<%= nonLette %>)
         </button>
       <% } %>
+      <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
+        <button class="btn btn-danger" onclick="deleteAllNotifications()" title="Elimina tutte le notifiche">
+          🗑️ Elimina tutte
+        </button>
+      <% } %>
       <button class="btn btn-primary" onclick="refreshNotifications()">
         <i class="icon">🔄</i> Aggiorna
       </button>
@@ -198,8 +203,7 @@ function renderNotifications() {
   
   container.innerHTML = notifications.map(notification => `
     <div class="notification-item ${!notification.letta ? 'unread' : ''}" 
-         data-id="${notification.id}"
-         onclick="markAsRead(${notification.id})">
+         data-id="${notification.id}">
       <div class="notification-icon ${getNotificationType(notification.tipo)}">
         ${getNotificationIcon(notification.tipo)}
       </div>
@@ -209,7 +213,7 @@ function renderNotifications() {
         <div class="notification-time">${formatTime(notification.created_at)}</div>
       </div>
       <div class="notification-actions-item">
-        <button class="btn-icon" onclick="deleteNotification(event, ${notification.id})" title="Elimina">
+        <button class="btn-icon btn-delete-notification" data-id="${notification.id}" title="Elimina">
           🗑️
         </button>
       </div>
@@ -303,6 +307,26 @@ async function deleteNotification(event, id) {
   }
 }
 
+async function deleteAllNotifications() {
+  if (!confirm('Sei sicuro di voler eliminare TUTTE le notifiche? Questa azione non è reversibile.')) return;
+  
+  try {
+    // Usa il nuovo endpoint bulk per eliminare tutte le notifiche
+    await fetch(`${basePath}/notifiche/delete-all`, { method: 'DELETE' });
+    
+    // Svuota l'array locale e aggiorna UI
+    notifications = [];
+    renderNotifications();
+    updateNotificationCount(0);
+    
+    // Mostra messaggio di successo
+    showToast('Tutte le notifiche sono state eliminate', 'ok');
+  } catch (err) {
+    console.error('Errore eliminazione notifiche:', err);
+    showToast('Errore durante l\'eliminazione delle notifiche', 'error');
+  }
+}
+
 function updateNotificationCount(count) {
   const badge = document.querySelector('.notification-badge');
   if (badge) {
@@ -319,6 +343,28 @@ function updateNotificationCount(count) {
 function refreshNotifications() {
   loadNotifications();
 }
+
+// Event delegation per click su notifiche e pulsanti elimina
+document.addEventListener('click', function(e) {
+  // Click su una notifica per marcarla come letta
+  const notificationItem = e.target.closest('.notification-item');
+  if (notificationItem && !e.target.closest('.btn-delete-notification')) {
+    const id = notificationItem.dataset.id;
+    if (id) {
+      markAsRead(parseInt(id));
+    }
+  }
+  
+  // Click sul pulsante elimina
+  const deleteBtn = e.target.closest('.btn-delete-notification');
+  if (deleteBtn) {
+    e.stopPropagation();
+    const id = deleteBtn.dataset.id;
+    if (id) {
+      deleteNotification(e, parseInt(id));
+    }
+  }
+});
 
 // Carica le notifiche al caricamento della pagina
 document.addEventListener('DOMContentLoaded', loadNotifications);

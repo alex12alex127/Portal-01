@@ -890,6 +890,10 @@ tr:hover td { background: var(--border-light); }
 .modal__input { width: 100%; max-width: 100%; min-width: 0; padding: 0.75rem 1rem; min-height: var(--touch-min); border: 1px solid var(--border); border-radius: var(--radius); font-size: 1rem; margin-top: 0.5rem; box-sizing: border-box; background: var(--surface); }
 .btn--secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
 .btn--secondary:hover { background: var(--border); }
+.btn-danger { background: var(--danger); color: white; border: 1px solid var(--danger); }
+.btn-danger:hover { background: #991b1b; border-color: #991b1b; }
+.btn-icon { background: none; border: none; padding: 0.25rem; cursor: pointer; border-radius: 4px; transition: background-color 0.2s; }
+.btn-icon:hover { background: var(--border); }
 
 /* Admin ferie: modali calendario (dettaglio giorno + modifica) */
 .modal-overlay.admin-ferie-modal { display: none; position: fixed; inset: 0; z-index: 400; align-items: center; justify-content: center; padding: var(--space); background: rgba(0,0,0,.45); backdrop-filter: blur(4px); }

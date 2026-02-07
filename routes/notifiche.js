@@ -95,4 +95,16 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// DELETE /notifiche/delete-all - Elimina tutte le notifiche
+router.delete('/delete-all', async (req, res) => {
+  try {
+    const db = require('../config/database');
+    await db.query('DELETE FROM notifiche WHERE user_id = $1', [req.session.user.id]);
+    res.json({ success: true, nonLette: 0 });
+  } catch (err) {
+    console.error('[notifiche delete all]', err);
+    res.status(500).json({ error: 'Errore eliminazione notifiche' });
+  }
+});
+
 module.exports = router;

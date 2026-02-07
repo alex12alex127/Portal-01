@@ -961,6 +961,22 @@ tr:hover td { background: var(--border-light); }
   .calendar-day { min-height: 52px; }
 }
 
+/* Badge di notifica (campanella accesa) */
+.badge--alert {
+  background: var(--danger);
+  color: white;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(185, 28, 28, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
 /* Focus e accessibilità */
 .sidebar__link:focus-visible, .btn:focus-visible, .btn-sm:focus-visible, .calendar-day:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-light); }
 .sidebar__close:focus-visible, .sidebar__toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255,255,255,.5); }

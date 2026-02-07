@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
+const { contaAvvisiNonLetti } = require('../lib/avvisi');
 
 router.get('/', (req, res) => {
   const base = req.app.get('basePath') || '';
@@ -51,6 +52,7 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       ORDER BY in_evidenza DESC, created_at DESC LIMIT 5
     `);
     const avvisiDashboard = avvisiResult.rows.map(a => ({ ...a, created_at: a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' }));
+    const avvisiNonLetti = await contaAvvisiNonLetti(req.session.user.id);
     res.render('dashboard', {
       title: 'Dashboard - Portal-01',
       activePage: 'dashboard',
@@ -58,7 +60,8 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       summary: { year, ...summary },
       ultimeRichieste: ultimeRichieste.rows.map(r => ({ ...r, data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine) })),
       notifiche,
-      avvisiDashboard: avvisiDashboard
+      avvisiDashboard: avvisiDashboard,
+      avvisiNonLetti
     });
   } catch (err) {
     console.error(err);

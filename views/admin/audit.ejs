@@ -29,7 +29,7 @@
     <div class="table-wrap">
       <table class="table">
         <thead>
-          <tr><th>Data/Ora</th><th>Utente</th><th>Azione</th><th>Dettaglio</th><th>IP</th></tr>
+          <tr><th>Data/Ora</th><th>Utente</th><th>Azione</th><th>Dettaglio</th></tr>
         </thead>
         <tbody>
           <% logs.forEach(function(l) { %>
@@ -38,7 +38,6 @@
             <td><%= l.full_name || l.username || '—' %></td>
             <td><span class="badge badge--avviso badge--info"><%= l.azione %></span></td>
             <td class="text-muted" style="font-size:.85rem;max-width:300px;overflow:hidden;text-overflow:ellipsis"><%= l.dettaglio || '' %></td>
-            <td class="text-muted" style="font-size:.85rem"><%= l.ip || '' %></td>
           </tr>
           <% }); %>
         </tbody>

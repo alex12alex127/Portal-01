@@ -1,37 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { 
-  NotificationService,
-  getNotificheUtente, 
-  contaNotificheNonLette, 
-  marcaNotificaComeLetta, 
+const { apiLimiter } = require('../middleware/security');
+const {
+  getNotificheUtente,
+  contaNotificheNonLette,
+  marcaNotificaComeLetta,
   marcaTutteComeLette,
-  eliminaNotifica
+  eliminaNotifica,
+  eliminaTutteNotifiche
 } = require('../lib/notifiche');
 
-/**
- * Routes per gestione notifiche utente
- * Pattern RESTful con error handling professionale
- */
-
-// Middleware per autenticazione su tutte le route
 router.use(requireAuth);
 
-/**
- * GET /notifiche - Pagina principale notifiche
- */
+// GET /notifiche - Pagina principale
 router.get('/', async (req, res) => {
   try {
     const userId = req.session.user.id;
-    
-    console.log(`[NotificationsRoute] Caricamento pagina notifiche per utente ${userId}`);
-    
     const [notifiche, nonLette] = await Promise.all([
-      getNotificheUtente(userId, 20),
+      getNotificheUtente(userId, 50),
       contaNotificheNonLette(userId)
     ]);
-    
     res.render('notifiche/index', {
       title: 'Notifiche - Portal-01',
       activePage: 'notifiche',
@@ -39,202 +28,81 @@ router.get('/', async (req, res) => {
       notifiche,
       nonLette
     });
-  } catch (error) {
-    console.error('[NotificationsRoute] Errore caricamento pagina notifiche:', error);
-    res.status(500).render('error', { 
-      title: 'Errore', 
-      message: 'Impossibile caricare le notifiche' 
-    });
+  } catch (err) {
+    console.error('[notifiche]', err);
+    res.status(500).send('Errore del server');
   }
 });
 
-/**
- * GET /notifiche/api - API endpoint per caricamento notifiche (AJAX)
- */
+// GET /notifiche/api - JSON per AJAX
 router.get('/api', async (req, res) => {
   try {
     const userId = req.session.user.id;
-    
-    console.log(`[NotificationsRoute] API: Caricamento notifiche per utente ${userId}`);
-    
     const [notifiche, nonLette] = await Promise.all([
-      getNotificheUtente(userId, 20),
+      getNotificheUtente(userId, 50),
       contaNotificheNonLette(userId)
     ]);
-    
-    res.json({
-      success: true,
-      data: {
-        notifiche,
-        nonLette,
-        totalCount: notifiche.length
-      },
-      message: 'Notifiche caricate con successo'
-    });
-  } catch (error) {
-    console.error('[NotificationsRoute] Errore API caricamento notifiche:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Errore caricamento notifiche',
-      message: error.message
-    });
+    res.json({ success: true, notifiche, nonLette });
+  } catch (err) {
+    console.error('[notifiche api]', err);
+    res.status(500).json({ success: false, error: 'Errore caricamento notifiche' });
   }
 });
 
-/**
- * GET /notifiche/count - Conteggio notifiche non lette
- */
+// GET /notifiche/count
 router.get('/count', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    const count = await contaNotificheNonLette(userId);
-    
-    res.json({
-      success: true,
-      data: { count },
-      message: 'Conteggio notifiche non lette'
-    });
-  } catch (error) {
-    console.error('[NotificationsRoute] Errore conteggio notifiche:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Errore conteggio notifiche',
-      message: error.message
-    });
+    const count = await contaNotificheNonLette(req.session.user.id);
+    res.json({ success: true, count });
+  } catch (err) {
+    console.error('[notifiche count]', err);
+    res.status(500).json({ success: false, error: 'Errore conteggio' });
   }
 });
 
-/**
- * POST /notifiche/:id/read - Marca notifica come letta
- */
-router.post('/:id/read', async (req, res) => {
+// POST /notifiche/:id/read - Marca singola come letta
+router.post('/:id/read', apiLimiter, async (req, res) => {
   try {
-    const notificationId = parseInt(req.params.id);
-    const userId = req.session.user.id;
-    
-    if (!notificationId || isNaN(notificationId)) {
-      return res.status(400).json({
-        success: false,
-        error: 'ID notifica non valido'
-      });
-    }
-    
-    console.log(`[NotificationsRoute] Marcatura notifica ${notificationId} come letta per utente ${userId}`);
-    
-    const notification = await marcaNotificaComeLetta(notificationId, userId);
-    const newUnreadCount = await contaNotificheNonLette(userId);
-    
-    res.json({
-      success: true,
-      data: {
-        notification,
-        nonLette: newUnreadCount
-      },
-      message: 'Notifica marcata come letta'
-    });
-  } catch (error) {
-    console.error('[NotificationsRoute] Errore marcatura notifica:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Errore marcatura notifica',
-      message: error.message
-    });
+    await marcaNotificaComeLetta(req.params.id, req.session.user.id);
+    const nonLette = await contaNotificheNonLette(req.session.user.id);
+    res.json({ success: true, nonLette });
+  } catch (err) {
+    console.error('[notifiche read]', err);
+    res.status(500).json({ success: false, error: 'Errore marcatura notifica' });
   }
 });
 
-/**
- * POST /notifiche/read-all - Marca tutte le notifiche come lette
- */
-router.post('/read-all', async (req, res) => {
+// POST /notifiche/read-all - Marca tutte come lette
+router.post('/read-all', apiLimiter, async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    
-    console.log(`[NotificationsRoute] Marcatura tutte le notifiche come lette per utente ${userId}`);
-    
-    const updatedCount = await marcaTutteComeLette(userId);
-    
-    res.json({
-      success: true,
-      data: {
-        updatedCount,
-        nonLette: 0
-      },
-      message: `${updatedCount} notifiche marcate come lette`
-    });
-  } catch (error) {
-    console.error('[NotificationsRoute] Errore marcatura tutte notifiche:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Errore marcatura notifiche',
-      message: error.message
-    });
+    const updatedCount = await marcaTutteComeLette(req.session.user.id);
+    res.json({ success: true, nonLette: 0, updatedCount });
+  } catch (err) {
+    console.error('[notifiche read-all]', err);
+    res.status(500).json({ success: false, error: 'Errore marcatura notifiche' });
   }
 });
 
-/**
- * DELETE /notifiche/:id - Elimina notifica specifica
- */
-router.delete('/:id', async (req, res) => {
+// DELETE /notifiche/delete-all - Elimina tutte (PRIMA di /:id per evitare conflitto)
+router.delete('/delete-all', apiLimiter, async (req, res) => {
   try {
-    const notificationId = parseInt(req.params.id);
-    const userId = req.session.user.id;
-    
-    if (!notificationId || isNaN(notificationId)) {
-      return res.status(400).json({
-        success: false,
-        error: 'ID notifica non valido'
-      });
-    }
-    
-    console.log(`[NotificationsRoute] Eliminazione notifica ${notificationId} per utente ${userId}`);
-    
-    const deletedNotification = await eliminaNotifica(notificationId, userId);
-    const newUnreadCount = await contaNotificheNonLette(userId);
-    
-    res.json({
-      success: true,
-      data: {
-        notification: deletedNotification,
-        nonLette: newUnreadCount
-      },
-      message: 'Notifica eliminata'
-    });
-  } catch (error) {
-    console.error('[NotificationsRoute] Errore eliminazione notifica:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Errore eliminazione notifica',
-      message: error.message
-    });
+    const deletedCount = await eliminaTutteNotifiche(req.session.user.id);
+    res.json({ success: true, nonLette: 0, deletedCount });
+  } catch (err) {
+    console.error('[notifiche delete-all]', err);
+    res.status(500).json({ success: false, error: 'Errore eliminazione notifiche' });
   }
 });
 
-/**
- * DELETE /notifiche/delete-all - Elimina tutte le notifiche
- */
-router.delete('/delete-all', async (req, res) => {
+// DELETE /notifiche/:id - Elimina singola
+router.delete('/:id', apiLimiter, async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    
-    console.log(`[NotificationsRoute] Eliminazione tutte le notifiche per utente ${userId}`);
-    
-    const deletedCount = await NotificationService.deleteAll(userId);
-    
-    res.json({
-      success: true,
-      data: {
-        deletedCount,
-        nonLette: 0
-      },
-      message: `${deletedCount} notifiche eliminate`
-    });
-  } catch (error) {
-    console.error('[NotificationsRoute] Errore eliminazione tutte notifiche:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Errore eliminazione notifiche',
-      message: error.message
-    });
+    await eliminaNotifica(req.params.id, req.session.user.id);
+    const nonLette = await contaNotificheNonLette(req.session.user.id);
+    res.json({ success: true, nonLette });
+  } catch (err) {
+    console.error('[notifiche delete]', err);
+    res.status(500).json({ success: false, error: 'Errore eliminazione notifica' });
   }
 });
 

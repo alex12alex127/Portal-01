@@ -1,745 +1,203 @@
-<%
-  title = 'Gestione Avvisi - Portal-01'
-  activePage = 'adminAvvisi'
-  breadcrumbs = [
-    { label: 'Dashboard', url: '/dashboard' }, 
-    { label: 'Amministrazione', url: '/admin' }, 
-    { label: 'Gestione Avvisi' }
-  ]
-%>
+<h1 class="page-title">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5v-7.5H8.25v7.5zm0 0H4.5v-7.5H8.25v7.5z" /></svg>
+  Gestione Avvisi
+</h1>
 
-<div class="admin-announcements-page">
-  <div class="page-header">
-    <h1>
-      <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25h5.25m1.5 12h8.25M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125h13.5c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375zM16.5 12.75h-9m0 0h3.75m-9.75 0h9.75m-9.75 0l-3 9m9.75-3l-3 9m0-9.75h-9" />
-      </svg>
-      Gestione Avvisi
-    </h1>
-    <div class="page-actions">
-      <button type="button" class="btn btn-primary btn-create">
-        <svg class="icon" style="width: 16px; height: 16px; margin-right: 0.5rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        Crea avviso
-      </button>
-      <button type="button" class="btn btn-secondary btn-refresh">
-        <svg class="icon" style="width: 16px; height: 16px; margin-right: 0.5rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.992v4.992" />
-        </svg>
-        Aggiorna
-      </button>
-    </div>
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+    <h2 style="margin:0">Avvisi (<%= avvisi.length %>)</h2>
+    <button type="button" class="btn btn-sm" id="btnNewAvviso">+ Nuovo avviso</button>
   </div>
-  
-  <p class="page-intro">Crea e gestisci gli avvisi visibili ai dipendenti.</p>
 
-  <div class="admin-content">
-    <div class="card">
-      <div class="card-header">
-        <h2>Avvisi (<span id="announcementsCount">0</span>)</h2>
-      </div>
-      
-      <div id="announcementsContainer">
-        <div class="loading">
-          <div class="loading-spinner"></div>
-          Caricamento avvisi...
-        </div>
-      </div>
+  <% if (avvisi.length === 0) { %>
+    <p class="empty">Nessun avviso. Crea il primo avviso per comunicare con i dipendenti.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Titolo</th><th>Tipo</th><th>Evidenza</th><th>Visibilità</th><th>Data</th><th>Azioni</th></tr>
+        </thead>
+        <tbody>
+          <% avvisi.forEach(function(a) { %>
+          <tr data-id="<%= a.id %>">
+            <td>
+              <strong><%= a.titolo %></strong>
+              <% if (a.contenuto && a.contenuto.length > 60) { %><br><span class="text-muted" style="font-size:.85rem"><%= a.contenuto.substring(0, 60) %>...</span><% } %>
+            </td>
+            <td><span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo === 'success' ? 'Successo' : a.tipo %></span></td>
+            <td><%= a.in_evidenza ? 'Sì' : 'No' %></td>
+            <td class="text-muted" style="font-size:.85rem">
+              <% if (!a.visibile_da && !a.visibile_fino) { %>Sempre
+              <% } else { %><%= a.visibile_da ? 'Dal ' + new Date(a.visibile_da).toLocaleDateString('it-IT') : '' %> <%= a.visibile_fino ? 'al ' + new Date(a.visibile_fino).toLocaleDateString('it-IT') : '' %>
+              <% } %>
+            </td>
+            <td class="text-muted" style="font-size:.85rem"><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' %></td>
+            <td>
+              <button type="button" class="btn btn-sm btn-edit" data-id="<%= a.id %>">Modifica</button>
+              <button type="button" class="btn btn-sm btn--danger btn-del" data-id="<%= a.id %>" data-titolo="<%= a.titolo %>">Elimina</button>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
     </div>
-  </div>
+  <% } %>
 </div>
 
-<!-- Modale per crea/modifica avviso -->
-<div id="announcementModal" class="modal" style="display: none;">
-  <div class="modal-overlay"></div>
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 id="modalTitle">Nuovo Avviso</h2>
-      <button type="button" class="modal-close" id="modalClose">
-        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+<!-- Modale -->
+<div id="avvisoModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.5);backdrop-filter:blur(2px)">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:var(--radius-lg,12px);width:90%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.15)">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.25rem;border-bottom:1px solid var(--border)">
+      <h3 id="modalTitle" style="margin:0">Nuovo Avviso</h3>
+      <button type="button" id="modalClose" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted);padding:0;line-height:1">&times;</button>
     </div>
-    
-    <form id="announcementForm" class="modal-body">
-      <div class="form-group">
-        <label for="fTitolo" class="form-label">Titolo *</label>
-        <input type="text" id="fTitolo" name="titolo" class="form-input" required maxlength="255">
+    <form id="avvisoForm" style="padding:1.25rem">
+      <input type="hidden" id="fId" value="">
+      <div style="margin-bottom:1rem">
+        <label for="fTitolo">Titolo *</label>
+        <input type="text" id="fTitolo" name="titolo" required maxlength="255" style="width:100%">
       </div>
-      
-      <div class="form-group">
-        <label for="fContenuto" class="form-label">Contenuto *</label>
-        <textarea id="fContenuto" name="contenuto" class="form-textarea" rows="4" required></textarea>
+      <div style="margin-bottom:1rem">
+        <label for="fContenuto">Contenuto *</label>
+        <textarea id="fContenuto" name="contenuto" rows="4" required style="width:100%"></textarea>
       </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="fTipo" class="form-label">Tipo</label>
-          <select id="fTipo" name="tipo" class="form-select">
-            <option value="info">Informazione</option>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div>
+          <label for="fTipo">Tipo</label>
+          <select id="fTipo" name="tipo" style="width:100%">
+            <option value="info">Info</option>
             <option value="warning">Attenzione</option>
             <option value="urgent">Urgente</option>
             <option value="success">Successo</option>
           </select>
         </div>
-        
-        <div class="form-group">
-          <label class="form-checkbox">
+        <div style="display:flex;align-items:flex-end">
+          <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
             <input type="checkbox" id="fEvidenza" name="in_evidenza">
             <span>In evidenza</span>
           </label>
         </div>
       </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="fVisibileDa" class="form-label">Visibile dal</label>
-          <input type="date" id="fVisibileDa" name="visibile_da" class="form-input">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div>
+          <label for="fVisibileDa">Visibile dal</label>
+          <input type="date" id="fVisibileDa" name="visibile_da" style="width:100%">
         </div>
-        
-        <div class="form-group">
-          <label for="fVisibileFino" class="form-label">Visibile fino al</label>
-          <input type="date" id="fVisibileFino" name="visibile_fino" class="form-input">
+        <div>
+          <label for="fVisibileFino">Visibile fino al</label>
+          <input type="date" id="fVisibileFino" name="visibile_fino" style="width:100%">
         </div>
       </div>
-      
-      <p class="form-help">Se lasci vuoto dal/al, l'avviso è sempre visibile.</p>
+      <p class="text-muted" style="font-size:.85rem;margin-bottom:1rem">Se lasci vuoto le date, l'avviso è sempre visibile.</p>
+      <div style="display:flex;justify-content:flex-end;gap:.5rem;padding-top:1rem;border-top:1px solid var(--border)">
+        <button type="button" class="btn btn-sm" id="modalCancel">Annulla</button>
+        <button type="submit" class="btn btn-sm btn--primary" id="modalSave">Salva</button>
+      </div>
     </form>
-    
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" id="modalCancel">Annulla</button>
-      <button type="submit" class="btn btn-primary" id="modalSave">Salva</button>
-    </div>
   </div>
 </div>
 
-<style>
-.admin-announcements-page {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.page-header h1 {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0;
-  color: var(--text);
-  font-size: 2rem;
-  font-weight: 700;
-}
-
-.page-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.page-intro {
-  color: var(--muted);
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
-}
-
-.admin-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.card-header h2 {
-  margin: 0;
-  color: var(--text);
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: var(--muted);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border);
-  border-top: 3px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Modal styles */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-}
-
-.modal-content {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 1001;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.modal-header h2 {
-  margin: 0;
-  color: var(--text);
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  padding: 0.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  color: var(--muted);
-  transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-  background: var(--border);
-  color: var(--text);
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  border-top: 1px solid var(--border);
-}
-
-/* Form styles */
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.form-input,
-.form-textarea,
-.form-select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 1rem;
-  transition: border-color 0.2s ease;
-}
-
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.form-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  color: var(--text);
-}
-
-.form-checkbox input[type="checkbox"] {
-  width: auto;
-  margin: 0;
-}
-
-.form-help {
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin-top: 0.5rem;
-}
-
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .modal-content {
-    width: 95%;
-    margin: 1rem;
-  }
-}
-</style>
-
 <script>
-/**
- * Sistema gestione avvisi admin professionale
- */
+(function(){
+  var base = window.APP_BASE || '';
+  var modal = document.getElementById('avvisoModal');
+  var form = document.getElementById('avvisoForm');
 
-class AdminAnnouncementManager {
-  constructor() {
-    this.announcements = [];
-    this.basePath = window.APP_BASE || '';
-    this.editingId = null;
-    this.init();
+  function showMsg(txt, ok) {
+    var el = document.createElement('div');
+    el.textContent = txt;
+    el.style.cssText = 'position:fixed;top:1rem;right:1rem;padding:.75rem 1.25rem;border-radius:var(--radius);color:#fff;font-weight:500;z-index:9999;background:' + (ok ? 'var(--success,#22c55e)' : 'var(--danger,#ef4444)');
+    document.body.appendChild(el);
+    setTimeout(function(){ el.remove(); }, 3000);
   }
 
-  init() {
-    this.setupEventListeners();
-    this.loadAnnouncements();
+  function openModal(title) {
+    document.getElementById('modalTitle').textContent = title || 'Nuovo Avviso';
+    modal.style.display = 'block';
   }
 
-  setupEventListeners() {
-    // Event delegation per tutti i click
-    document.addEventListener('click', (e) => {
-      this.handleClick(e);
-    });
-
-    // Submit form
-    const form = document.getElementById('announcementForm');
-    if (form) {
-      form.addEventListener('submit', (e) => {
-        this.handleSubmit(e);
-      });
-    }
-  }
-
-  handleClick(e) {
-    // Click su "Crea avviso"
-    const createBtn = e.target.closest('.btn-create');
-    if (createBtn) {
-      console.log('[AdminAnnouncementManager] Click su crea avviso rilevato');
-      this.openModal();
-    }
-    
-    // Click su "Aggiorna"
-    const refreshBtn = e.target.closest('.btn-refresh');
-    if (refreshBtn) {
-      this.loadAnnouncements();
-    }
-    
-    // Click su "Modifica"
-    const editBtn = e.target.closest('.btn-edit');
-    if (editBtn) {
-      this.editAnnouncement(editBtn.dataset.id);
-    }
-    
-    // Click su "Elimina"
-    const deleteBtn = e.target.closest('.btn-delete');
-    if (deleteBtn) {
-      this.deleteAnnouncement(deleteBtn.dataset.id, deleteBtn.dataset.title);
-    }
-    
-    // Click su chiudi modale
-    const closeBtn = e.target.closest('.modal-close');
-    const cancelBtn = e.target.closest('#modalCancel');
-    const overlay = e.target.closest('.modal-overlay');
-    
-    if (closeBtn || cancelBtn || overlay) {
-      this.closeModal();
-    }
-  }
-
-  async loadAnnouncements() {
-    try {
-      this.setLoading(true);
-      
-      console.log('[AdminAnnouncementManager] Caricamento avvisi admin...');
-      const response = await fetch(`${this.basePath}/admin/avvisi/api`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      console.log('[AdminAnnouncementManager] Avvisi admin caricati:', result);
-      
-      if (result.success) {
-        this.announcements = result.data.avvisi || [];
-        this.renderAnnouncements();
-        this.updateAnnouncementsCount(this.announcements.length);
-      } else {
-        throw new Error(result.message || 'Errore caricamento');
-      }
-    } catch (error) {
-      console.error('[AdminAnnouncementManager] Errore caricamento:', error);
-      this.showError('Impossibile caricare gli avvisi', error);
-    } finally {
-      this.setLoading(false);
-    }
-  }
-
-  renderAnnouncements() {
-    const container = document.getElementById('announcementsContainer');
-    
-    if (!this.announcements || this.announcements.length === 0) {
-      container.innerHTML = `
-        <div style="text-align:center;padding:3rem 1rem;">
-          <p style="font-size:2rem;">📢</p>
-          <h3 style="margin:1rem 0;color:var(--text);">Nessun avviso</h3>
-          <p style="color:var(--muted);">Crea il primo avviso per comunicare con i dipendenti.</p>
-          <button type="button" class="btn btn-primary" onclick="window.adminAnnouncementManager.openModal()">
-            Crea avviso
-          </button>
-        </div>
-      `;
-      return;
-    }
-    
-    const oggi = new Date().toISOString().split('T')[0];
-    
-    container.innerHTML = `
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;">
-          <thead>
-            <tr>
-              <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Titolo</th>
-              <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Tipo</th>
-              <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Periodo</th>
-              <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Stato</th>
-              <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Azioni</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${this.announcements.map(a => {
-              const da = a.visibile_da ? String(a.visibile_da).slice(0, 10) : '';
-              const fino = a.visibile_fino ? String(a.visibile_fino).slice(0, 10) : '';
-              let stato = 'attivo';
-              if (da && da > oggi) stato = 'programmato';
-              if (fino && fino < oggi) stato = 'scaduto';
-              const periodoLabel = (!da && !fino) ? 'Sempre' : (da ? 'Dal ' + da : '') + (fino ? ' al ' + fino : '');
-              
-              return `
-                <tr>
-                  <td style="padding:.75rem;border-bottom:1px solid var(--border);">
-                    <strong>${this.escapeHtml(a.titolo)}</strong>
-                    ${a.in_evidenza ? ' <span title="In evidenza">📌</span>' : ''}
-                    ${a.contenuto && a.contenuto.length > 80 ? 
-                      `<br><small style="color:var(--muted);">${this.escapeHtml(a.contenuto.substring(0, 80))}...</small>` : ''}
-                  </td>
-                  <td style="padding:.75rem;border-bottom:1px solid var(--border);">
-                    <span style="padding:2px 10px;border-radius:12px;font-size:.8rem;border:1px solid var(--${a.tipo};color:var(--${a.tipo});">
-                      ${this.getTypeLabel(a.tipo)}
-                    </span>
-                  </td>
-                  <td style="padding:.75rem;border-bottom:1px solid var(--border);">
-                    <span style="color:var(--muted);">${periodoLabel}</span>
-                  </td>
-                  <td style="padding:.75rem;border-bottom:1px solid var(--border);">
-                    <span style="padding:2px 10px;border-radius:12px;font-size:.8rem;border:1px solid var(--${stato};color:var(--${stato});">
-                      ${stato.charAt(0).toUpperCase() + stato.slice(1)}
-                    </span>
-                  </td>
-                  <td style="padding:.75rem;border-bottom:1px solid var(--border);">
-                    <button type="button" class="btn btn-sm btn-edit" data-id="${a.id}">Modifica</button>
-                    <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="${a.id}" data-title="${this.escapeHtml(a.titolo)}">Elimina</button>
-                  </td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  async editAnnouncement(id) {
-    try {
-      console.log(`[AdminAnnouncementManager] Caricamento avviso ${id} per modifica`);
-      
-      const response = await fetch(`${this.basePath}/admin/avvisi/${id}`);
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.message || 'Errore caricamento avviso');
-      }
-      
-      const a = result.data.avviso;
-      this.editingId = id;
-      
-      // Popola form
-      document.getElementById('fTitolo').value = a.titolo;
-      document.getElementById('fContenuto').value = a.contenuto;
-      document.getElementById('fTipo').value = a.tipo || 'info';
-      document.getElementById('fEvidenza').checked = !!a.in_evidenza;
-      document.getElementById('fVisibileDa').value = a.visibile_da || '';
-      document.getElementById('fVisibileFino').value = a.visibile_fino || '';
-      
-      document.getElementById('modalTitle').textContent = 'Modifica Avviso';
-      this.openModal();
-    } catch (error) {
-      console.error('[AdminAnnouncementManager] Errore caricamento avviso:', error);
-      this.showToast('Errore caricamento avviso', 'error');
-    }
-  }
-
-  async deleteAnnouncement(id, title) {
-    if (!confirm(`Eliminare "${title}"?`)) return;
-    
-    try {
-      console.log(`[AdminAnnouncementManager] Eliminazione avviso ${id}`);
-      
-      const response = await fetch(`${this.basePath}/admin/avvisi/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        this.showToast('Avviso eliminato', 'success');
-        this.loadAnnouncements();
-      } else {
-        throw new Error(result.message || 'Errore eliminazione');
-      }
-    } catch (error) {
-      console.error('[AdminAnnouncementManager] Errore eliminazione:', error);
-      this.showToast('Errore eliminazione avviso', 'error');
-    }
-  }
-
-  openModal() {
-    console.log('[AdminAnnouncementManager] Apertura modale...');
-    const modal = document.getElementById('announcementModal');
-    console.log('[AdminAnnouncementManager] Modal trovato:', !!modal);
-    
-    if (modal) {
-      modal.style.display = 'flex';
-      console.log('[AdminAnnouncementManager] Modal visualizzata');
-      
-      if (!this.editingId) {
-        // Reset form per nuovo avviso
-        document.getElementById('announcementForm').reset();
-        document.getElementById('modalTitle').textContent = 'Nuovo Avviso';
-        this.editingId = null;
-        console.log('[AdminAnnouncementManager] Form resettato per nuovo avviso');
-      }
-    } else {
-      console.error('[AdminAnnouncementManager] Modal non trovata!');
-    }
-  }
-
-  closeModal() {
-    const modal = document.getElementById('announcementModal');
+  function closeModal() {
     modal.style.display = 'none';
-    document.getElementById('announcementForm').reset();
-    this.editingId = null;
+    form.reset();
+    document.getElementById('fId').value = '';
   }
 
-  async handleSubmit(e) {
+  // Nuovo avviso
+  document.getElementById('btnNewAvviso').addEventListener('click', function() {
+    form.reset();
+    document.getElementById('fId').value = '';
+    openModal('Nuovo Avviso');
+  });
+
+  // Chiudi modale
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+
+  // Submit form
+  form.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const data = {
-      titolo: formData.get('titolo'),
-      contenuto: formData.get('contenuto'),
-      tipo: formData.get('tipo'),
-      in_evidenza: formData.get('in_evidenza') ? '1' : '',
-      visibile_da: formData.get('visibile_da') || '',
-      visibile_fino: formData.get('visibile_fino') || ''
+    var id = document.getElementById('fId').value;
+    var body = {
+      titolo: document.getElementById('fTitolo').value,
+      contenuto: document.getElementById('fContenuto').value,
+      tipo: document.getElementById('fTipo').value,
+      in_evidenza: document.getElementById('fEvidenza').checked ? '1' : '',
+      visibile_da: document.getElementById('fVisibileDa').value || '',
+      visibile_fino: document.getElementById('fVisibileFino').value || ''
     };
-    
     try {
-      const url = this.editingId 
-        ? `${this.basePath}/admin/avvisi/${this.editingId}`
-        : `${this.basePath}/admin/avvisi`;
-      
-      const method = this.editingId ? 'PUT' : 'POST';
-      
-      console.log(`[AdminAnnouncementManager] ${method === 'PUT' ? 'Aggiornamento' : 'Creazione'} avviso`);
-      
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        this.showToast(result.message || 'Avviso salvato', 'success');
-        this.closeModal();
-        this.loadAnnouncements();
-      } else {
-        throw new Error(result.message || 'Errore salvataggio');
-      }
-    } catch (error) {
-      console.error('[AdminAnnouncementManager] Errore salvataggio:', error);
-      this.showToast('Errore salvataggio avviso', 'error');
+      var url = id ? base + '/admin/avvisi/' + id : base + '/admin/avvisi';
+      var method = id ? 'PUT' : 'POST';
+      var r = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      var data = await r.json();
+      if (data.success) {
+        showMsg(id ? 'Avviso aggiornato' : 'Avviso creato', true);
+        closeModal();
+        location.reload();
+      } else { showMsg(data.error || 'Errore', false); }
+    } catch(err) { showMsg('Errore di rete', false); }
+  });
+
+  // Event delegation per modifica e elimina
+  document.addEventListener('click', async function(e) {
+    // Modifica
+    var editBtn = e.target.closest('.btn-edit');
+    if (editBtn) {
+      var id = editBtn.dataset.id;
+      try {
+        var r = await fetch(base + '/admin/avvisi/' + id);
+        var data = await r.json();
+        if (data.success && data.avviso) {
+          var a = data.avviso;
+          document.getElementById('fId').value = a.id;
+          document.getElementById('fTitolo').value = a.titolo;
+          document.getElementById('fContenuto').value = a.contenuto;
+          document.getElementById('fTipo').value = a.tipo || 'info';
+          document.getElementById('fEvidenza').checked = !!a.in_evidenza;
+          document.getElementById('fVisibileDa').value = a.visibile_da || '';
+          document.getElementById('fVisibileFino').value = a.visibile_fino || '';
+          openModal('Modifica Avviso');
+        } else { showMsg(data.error || 'Errore caricamento', false); }
+      } catch(err) { showMsg('Errore di rete', false); }
     }
-  }
 
-  updateAnnouncementsCount(count) {
-    const countElement = document.getElementById('announcementsCount');
-    if (countElement) {
-      countElement.textContent = count;
+    // Elimina
+    var delBtn = e.target.closest('.btn-del');
+    if (delBtn) {
+      var id = delBtn.dataset.id;
+      var titolo = delBtn.dataset.titolo;
+      if (!confirm('Eliminare "' + titolo + '"?')) return;
+      try {
+        var r = await fetch(base + '/admin/avvisi/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+        var data = await r.json();
+        if (data.success) {
+          showMsg('Avviso eliminato', true);
+          var row = document.querySelector('tr[data-id="' + id + '"]');
+          if (row) row.remove();
+        } else { showMsg(data.error || 'Errore', false); }
+      } catch(err) { showMsg('Errore di rete', false); }
     }
-  }
-
-  setLoading(loading) {
-    const container = document.getElementById('announcementsContainer');
-    if (loading) {
-      container.innerHTML = `
-        <div class="loading">
-          <div class="loading-spinner"></div>
-          Caricamento avvisi...
-        </div>
-      `;
-    }
-  }
-
-  showError(message, error) {
-    const container = document.getElementById('announcementsContainer');
-    container.innerHTML = `
-      <div style="text-align:center;padding:3rem 1rem;">
-        <p style="font-size:2rem;">❌</p>
-        <h3 style="margin:1rem 0;color:var(--text);">Errore</h3>
-        <p style="color:var(--muted);margin-bottom:1rem;">${message}</p>
-        <button class="btn btn-primary" onclick="location.reload()">Ricarica pagina</button>
-      </div>
-    `;
-  }
-
-  showToast(message, type = 'info') {
-    if (typeof window.showToast === 'function') {
-      window.showToast(message, type);
-      return;
-    }
-    
-    const toast = document.createElement('div');
-    toast.className = `toast toast--${type}`;
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 20px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 500;
-      z-index: 1000;
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--primary)'};
-    `;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.style.transform = 'translateX(0)';
-    }, 100);
-    
-    setTimeout(() => {
-      toast.style.transform = 'translateX(100%)';
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    }, 3000);
-  }
-
-  // Funzioni helper
-  getTypeLabel(type) {
-    const labels = {
-      'info': 'Info',
-      'warning': 'Attenzione',
-      'urgent': 'Urgente',
-      'success': 'Successo'
-    };
-    return labels[type] || type;
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text || '';
-    return div.innerHTML;
-  }
-}
-
-// Inizializzazione quando il DOM è pronto
-document.addEventListener('DOMContentLoaded', () => {
-  window.adminAnnouncementManager = new AdminAnnouncementManager();
-});
+  });
+})();
 </script>

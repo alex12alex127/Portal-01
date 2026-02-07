@@ -1,721 +1,161 @@
-<%
-  title = 'Notifiche - Portal-01'
-  activePage = 'notifiche'
-  breadcrumbs = [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Notifiche' }]
-%>
+<h1 class="page-title">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+  Notifiche
+</h1>
 
-<div class="notifications-page">
-  <div class="page-header">
-    <h1>
-      <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-      </svg>
-      Notifiche
-    </h1>
-    <div class="page-actions">
-      <button class="btn btn-secondary btn-mark-all-read" style="display: none;">
-        Marca tutte come lette (0)
-      </button>
-      <button class="btn btn-danger btn-delete-all" style="display: none;" title="Elimina tutte le notifiche">
-        🗑️ Elimina tutte
-      </button>
-      <button class="btn btn-primary btn-refresh">
-        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.992v4.992" />
-        </svg>
-        Aggiorna
-      </button>
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+    <h2 style="margin:0">
+      <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+      Le tue notifiche
+      <% if (nonLette > 0) { %><span class="badge badge--alert" style="margin-left:.5rem"><%= nonLette %></span><% } %>
+    </h2>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <% if (nonLette > 0) { %>
+        <button type="button" class="btn btn-sm" id="btnMarkAllRead">Marca tutte come lette (<%= nonLette %>)</button>
+      <% } %>
+      <% if (notifiche.length > 0) { %>
+        <button type="button" class="btn btn-sm btn--danger" id="btnDeleteAll">Elimina tutte</button>
+      <% } %>
     </div>
   </div>
-  
-  <p class="page-intro">Qui trovi tutte le tue notifiche. Clicca su una notifica per maggiori dettagli.</p>
 
-  <div class="notifications-list" id="notificationsList">
-    <div class="loading">
-      <div class="loading-spinner"></div>
-      Caricamento notifiche...
-    </div>
-  </div>
+  <% if (notifiche.length === 0) { %>
+    <p class="empty">
+      <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+      Nessuna notifica.
+    </p>
+  <% } else { %>
+    <ul class="notifiche-list" id="notificheList">
+      <% notifiche.forEach(function(n) { %>
+      <li class="notifiche-item <%= n.letta ? 'letta' : 'non-letta' %>" data-id="<%= n.id %>">
+        <div class="notifiche-item__body">
+          <strong class="notifiche-item__title"><%= n.titolo || 'Notifica' %></strong>
+          <% if (n.messaggio) { %><p class="notifiche-item__msg"><%= n.messaggio %></p><% } %>
+          <span class="notifiche-item__date text-muted"><%= n.created_at ? new Date(n.created_at).toLocaleString('it-IT') : '' %></span>
+        </div>
+        <div class="notifiche-item__actions">
+          <% if (!n.letta) { %>
+            <button type="button" class="btn btn-sm btn-mark-read" data-id="<%= n.id %>" title="Marca come letta">&#x2713;</button>
+          <% } %>
+          <button type="button" class="btn btn-sm btn--danger btn-delete" data-id="<%= n.id %>" title="Elimina">&times;</button>
+        </div>
+      </li>
+      <% }); %>
+    </ul>
+  <% } %>
 </div>
 
 <style>
-.notifications-page {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.page-header h1 {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0;
-  color: var(--text);
-  font-size: 2rem;
-  font-weight: 700;
-}
-
-.page-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.page-intro {
-  color: var(--muted);
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-.notifications-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.notification-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.notification-item:hover {
-  border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transform: translateY(-2px);
-}
-
-.notification-item.unread {
-  border-left: 4px solid var(--primary);
-  background: linear-gradient(135deg, var(--surface) 0%, rgba(var(--primary-rgb, 59, 130, 246), 0.05) 100%);
-}
-
-.notification-item.unread::before {
-  content: '';
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 8px;
-  height: 8px;
-  background: var(--primary);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-.notification-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.notification-icon.info { 
-  background: linear-gradient(135deg, var(--primary-light), var(--primary)); 
-  color: white; 
-}
-
-.notification-icon.success { 
-  background: linear-gradient(135deg, var(--success-light), var(--success)); 
-  color: white; 
-}
-
-.notification-icon.warning { 
-  background: linear-gradient(135deg, var(--warn-light), var(--warn)); 
-  color: white; 
-}
-
-.notification-icon.error { 
-  background: linear-gradient(135deg, var(--danger-light), var(--danger)); 
-  color: white; 
-}
-
-.notification-icon.ferie_create { 
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
-  color: white; 
-}
-
-.notification-icon.ferie_approvata { 
-  background: linear-gradient(135deg, #10b981, #059669); 
-  color: white; 
-}
-
-.notification-icon.ferie_rifiutata { 
-  background: linear-gradient(135deg, #ef4444, #dc2626); 
-  color: white; 
-}
-
-.notification-icon.ferie_approve { 
-  background: linear-gradient(135deg, #f59e0b, #d97706); 
-  color: white; 
-}
-
-.notification-icon.system { 
-  background: linear-gradient(135deg, #6b7280, #4b5563); 
-  color: white; 
-}
-
-.notification-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.notification-title {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--text);
-  font-size: 1.1rem;
-  line-height: 1.3;
-}
-
-.notification-message {
-  color: var(--muted);
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin-bottom: 0.75rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.notification-time {
-  font-size: 0.85rem;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.notification-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  color: var(--muted);
-  font-size: 1.1rem;
-}
-
-.btn-icon:hover {
-  background: var(--border);
-  color: var(--text);
-}
-
-.btn-icon.delete:hover {
-  background: var(--danger-light);
-  color: var(--danger);
-}
-
-.empty-notifications {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--muted);
-}
-
-.empty-notifications .icon {
-  font-size: 4rem;
-  margin-bottom: 1.5rem;
-  opacity: 0.5;
-}
-
-.empty-notifications h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: var(--text);
-}
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: var(--muted);
-  font-size: 1.1rem;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border);
-  border-top: 3px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-}
-
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .page-header h1 {
-    font-size: 1.5rem;
-  }
-  
-  .notification-item {
-    padding: 1rem;
-  }
-  
-  .notification-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-  }
-}
+.notifiche-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem }
+.notifiche-item { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; padding:1rem; border:1px solid var(--border); border-radius:var(--radius); transition:opacity .3s }
+.notifiche-item.non-letta { border-left:4px solid var(--primary); background:rgba(var(--primary-rgb,59,130,246),.04) }
+.notifiche-item.letta { opacity:.7 }
+.notifiche-item__body { flex:1; min-width:0 }
+.notifiche-item__title { display:block; margin-bottom:.25rem }
+.notifiche-item__msg { margin:.25rem 0; font-size:.95rem; color:var(--muted); white-space:pre-wrap; word-break:break-word }
+.notifiche-item__date { font-size:.85rem }
+.notifiche-item__actions { display:flex; gap:.25rem; flex-shrink:0 }
+.notifiche-item.removing { opacity:0; transform:translateX(30px); transition:all .3s }
 </style>
 
 <script>
-/**
- * Sistema notifiche professionale
- * Pattern moderno con error handling robusto
- */
+(function(){
+  var base = window.APP_BASE || '';
 
-class NotificationManager {
-  constructor() {
-    this.notifications = [];
-    this.basePath = window.APP_BASE || '';
-    this.init();
+  function showMsg(txt, ok) {
+    var el = document.createElement('div');
+    el.className = 'toast-msg ' + (ok ? 'toast--ok' : 'toast--err');
+    el.textContent = txt;
+    el.style.cssText = 'position:fixed;top:1rem;right:1rem;padding:.75rem 1.25rem;border-radius:var(--radius);color:#fff;font-weight:500;z-index:9999;background:' + (ok ? 'var(--success,#22c55e)' : 'var(--danger,#ef4444)');
+    document.body.appendChild(el);
+    setTimeout(function(){ el.remove(); }, 3000);
   }
 
-  init() {
-    this.setupEventListeners();
-    this.loadNotifications();
+  async function api(url, method) {
+    var r = await fetch(base + url, { method: method || 'POST', headers: { 'Content-Type': 'application/json' } });
+    return await r.json();
   }
 
-  setupEventListeners() {
-    // Event delegation per tutti i click
-    document.addEventListener('click', (e) => {
-      this.handleClick(e);
-    });
-  }
+  document.addEventListener('click', async function(e) {
+    // Marca singola come letta
+    var markBtn = e.target.closest('.btn-mark-read');
+    if (markBtn) {
+      var id = markBtn.dataset.id;
+      try {
+        var res = await api('/notifiche/' + id + '/read', 'POST');
+        if (res.success) {
+          var item = document.querySelector('.notifiche-item[data-id="' + id + '"]');
+          if (item) { item.classList.remove('non-letta'); item.classList.add('letta'); }
+          markBtn.remove();
+          showMsg('Notifica marcata come letta', true);
+          updateBadge(res.nonLette);
+        } else { showMsg(res.error || 'Errore', false); }
+      } catch(err) { showMsg('Errore di rete', false); }
+    }
 
-  handleClick(e) {
-    // Click su una notifica per marcarla come letta
-    const notificationItem = e.target.closest('.notification-item');
-    if (notificationItem && !e.target.closest('.btn-icon')) {
-      const id = notificationItem.dataset.id;
-      if (id) {
-        this.markAsRead(parseInt(id));
-      }
+    // Elimina singola
+    var delBtn = e.target.closest('.btn-delete');
+    if (delBtn) {
+      var id = delBtn.dataset.id;
+      if (!confirm('Eliminare questa notifica?')) return;
+      try {
+        var res = await api('/notifiche/' + id, 'DELETE');
+        if (res.success) {
+          var item = document.querySelector('.notifiche-item[data-id="' + id + '"]');
+          if (item) { item.classList.add('removing'); setTimeout(function(){ item.remove(); checkEmpty(); }, 300); }
+          showMsg('Notifica eliminata', true);
+          updateBadge(res.nonLette);
+        } else { showMsg(res.error || 'Errore', false); }
+      } catch(err) { showMsg('Errore di rete', false); }
     }
-    
-    // Click sul pulsante elimina
-    const deleteBtn = e.target.closest('.btn-icon.delete');
-    if (deleteBtn) {
-      e.stopPropagation();
-      const id = deleteBtn.dataset.id;
-      if (id) {
-        this.deleteNotification(parseInt(id));
-      }
-    }
-    
-    // Click su "Marca tutte come lette"
-    const markAllBtn = e.target.closest('.btn-mark-all-read');
-    if (markAllBtn) {
-      this.markAllAsRead();
-    }
-    
-    // Click su "Elimina tutte"
-    const deleteAllBtn = e.target.closest('.btn-delete-all');
-    if (deleteAllBtn) {
-      this.deleteAllNotifications();
-    }
-    
-    // Click su "Aggiorna"
-    const refreshBtn = e.target.closest('.btn-refresh');
-    if (refreshBtn) {
-      this.loadNotifications();
-    }
-  }
+  });
 
-  async loadNotifications() {
+  // Marca tutte come lette
+  var btnAll = document.getElementById('btnMarkAllRead');
+  if (btnAll) btnAll.addEventListener('click', async function() {
     try {
-      this.setLoading(true);
-      
-      console.log('[NotificationManager] Caricamento notifiche...');
-      const response = await fetch(`${this.basePath}/notifiche/api`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      console.log('[NotificationManager] Notifiche caricate:', result);
-      
-      if (result.success) {
-        this.notifications = result.data.notifiche || [];
-        this.renderNotifications();
-        this.updateActionButtons(result.data.nonLette, this.notifications.length);
-        this.updateNotificationCount(result.data.nonLette);
-      } else {
-        throw new Error(result.message || 'Errore caricamento');
-      }
-    } catch (error) {
-      console.error('[NotificationManager] Errore caricamento:', error);
-      this.showError('Impossibile caricare le notifiche', error);
-    } finally {
-      this.setLoading(false);
-    }
-  }
+      var res = await api('/notifiche/read-all', 'POST');
+      if (res.success) {
+        document.querySelectorAll('.notifiche-item.non-letta').forEach(function(el) {
+          el.classList.remove('non-letta'); el.classList.add('letta');
+        });
+        document.querySelectorAll('.btn-mark-read').forEach(function(b) { b.remove(); });
+        btnAll.style.display = 'none';
+        showMsg('Tutte le notifiche marcate come lette (' + (res.updatedCount || 0) + ')', true);
+        updateBadge(0);
+      } else { showMsg(res.error || 'Errore', false); }
+    } catch(err) { showMsg('Errore di rete', false); }
+  });
 
-  renderNotifications() {
-    const container = document.getElementById('notificationsList');
-    
-    if (!this.notifications || this.notifications.length === 0) {
-      container.innerHTML = `
-        <div class="empty-notifications">
-          <div class="icon">📭</div>
-          <h3>Nessuna notifica</h3>
-          <p>Non hai ricevuto nessuna notifica.</p>
-        </div>
-      `;
-      return;
-    }
-    
-    container.innerHTML = this.notifications.map(notification => `
-      <div class="notification-item ${!notification.letta ? 'unread' : ''}" 
-           data-id="${notification.id}">
-        <div class="notification-icon ${this.getNotificationType(notification.tipo)}">
-          ${this.getNotificationIcon(notification.tipo)}
-        </div>
-        <div class="notification-content">
-          <div class="notification-title">${this.escapeHtml(notification.titolo)}</div>
-          ${notification.messaggio ? `<div class="notification-message">${this.escapeHtml(notification.messaggio)}</div>` : ''}
-          <div class="notification-time">
-            <svg class="icon" style="width: 16px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            ${this.formatTime(notification.created_at)}
-          </div>
-        </div>
-        <div class="notification-actions">
-          <button class="btn-icon delete" data-id="${notification.id}" title="Elimina">
-            🗑️
-          </button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  async markAsRead(id) {
+  // Elimina tutte
+  var btnDelAll = document.getElementById('btnDeleteAll');
+  if (btnDelAll) btnDelAll.addEventListener('click', async function() {
+    if (!confirm('Eliminare TUTTE le notifiche?')) return;
     try {
-      console.log(`[NotificationManager] Marcatura notifica ${id} come letta`);
-      
-      const response = await fetch(`${this.basePath}/notifiche/${id}/read`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      const result = await response.json();
-      console.log('[NotificationManager] Risposta marcatura:', result);
-      
-      if (result.success) {
-        // Aggiorna stato locale
-        const notification = this.notifications.find(n => n.id === id);
-        if (notification) {
-          notification.letta = true;
-          this.renderNotifications();
-          this.updateActionButtons(result.data.nonLette, this.notifications.length);
-          this.updateNotificationCount(result.data.nonLette);
-          this.showToast('Notifica marcata come letta', 'success');
-        }
-      } else {
-        throw new Error(result.message || 'Errore marcatura');
-      }
-    } catch (error) {
-      console.error('[NotificationManager] Errore marcatura:', error);
-      this.showToast('Errore durante la marcatura della notifica', 'error');
+      var res = await api('/notifiche/delete-all', 'DELETE');
+      if (res.success) {
+        var list = document.getElementById('notificheList');
+        if (list) list.innerHTML = '';
+        btnDelAll.style.display = 'none';
+        if (btnAll) btnAll.style.display = 'none';
+        checkEmpty();
+        showMsg('Tutte le notifiche eliminate (' + (res.deletedCount || 0) + ')', true);
+        updateBadge(0);
+      } else { showMsg(res.error || 'Errore', false); }
+    } catch(err) { showMsg('Errore di rete', false); }
+  });
+
+  function updateBadge(count) {
+    var b = document.querySelector('.sidebar .notification-badge');
+    if (b) { if (count > 0) { b.textContent = count; b.style.display = ''; } else { b.style.display = 'none'; } }
+  }
+
+  function checkEmpty() {
+    var list = document.getElementById('notificheList');
+    if (list && list.children.length === 0) {
+      list.outerHTML = '<p class="empty">Nessuna notifica.</p>';
     }
   }
-
-  async markAllAsRead() {
-    try {
-      console.log('[NotificationManager] Marcatura tutte le notifiche come lette');
-      
-      const response = await fetch(`${this.basePath}/notifiche/read-all`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      const result = await response.json();
-      console.log('[NotificationManager] Risposta marcatura tutte:', result);
-      
-      if (result.success) {
-        // Aggiorna stato locale
-        this.notifications.forEach(n => n.letta = true);
-        this.renderNotifications();
-        this.updateActionButtons(0, this.notifications.length);
-        this.updateNotificationCount(0);
-        
-        const message = result.data.updatedCount > 0 
-          ? `Tutte le notifiche (${result.data.updatedCount}) sono state marcate come lette`
-          : 'Nessuna notifica da marcare come letta';
-        
-        this.showToast(message, 'success');
-      } else {
-        throw new Error(result.message || 'Errore marcatura');
-      }
-    } catch (error) {
-      console.error('[NotificationManager] Errore marcatura tutte:', error);
-      this.showToast('Errore durante la marcatura delle notifiche', 'error');
-    }
-  }
-
-  async deleteNotification(id) {
-    if (!confirm('Sei sicuro di voler eliminare questa notifica?')) return;
-    
-    try {
-      console.log(`[NotificationManager] Eliminazione notifica ${id}`);
-      
-      const response = await fetch(`${this.basePath}/notifiche/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      const result = await response.json();
-      console.log('[NotificationManager] Risposta eliminazione:', result);
-      
-      if (result.success) {
-        // Rimuovi dalla lista locale
-        this.notifications = this.notifications.filter(n => n.id !== id);
-        this.renderNotifications();
-        this.updateActionButtons(result.data.nonLette, this.notifications.length);
-        this.updateNotificationCount(result.data.nonLette);
-        this.showToast('Notifica eliminata', 'success');
-      } else {
-        throw new Error(result.message || 'Errore eliminazione');
-      }
-    } catch (error) {
-      console.error('[NotificationManager] Errore eliminazione:', error);
-      this.showToast('Errore durante l\'eliminazione della notifica', 'error');
-    }
-  }
-
-  async deleteAllNotifications() {
-    if (!confirm('Sei sicuro di voler eliminare TUTTE le notifiche? Questa azione non è reversibile.')) return;
-    
-    try {
-      console.log('[NotificationManager] Eliminazione tutte le notifiche');
-      
-      const response = await fetch(`${this.basePath}/notifiche/delete-all`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      const result = await response.json();
-      console.log('[NotificationManager] Risposta eliminazione tutte:', result);
-      
-      if (result.success) {
-        // Svuota la lista locale
-        this.notifications = [];
-        this.renderNotifications();
-        this.updateActionButtons(0, 0);
-        this.updateNotificationCount(0);
-        
-        const message = result.data.deletedCount > 0
-          ? `Tutte le notifiche (${result.data.deletedCount}) sono state eliminate`
-          : 'Nessuna notifica da eliminare';
-        
-        this.showToast(message, 'success');
-      } else {
-        throw new Error(result.message || 'Errore eliminazione');
-      }
-    } catch (error) {
-      console.error('[NotificationManager] Errore eliminazione tutte:', error);
-      this.showToast('Errore durante l\'eliminazione delle notifiche', 'error');
-    }
-  }
-
-  updateActionButtons(unreadCount, totalCount) {
-    const markAllBtn = document.querySelector('.btn-mark-all-read');
-    const deleteAllBtn = document.querySelector('.btn-delete-all');
-    
-    if (markAllBtn) {
-      if (unreadCount > 0) {
-        markAllBtn.style.display = 'inline-flex';
-        markAllBtn.textContent = `Marca tutte come lette (${unreadCount})`;
-      } else {
-        markAllBtn.style.display = 'none';
-      }
-    }
-    
-    if (deleteAllBtn) {
-      if (totalCount > 0) {
-        deleteAllBtn.style.display = 'inline-flex';
-      } else {
-        deleteAllBtn.style.display = 'none';
-      }
-    }
-  }
-
-  updateNotificationCount(count) {
-    const badge = document.querySelector('.notification-badge');
-    if (badge) {
-      const newCount = count !== undefined ? count : this.notifications.filter(n => !n.letta).length;
-      if (newCount > 0) {
-        badge.textContent = newCount;
-        badge.style.display = 'inline-block';
-      } else {
-        badge.style.display = 'none';
-      }
-    }
-  }
-
-  setLoading(loading) {
-    const container = document.getElementById('notificationsList');
-    if (loading) {
-      container.innerHTML = `
-        <div class="loading">
-          <div class="loading-spinner"></div>
-          Caricamento notifiche...
-        </div>
-      `;
-    }
-  }
-
-  showError(message, error) {
-    const container = document.getElementById('notificationsList');
-    container.innerHTML = `
-      <div class="empty-notifications">
-        <div class="icon">❌</div>
-        <h3>Errore</h3>
-        <p>${message}</p>
-        <button class="btn btn-primary" onclick="location.reload()">Ricarica pagina</button>
-      </div>
-    `;
-  }
-
-  showToast(message, type = 'info') {
-    // Usa toast globale se disponibile, altrimenti crea uno semplice
-    if (typeof window.showToast === 'function') {
-      window.showToast(message, type);
-      return;
-    }
-    
-    const toast = document.createElement('div');
-    toast.className = `toast toast--${type}`;
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 20px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 500;
-      z-index: 1000;
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--primary)'};
-    `;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.style.transform = 'translateX(0)';
-    }, 100);
-    
-    setTimeout(() => {
-      toast.style.transform = 'translateX(100%)';
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    }, 3000);
-  }
-
-  // Funzioni helper
-  getNotificationType(type) {
-    const types = {
-      'ferie_create': 'ferie_create',
-      'ferie_approvata': 'ferie_approvata',
-      'ferie_rifiutata': 'ferie_rifiutata',
-      'ferie_approve': 'ferie_approve',
-      'system': 'system',
-      'info': 'info',
-      'success': 'success',
-      'warning': 'warning',
-      'error': 'error'
-    };
-    return types[type] || 'info';
-  }
-
-  getNotificationIcon(type) {
-    const icons = {
-      'ferie_create': '📝',
-      'ferie_approvata': '✅',
-      'ferie_rifiutata': '❌',
-      'ferie_approve': '⏳',
-      'system': '🔧',
-      'info': 'ℹ️',
-      'success': '✅',
-      'warning': '⚠️',
-      'error': '❌'
-    };
-    return icons[type] || '📢';
-  }
-
-  formatTime(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMins < 1) return 'Adesso';
-    if (diffMins < 60) return `${diffMins} min fa`;
-    if (diffHours < 24) return `${diffHours} ore fa`;
-    if (diffDays < 7) return `${diffDays} giorni fa`;
-    
-    return date.toLocaleDateString('it-IT');
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text || '';
-    return div.innerHTML;
-  }
-}
-
-// Inizializzazione quando il DOM è pronto
-document.addEventListener('DOMContentLoaded', () => {
-  window.notificationManager = new NotificationManager();
-});
+})();
 </script>

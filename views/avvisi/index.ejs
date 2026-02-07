@@ -1,551 +1,82 @@
-<%
-  title = 'Avvisi - Portal-01'
-  activePage = 'avvisi'
-  breadcrumbs = [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Avvisi' }]
-%>
+<h1 class="page-title">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+  Avvisi
+  <% if (nonLetti > 0) { %><span class="badge badge--alert" style="margin-left:.5rem"><%= nonLetti %></span><% } %>
+</h1>
 
-<div class="announcements-page">
-  <div class="page-header">
-    <h1>
-      <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-      </svg>
-      Avvisi
-    </h1>
-    <div class="page-actions">
-      <button class="btn btn-primary btn-refresh">
-        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.992v4.992" />
-        </svg>
-        Aggiorna
-      </button>
-    </div>
+<% if (avvisi.length === 0) { %>
+  <div class="card">
+    <p class="empty">
+      <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+      Nessun avviso disponibile al momento.
+    </p>
   </div>
-  
-  <p class="page-intro">Qui trovi tutti gli avvisi pubblicati. Clicca su un avviso per leggerlo e segnarlo come letto.</p>
-
-  <div class="announcements-list" id="announcementsList">
-    <div class="loading">
-      <div class="loading-spinner"></div>
-      Caricamento avvisi...
+<% } else { %>
+  <div class="avvisi-list">
+    <% avvisi.forEach(function(a) { %>
+    <div class="card avviso-card <%= a.in_evidenza ? 'avviso-card--evidenza' : '' %> <%= a.letto ? 'avviso-card--letto' : '' %>" data-id="<%= a.id %>">
+      <div class="avviso-card__header">
+        <span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo === 'success' ? 'Successo' : a.tipo %></span>
+        <% if (a.in_evidenza) { %><span class="badge badge--evidenza">In evidenza</span><% } %>
+        <span class="text-muted" style="margin-left:auto;font-size:.85rem"><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' %></span>
+      </div>
+      <h2 class="avviso-card__title"><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/avvisi/<%= a.id %>"><%= a.titolo %></a></h2>
+      <% if (a.contenuto) { %>
+        <p class="avviso-card__excerpt"><%= a.contenuto.length > 200 ? a.contenuto.substring(0, 200) + '...' : a.contenuto %></p>
+      <% } %>
+      <div class="avviso-card__footer">
+        <% if (a.autore_nome) { %><span class="text-muted"><%= a.autore_nome %></span><% } %>
+        <% if (!a.letto) { %>
+          <button type="button" class="btn btn-sm btn-mark-read" data-id="<%= a.id %>">Segna come letto</button>
+        <% } else { %>
+          <span class="text-muted" style="font-size:.85rem">Letto</span>
+        <% } %>
+      </div>
     </div>
+    <% }); %>
   </div>
-</div>
+<% } %>
 
 <style>
-.announcements-page {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.page-header h1 {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0;
-  color: var(--text);
-  font-size: 2rem;
-  font-weight: 700;
-}
-
-.page-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.page-intro {
-  color: var(--muted);
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-.announcements-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.announcement-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  position: relative;
-}
-
-.announcement-card:hover {
-  border-color: var(--primary);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  transform: translateY(-4px);
-}
-
-.announcement-card.featured {
-  border-left: 6px solid var(--primary);
-  background: linear-gradient(135deg, var(--surface) 0%, rgba(var(--primary-rgb, 59, 130, 246), 0.08) 100%);
-}
-
-.announcement-card.featured::before {
-  content: '📌 In evidenza';
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: var(--primary);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.announcement-card.read {
-  opacity: 0.8;
-}
-
-.announcement-card.read:hover {
-  opacity: 0.9;
-}
-
-.announcement-header {
-  margin-bottom: 1.5rem;
-}
-
-.announcement-meta {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.announcement-type {
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.announcement-type.info { 
-  background: linear-gradient(135deg, var(--primary-light), var(--primary)); 
-  color: white; 
-}
-
-.announcement-type.warning { 
-  background: linear-gradient(135deg, var(--warn-light), var(--warn)); 
-  color: white; 
-}
-
-.announcement-type.urgent { 
-  background: linear-gradient(135deg, var(--danger-light), var(--danger)); 
-  color: white; 
-}
-
-.announcement-type.success { 
-  background: linear-gradient(135deg, var(--success-light), var(--success)); 
-  color: white; 
-}
-
-.announcement-date,
-.announcement-author {
-  color: var(--muted);
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.announcement-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 1rem 0;
-  line-height: 1.3;
-}
-
-.announcement-period {
-  font-size: 0.9rem;
-  color: var(--muted);
-  margin-bottom: 1.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--bg);
-  border-radius: 8px;
-  border-left: 3px solid var(--border);
-}
-
-.announcement-content {
-  color: var(--text);
-  line-height: 1.7;
-  font-size: 1.05rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-  margin-bottom: 1.5rem;
-}
-
-.announcement-actions {
-  display: flex;
-  gap: 0.75rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
-}
-
-.empty-announcements {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--muted);
-}
-
-.empty-announcements .icon {
-  font-size: 4rem;
-  margin-bottom: 1.5rem;
-  opacity: 0.5;
-}
-
-.empty-announcements h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: var(--text);
-}
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: var(--muted);
-  font-size: 1.1rem;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border);
-  border-top: 3px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .page-header h1 {
-    font-size: 1.5rem;
-  }
-  
-  .announcement-card {
-    padding: 1.5rem;
-  }
-  
-  .announcement-title {
-    font-size: 1.25rem;
-  }
-  
-  .announcement-meta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
+.avvisi-list { display:flex; flex-direction:column; gap:1rem }
+.avviso-card { transition:all .2s }
+.avviso-card:hover { box-shadow:0 4px 12px rgba(0,0,0,.08) }
+.avviso-card--evidenza { border-left:4px solid var(--primary) }
+.avviso-card--letto { opacity:.75 }
+.avviso-card__header { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-bottom:.75rem }
+.avviso-card__title { margin:0 0 .5rem; font-size:1.25rem }
+.avviso-card__title a { color:var(--text); text-decoration:none }
+.avviso-card__title a:hover { color:var(--primary) }
+.avviso-card__excerpt { color:var(--muted); margin:0 0 .75rem; line-height:1.5; white-space:pre-wrap; word-break:break-word }
+.avviso-card__footer { display:flex; justify-content:space-between; align-items:center; gap:.5rem }
+.badge--evidenza { background:var(--primary); color:#fff; padding:.15rem .5rem; border-radius:999px; font-size:.75rem }
 </style>
 
 <script>
-/**
- * Sistema avvisi professionale
- * Pattern moderno con error handling robusto
- */
-
-class AnnouncementManager {
-  constructor() {
-    this.announcements = [];
-    this.basePath = window.APP_BASE || '';
-    this.init();
+(function(){
+  var base = window.APP_BASE || '';
+  function showMsg(txt, ok) {
+    var el = document.createElement('div');
+    el.textContent = txt;
+    el.style.cssText = 'position:fixed;top:1rem;right:1rem;padding:.75rem 1.25rem;border-radius:var(--radius);color:#fff;font-weight:500;z-index:9999;background:' + (ok ? 'var(--success,#22c55e)' : 'var(--danger,#ef4444)');
+    document.body.appendChild(el);
+    setTimeout(function(){ el.remove(); }, 3000);
   }
 
-  init() {
-    this.setupEventListeners();
-    this.loadAnnouncements();
-  }
-
-  setupEventListeners() {
-    // Event delegation per tutti i click
-    document.addEventListener('click', (e) => {
-      this.handleClick(e);
-    });
-  }
-
-  handleClick(e) {
-    // Click su un avviso per andare al dettaglio
-    const announcementCard = e.target.closest('.announcement-card');
-    if (announcementCard && !e.target.closest('.btn')) {
-      const id = announcementCard.dataset.id;
-      if (id) {
-        window.location.href = `${this.basePath}/avvisi/${id}`;
-      }
-    }
-    
-    // Click su "Segna come letto"
-    const markReadBtn = e.target.closest('.btn-mark-read');
-    if (markReadBtn) {
-      e.stopPropagation();
-      const id = markReadBtn.dataset.id;
-      if (id) {
-        this.markAsRead(parseInt(id));
-      }
-    }
-    
-    // Click su "Aggiorna"
-    const refreshBtn = e.target.closest('.btn-refresh');
-    if (refreshBtn) {
-      this.loadAnnouncements();
-    }
-  }
-
-  async loadAnnouncements() {
+  document.addEventListener('click', async function(e) {
+    var btn = e.target.closest('.btn-mark-read');
+    if (!btn) return;
+    var id = btn.dataset.id;
     try {
-      this.setLoading(true);
-      
-      console.log('[AnnouncementManager] Caricamento avvisi...');
-      const response = await fetch(`${this.basePath}/avvisi/api`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      console.log('[AnnouncementManager] Avvisi caricati:', result);
-      
-      if (result.success) {
-        this.announcements = result.data.avvisi || [];
-        this.renderAnnouncements();
-        this.updateNotificationCount(result.data.nonLette);
-      } else {
-        throw new Error(result.message || 'Errore caricamento');
-      }
-    } catch (error) {
-      console.error('[AnnouncementManager] Errore caricamento:', error);
-      this.showError('Impossibile caricare gli avvisi', error);
-    } finally {
-      this.setLoading(false);
-    }
-  }
-
-  renderAnnouncements() {
-    const container = document.getElementById('announcementsList');
-    
-    if (!this.announcements || this.announcements.length === 0) {
-      container.innerHTML = `
-        <div class="empty-announcements">
-          <div class="icon">📢</div>
-          <h3>Nessun avviso</h3>
-          <p>Non ci sono avvisi disponibili al momento.</p>
-        </div>
-      `;
-      return;
-    }
-    
-    container.innerHTML = this.announcements.map(announcement => `
-      <article class="announcement-card ${announcement.in_evidenza ? 'featured' : ''} ${announcement.letto ? 'read' : ''}" 
-               data-id="${announcement.id}">
-        <header class="announcement-header">
-          <div class="announcement-meta">
-            <span class="announcement-type ${announcement.tipo}">${this.getTypeLabel(announcement.tipo)}</span>
-            ${announcement.visibile_da || announcement.visibile_fino ? `
-              <span class="announcement-period">
-                Visibile ${announcement.visibile_da ? 'dal ' + announcement.visibile_da : ''}${announcement.visibile_da && announcement.visibile_fino ? ' ' : ''}${announcement.visibile_fino ? 'al ' + announcement.visibile_fino : ''}
-              </span>
-            ` : ''}
-            <time class="announcement-date" datetime="${announcement.created_at}">
-              <svg class="icon" style="width: 16px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              ${this.formatDate(announcement.created_at)}
-            </time>
-            ${announcement.autore_nome ? `
-              <span class="announcement-author">
-                <svg class="icon" style="width: 16px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-                ${announcement.autore_nome}
-              </span>
-            ` : ''}
-          </div>
-          <h2 class="announcement-title">${this.escapeHtml(announcement.titolo)}</h2>
-        </header>
-        <div class="announcement-content">
-          ${this.escapeHtml(announcement.contenuto || '')}
-        </div>
-        ${!announcement.letto ? `
-          <div class="announcement-actions">
-            <button type="button" class="btn btn-secondary btn-mark-read" data-id="${announcement.id}">
-              <svg class="icon" style="width: 16px; height: 16px; margin-right: 0.5rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Segna come letto
-            </button>
-          </div>
-        ` : ''}
-      </article>
-    `).join('');
-  }
-
-  async markAsRead(id) {
-    try {
-      console.log(`[AnnouncementManager] Marcatura avviso ${id} come letto`);
-      
-      const response = await fetch(`${this.basePath}/avvisi/${id}/letta`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      const result = await response.json();
-      console.log('[AnnouncementManager] Risposta marcatura:', result);
-      
-      if (result.success) {
-        // Aggiorna stato locale
-        const announcement = this.announcements.find(a => a.id === id);
-        if (announcement) {
-          announcement.letto = true;
-          this.renderAnnouncements();
-          this.updateNotificationCount(result.data.nonLette);
-          this.showToast('Avviso segnato come letto', 'success');
-        }
-      } else {
-        throw new Error(result.message || 'Errore marcatura');
-      }
-    } catch (error) {
-      console.error('[AnnouncementManager] Errore marcatura:', error);
-      this.showToast('Errore durante la marcatura dell\'avviso', 'error');
-    }
-  }
-
-  updateNotificationCount(count) {
-    const badge = document.querySelector('.notification-badge');
-    if (badge) {
-      const newCount = count !== undefined ? count : this.announcements.filter(a => !a.letto).length;
-      if (newCount > 0) {
-        badge.textContent = newCount;
-        badge.style.display = 'inline-block';
-      } else {
-        badge.style.display = 'none';
-      }
-    }
-  }
-
-  setLoading(loading) {
-    const container = document.getElementById('announcementsList');
-    if (loading) {
-      container.innerHTML = `
-        <div class="loading">
-          <div class="loading-spinner"></div>
-          Caricamento avvisi...
-        </div>
-      `;
-    }
-  }
-
-  showError(message, error) {
-    const container = document.getElementById('announcementsList');
-    container.innerHTML = `
-      <div class="empty-announcements">
-        <div class="icon">❌</div>
-        <h3>Errore</h3>
-        <p>${message}</p>
-        <button class="btn btn-primary" onclick="location.reload()">Ricarica pagina</button>
-      </div>
-    `;
-  }
-
-  showToast(message, type = 'info') {
-    // Usa toast globale se disponibile, altrimenti crea uno semplice
-    if (typeof window.showToast === 'function') {
-      window.showToast(message, type);
-      return;
-    }
-    
-    const toast = document.createElement('div');
-    toast.className = `toast toast--${type}`;
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 20px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 500;
-      z-index: 1000;
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--primary)'};
-    `;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.style.transform = 'translateX(0)';
-    }, 100);
-    
-    setTimeout(() => {
-      toast.style.transform = 'translateX(100%)';
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    }, 3000);
-  }
-
-  // Funzioni helper
-  getTypeLabel(type) {
-    const labels = {
-      'info': 'Informazione',
-      'warning': 'Attenzione',
-      'urgent': 'Urgente',
-      'success': 'Successo',
-      'maintenance': 'Manutenzione'
-    };
-    return labels[type] || type;
-  }
-
-  formatDate(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('it-IT', { 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric' 
-    });
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text || '';
-    return div.innerHTML;
-  }
-}
-
-// Inizializzazione quando il DOM è pronto
-document.addEventListener('DOMContentLoaded', () => {
-  window.announcementManager = new AnnouncementManager();
-});
+      var r = await fetch(base + '/avvisi/' + id + '/letta', { method:'POST', headers:{'Content-Type':'application/json'} });
+      var data = await r.json();
+      if (data.success) {
+        var card = document.querySelector('.avviso-card[data-id="' + id + '"]');
+        if (card) { card.classList.add('avviso-card--letto'); }
+        btn.replaceWith(Object.assign(document.createElement('span'), { className:'text-muted', style:'font-size:.85rem', textContent:'Letto' }));
+        showMsg('Avviso segnato come letto', true);
+      } else { showMsg(data.error || 'Errore', false); }
+    } catch(err) { showMsg('Errore di rete', false); }
+  });
+})();
 </script>

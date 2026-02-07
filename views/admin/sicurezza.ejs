@@ -22,14 +22,6 @@
     <div style="font-size:1.8rem;font-weight:700;color:<%= stats.dpi_scaduti > 0 ? 'var(--danger,#dc2626)' : 'var(--success,#22c55e)' %>"><%= stats.dpi_scaduti %></div>
     <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">DPI Scaduti</div>
   </div>
-  <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1rem;text-align:center">
-    <div style="font-size:1.8rem;font-weight:700;color:<%= stats.infortuni_anno > 0 ? 'var(--warn,#f59e0b)' : 'var(--success,#22c55e)' %>"><%= stats.infortuni_anno %></div>
-    <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Infortuni Anno</div>
-  </div>
-  <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1rem;text-align:center">
-    <div style="font-size:1.8rem;font-weight:700;color:var(--primary,#1a56db)"><%= stats.documenti %></div>
-    <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Documenti</div>
-  </div>
 </div>
 
 <% if (scadenze.totale > 0) { %>
@@ -39,7 +31,6 @@
   <span style="font-size:.85rem;opacity:.9">
     <% if (scadenze.formazioni.length) { %><%= scadenze.formazioni.length %> formazioni<% } %>
     <% if (scadenze.dpi.length) { %> · <%= scadenze.dpi.length %> DPI<% } %>
-    <% if (scadenze.documenti.length) { %> · <%= scadenze.documenti.length %> documenti<% } %>
   </span>
 </div>
 <% } %>
@@ -66,8 +57,6 @@
 <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid var(--border,#e5e7eb)">
   <a href="<%= bp %>/admin/sicurezza?tab=formazioni<%= filtri.user_id ? '&user_id=' + filtri.user_id : '' %>" style="padding:.65rem 1.25rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid <%= tab === 'formazioni' ? 'var(--primary,#1a56db)' : 'transparent' %>;margin-bottom:-2px;color:<%= tab === 'formazioni' ? 'var(--primary,#1a56db)' : 'var(--muted)' %>">Formazioni (<%= formazioni.length %>)</a>
   <a href="<%= bp %>/admin/sicurezza?tab=dpi<%= filtri.user_id ? '&user_id=' + filtri.user_id : '' %>" style="padding:.65rem 1.25rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid <%= tab === 'dpi' ? 'var(--primary,#1a56db)' : 'transparent' %>;margin-bottom:-2px;color:<%= tab === 'dpi' ? 'var(--primary,#1a56db)' : 'var(--muted)' %>">DPI (<%= dpiConsegne.length %>)</a>
-  <a href="<%= bp %>/admin/sicurezza?tab=infortuni<%= filtri.user_id ? '&user_id=' + filtri.user_id : '' %>" style="padding:.65rem 1.25rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid <%= tab === 'infortuni' ? 'var(--primary,#1a56db)' : 'transparent' %>;margin-bottom:-2px;color:<%= tab === 'infortuni' ? 'var(--primary,#1a56db)' : 'var(--muted)' %>">Infortuni (<%= infortuni.length %>)</a>
-  <a href="<%= bp %>/admin/sicurezza?tab=documenti<%= filtri.user_id ? '&user_id=' + filtri.user_id : '' %>" style="padding:.65rem 1.25rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid <%= tab === 'documenti' ? 'var(--primary,#1a56db)' : 'transparent' %>;margin-bottom:-2px;color:<%= tab === 'documenti' ? 'var(--primary,#1a56db)' : 'var(--muted)' %>">Documenti (<%= documenti.length %>)</a>
 </div>
 
 <!-- ===== TAB FORMAZIONI ===== -->
@@ -151,85 +140,6 @@
 </div>
 <% } %>
 
-<!-- ===== TAB INFORTUNI ===== -->
-<% if (tab === 'infortuni') { %>
-<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:0 0 12px 12px;overflow:hidden;border-top:0">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:.85rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb)">
-    <span style="font-size:.85rem;color:var(--muted)"><%= infortuni.length %> infortuni</span>
-    <button type="button" class="btn btn-sm" id="btnNewInfortunio">+ Registra infortunio</button>
-  </div>
-  <% if (infortuni.length === 0) { %>
-  <div style="padding:2.5rem;text-align:center;color:var(--muted)">Nessun infortunio registrato.</div>
-  <% } else { %>
-  <div>
-    <% infortuni.forEach(function(i) { %>
-    <div class="rsp-list-row" style="display:flex;align-items:center;gap:1rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
-      <div style="width:36px;height:36px;border-radius:50%;background:var(--warn,#f59e0b);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg style="width:18px;height:18px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
-          <span style="font-weight:600;font-size:.9rem"><%= i.full_name || i.username %></span>
-          <span style="font-size:.78rem;color:var(--muted)"><%= i.data_evento %><%= i.ora_evento ? ' ore ' + String(i.ora_evento).slice(0,5) : '' %></span>
-          <span class="badge <%= i.stato === 'chiuso' ? 'approved' : 'pending' %>" style="font-size:.65rem"><%= i.stato === 'chiuso' ? 'Chiuso' : 'Aperto' %></span>
-        </div>
-        <div style="font-size:.82rem;color:var(--muted);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><%= i.descrizione %></div>
-        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.15rem;font-size:.78rem;color:var(--muted);flex-wrap:wrap">
-          <% if (i.luogo) { %><span>Luogo: <%= i.luogo %></span><% } %>
-          <% if (i.giorni_prognosi) { %><span>· Prognosi: <%= i.giorni_prognosi %>gg</span><% } %>
-          <% if (i.denunciato_inail) { %><span style="color:var(--primary,#1a56db);font-weight:600">· INAIL: <%= i.numero_pratica || 'Sì' %></span><% } %>
-        </div>
-      </div>
-      <div style="display:flex;gap:.3rem;flex-shrink:0">
-        <button type="button" class="btn-sm sic-edit-btn" data-section="infortuni" data-id="<%= i.id %>" data-evento="<%= i.data_evento %>" data-ora="<%= i.ora_evento ? String(i.ora_evento).slice(0,5) : '' %>" data-luogo="<%= i.luogo || '' %>" data-descrizione="<%= i.descrizione %>" data-lesione="<%= i.tipo_lesione || '' %>" data-corpo="<%= i.parte_corpo || '' %>" data-prognosi="<%= i.giorni_prognosi || '' %>" data-rientro="<%= i.data_rientro %>" data-testimoni="<%= i.testimoni || '' %>" data-provvedimenti="<%= i.provvedimenti || '' %>" data-inail="<%= i.denunciato_inail %>" data-pratica="<%= i.numero_pratica || '' %>" data-stato="<%= i.stato %>">Modifica</button>
-        <button type="button" class="btn-sm sic-del-btn" data-section="infortuni" data-id="<%= i.id %>">Elimina</button>
-      </div>
-    </div>
-    <% }); %>
-  </div>
-  <% } %>
-</div>
-<% } %>
-
-<!-- ===== TAB DOCUMENTI ===== -->
-<% if (tab === 'documenti') { %>
-<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:0 0 12px 12px;overflow:hidden;border-top:0">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:.85rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb)">
-    <span style="font-size:.85rem;color:var(--muted)"><%= documenti.length %> documenti</span>
-    <button type="button" class="btn btn-sm" id="btnNewDocumento">+ Nuovo documento</button>
-  </div>
-  <% if (documenti.length === 0) { %>
-  <div style="padding:2.5rem;text-align:center;color:var(--muted)">Nessun documento registrato.</div>
-  <% } else { %>
-  <div>
-    <% documenti.forEach(function(d) { var scaduto = d.data_scadenza && new Date(d.data_scadenza) < new Date(); %>
-    <div class="rsp-list-row" style="display:flex;align-items:center;gap:1rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6);<%= scaduto ? 'background:rgba(220,38,38,.04)' : '' %>">
-      <div style="width:36px;height:36px;border-radius:50%;background:var(--primary-light,#eef2ff);color:var(--primary,#1a56db);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg style="width:18px;height:18px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
-          <span style="font-weight:600;font-size:.9rem"><%= d.titolo %></span>
-          <span style="background:var(--primary-light,#eef2ff);color:var(--primary,#1a56db);font-size:.68rem;font-weight:600;padding:.15rem .45rem;border-radius:4px"><%= d.categoria %></span>
-          <span style="font-size:.75rem;color:var(--muted)">v<%= d.versione %></span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.15rem;font-size:.78rem;color:var(--muted);flex-wrap:wrap">
-          <% if (d.data_approvazione) { %><span>Approvato: <%= d.data_approvazione %></span><% } %>
-          <% if (d.data_scadenza) { %><span>· Scade: <strong style="color:<%= scaduto ? 'var(--danger,#dc2626)' : 'inherit' %>"><%= d.data_scadenza %></strong></span><% } %>
-          <% if (d.autore_nome) { %><span>· <%= d.autore_nome %></span><% } %>
-        </div>
-      </div>
-      <% if (scaduto) { %><span style="display:inline-flex;align-items:center;gap:3px;background:var(--danger,#dc2626);color:#fff;font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:5px">SCADUTO</span><% } %>
-      <div style="display:flex;gap:.3rem;flex-shrink:0">
-        <button type="button" class="btn-sm sic-edit-btn" data-section="documenti" data-id="<%= d.id %>" data-titolo="<%= d.titolo %>" data-categoria="<%= d.categoria %>" data-descrizione="<%= d.descrizione || '' %>" data-versione="<%= d.versione %>" data-approvazione="<%= d.data_approvazione %>" data-scadenza="<%= d.data_scadenza %>">Modifica</button>
-        <button type="button" class="btn-sm sic-del-btn" data-section="documenti" data-id="<%= d.id %>">Elimina</button>
-      </div>
-    </div>
-    <% }); %>
-  </div>
-  <% } %>
-</div>
-<% } %>
 
 <!-- ===== MODALE CREAZIONE/MODIFICA ===== -->
 <div id="sicModal" class="modal-overlay admin-ferie-modal" aria-hidden="true" hidden>
@@ -277,25 +187,6 @@ var formFields = {
       '<label>Descrizione <textarea id="sf_desc" name="descrizione" rows="1" placeholder="Opzionale">' + (d ? d.descrizione : '') + '</textarea></label>' +
       '<label>Note <textarea id="sf_note" name="note" rows="1" placeholder="Opzionale">' + (d ? d.note : '') + '</textarea></label>';
   },
-  infortuni: function(d) {
-    return '<label>Dipendente <select id="sf_user_id" name="user_id" required' + (d ? ' disabled' : '') + '>' + usersSelect(d ? d.user_id : '') + '</select></label>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><label>Data evento <input type="date" id="sf_evento" name="data_evento" required value="' + (d ? d.evento : '') + '"></label><label>Ora <input type="time" id="sf_ora" name="ora_evento" value="' + (d ? d.ora : '') + '"></label></div>' +
-      '<label>Luogo <input type="text" id="sf_luogo" name="luogo" placeholder="es. Cantiere Via Roma" value="' + (d ? d.luogo : '') + '"></label>' +
-      '<label>Descrizione <textarea id="sf_desc" name="descrizione" rows="2" required placeholder="Descrizione dell\'evento">' + (d ? d.descrizione : '') + '</textarea></label>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><label>Tipo lesione <input type="text" id="sf_lesione" name="tipo_lesione" placeholder="es. Contusione, taglio" value="' + (d ? d.lesione : '') + '"></label><label>Parte corpo <input type="text" id="sf_corpo" name="parte_corpo" placeholder="es. Mano dx, piede sx" value="' + (d ? d.corpo : '') + '"></label></div>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><label>Giorni prognosi <input type="number" id="sf_prognosi" name="giorni_prognosi" min="0" value="' + (d ? d.prognosi : '0') + '"></label><label>Data rientro <input type="date" id="sf_rientro" name="data_rientro" value="' + (d ? d.rientro : '') + '"></label></div>' +
-      '<label>Testimoni <input type="text" id="sf_testimoni" name="testimoni" placeholder="Nomi testimoni" value="' + (d ? d.testimoni : '') + '"></label>' +
-      '<label>Provvedimenti <textarea id="sf_provvedimenti" name="provvedimenti" rows="1" placeholder="Azioni correttive">' + (d ? d.provvedimenti : '') + '</textarea></label>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><label>Denunciato INAIL <select id="sf_inail" name="denunciato_inail"><option value="false"' + (d && d.inail !== 'true' ? ' selected' : '') + '>No</option><option value="true"' + (d && d.inail === 'true' ? ' selected' : '') + '>Sì</option></select></label><label>N. pratica INAIL <input type="text" id="sf_pratica" name="numero_pratica" value="' + (d ? d.pratica : '') + '"></label></div>' +
-      '<label>Stato <select id="sf_stato" name="stato"><option value="aperto"' + (d && d.stato === 'aperto' ? ' selected' : '') + '>Aperto</option><option value="chiuso"' + (d && d.stato === 'chiuso' ? ' selected' : '') + '>Chiuso</option></select></label>';
-  },
-  documenti: function(d) {
-    return '<label>Titolo <input type="text" id="sf_titolo" name="titolo" required placeholder="es. DVR 2025, Procedura PES/PAV" value="' + (d ? d.titolo : '') + '"></label>' +
-      '<label>Categoria <select id="sf_categoria" name="categoria" required><option value="">-- Seleziona --</option><option value="DVR"' + (d && d.categoria === 'DVR' ? ' selected' : '') + '>DVR</option><option value="Procedura"' + (d && d.categoria === 'Procedura' ? ' selected' : '') + '>Procedura</option><option value="Istruzione operativa"' + (d && d.categoria === 'Istruzione operativa' ? ' selected' : '') + '>Istruzione operativa</option><option value="Piano emergenza"' + (d && d.categoria === 'Piano emergenza' ? ' selected' : '') + '>Piano emergenza</option><option value="Registro"' + (d && d.categoria === 'Registro' ? ' selected' : '') + '>Registro</option><option value="Altro"' + (d && d.categoria === 'Altro' ? ' selected' : '') + '>Altro</option></select></label>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><label>Versione <input type="text" id="sf_versione" name="versione" value="' + (d ? d.versione : '1.0') + '"></label><label>Data approvazione <input type="date" id="sf_approvazione" name="data_approvazione" value="' + (d ? d.approvazione : '') + '"></label></div>' +
-      '<label>Data scadenza <input type="date" id="sf_scadenza" name="data_scadenza" value="' + (d ? d.scadenza : '') + '"></label>' +
-      '<label>Descrizione <textarea id="sf_desc" name="descrizione" rows="2" placeholder="Opzionale">' + (d ? d.descrizione : '') + '</textarea></label>';
-  }
 };
 
 function openSicModal(section, title, data) {
@@ -317,14 +208,10 @@ document.getElementById('sicModal').onclick = function(e) { if (e.target === thi
 // New buttons
 var btnNew = {
   formazioni: document.getElementById('btnNewFormazione'),
-  dpi: document.getElementById('btnNewDpi'),
-  infortuni: document.getElementById('btnNewInfortunio'),
-  documenti: document.getElementById('btnNewDocumento')
+  dpi: document.getElementById('btnNewDpi')
 };
 if (btnNew.formazioni) btnNew.formazioni.onclick = function() { openSicModal('formazioni', 'Nuova formazione', null); };
 if (btnNew.dpi) btnNew.dpi.onclick = function() { openSicModal('dpi', 'Nuova consegna DPI', null); };
-if (btnNew.infortuni) btnNew.infortuni.onclick = function() { openSicModal('infortuni', 'Registra infortunio', null); };
-if (btnNew.documenti) btnNew.documenti.onclick = function() { openSicModal('documenti', 'Nuovo documento', null); };
 
 // Edit buttons
 document.querySelectorAll('.sic-edit-btn').forEach(function(btn) {

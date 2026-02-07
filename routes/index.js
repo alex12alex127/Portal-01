@@ -52,16 +52,15 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       ORDER BY in_evidenza DESC, created_at DESC LIMIT 5
     `);
     const avvisiDashboard = avvisiResult.rows.map(a => ({ ...a, created_at: a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' }));
-    let sicurezzaScadenze = { formazioni: [], dpi: [], documenti: [], totale: 0 };
+    let sicurezzaScadenze = { formazioni: [], dpi: [], totale: 0 };
     try {
       const scadRaw = await getScadenzeSicurezza(30);
       sicurezzaScadenze = {
         formazioni: scadRaw.formazioni.filter(s => s.user_id === req.session.user.id).map(s => ({ ...s, data_scadenza: soloData(s.data_scadenza) })),
         dpi: scadRaw.dpi.filter(s => s.user_id === req.session.user.id).map(s => ({ ...s, data_scadenza: soloData(s.data_scadenza) })),
-        documenti: scadRaw.documenti.map(s => ({ ...s, data_scadenza: soloData(s.data_scadenza) })),
         totale: 0
       };
-      sicurezzaScadenze.totale = sicurezzaScadenze.formazioni.length + sicurezzaScadenze.dpi.length + sicurezzaScadenze.documenti.length;
+      sicurezzaScadenze.totale = sicurezzaScadenze.formazioni.length + sicurezzaScadenze.dpi.length;
     } catch (_) { /* tabelle non ancora create */ }
     res.render('dashboard', {
       title: 'Panoramica - Portal-01',

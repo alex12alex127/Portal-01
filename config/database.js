@@ -181,54 +181,6 @@ async function initDatabase() {
     await client.query('CREATE INDEX IF NOT EXISTS idx_dpi_user ON dpi_consegne(user_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_dpi_scadenza ON dpi_consegne(data_scadenza)');
 
-    // Registro infortuni
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS infortuni (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        data_evento DATE NOT NULL,
-        ora_evento TIME,
-        luogo VARCHAR(300),
-        descrizione TEXT NOT NULL,
-        tipo_lesione VARCHAR(200),
-        parte_corpo VARCHAR(200),
-        giorni_prognosi INTEGER DEFAULT 0,
-        data_rientro DATE,
-        testimoni TEXT,
-        provvedimenti TEXT,
-        denunciato_inail BOOLEAN DEFAULT false,
-        numero_pratica VARCHAR(100),
-        allegato_path VARCHAR(500),
-        allegato_nome VARCHAR(255),
-        stato VARCHAR(20) DEFAULT 'aperto',
-        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    await client.query('CREATE INDEX IF NOT EXISTS idx_infortuni_user ON infortuni(user_id)');
-    await client.query('CREATE INDEX IF NOT EXISTS idx_infortuni_data ON infortuni(data_evento DESC)');
-
-    // Documenti sicurezza (DVR, procedure, istruzioni operative)
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS documenti_sicurezza (
-        id SERIAL PRIMARY KEY,
-        titolo VARCHAR(255) NOT NULL,
-        categoria VARCHAR(100) NOT NULL,
-        descrizione TEXT,
-        versione VARCHAR(20) DEFAULT '1.0',
-        data_approvazione DATE,
-        data_scadenza DATE,
-        file_path VARCHAR(500),
-        file_nome VARCHAR(255),
-        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    await client.query('CREATE INDEX IF NOT EXISTS idx_docsic_categoria ON documenti_sicurezza(categoria)');
-    await client.query('CREATE INDEX IF NOT EXISTS idx_docsic_scadenza ON documenti_sicurezza(data_scadenza)');
-
     console.log('Tabelle e indici create/verificate');
   } finally {
     client.release();

@@ -11,7 +11,6 @@
   <span style="font-size:.85rem;opacity:.9">
     <% if (scadenze.formazioni.length) { %><%= scadenze.formazioni.length %> formazioni<% } %>
     <% if (scadenze.dpi.length) { %> · <%= scadenze.dpi.length %> DPI<% } %>
-    <% if (scadenze.documenti.length) { %> · <%= scadenze.documenti.length %> documenti<% } %>
   </span>
 </div>
 <% } %>
@@ -20,8 +19,6 @@
 <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid var(--border,#e5e7eb)">
   <a href="<%= bp %>/sicurezza?tab=formazioni" style="padding:.65rem 1.25rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid <%= tab === 'formazioni' ? 'var(--primary,#1a56db)' : 'transparent' %>;margin-bottom:-2px;color:<%= tab === 'formazioni' ? 'var(--primary,#1a56db)' : 'var(--muted)' %>">Le mie formazioni (<%= formazioni.length %>)</a>
   <a href="<%= bp %>/sicurezza?tab=dpi" style="padding:.65rem 1.25rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid <%= tab === 'dpi' ? 'var(--primary,#1a56db)' : 'transparent' %>;margin-bottom:-2px;color:<%= tab === 'dpi' ? 'var(--primary,#1a56db)' : 'var(--muted)' %>">I miei DPI (<%= dpiConsegne.length %>)</a>
-  <a href="<%= bp %>/sicurezza?tab=infortuni" style="padding:.65rem 1.25rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid <%= tab === 'infortuni' ? 'var(--primary,#1a56db)' : 'transparent' %>;margin-bottom:-2px;color:<%= tab === 'infortuni' ? 'var(--primary,#1a56db)' : 'var(--muted)' %>">Infortuni (<%= infortuni.length %>)</a>
-  <a href="<%= bp %>/sicurezza?tab=documenti" style="padding:.65rem 1.25rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid <%= tab === 'documenti' ? 'var(--primary,#1a56db)' : 'transparent' %>;margin-bottom:-2px;color:<%= tab === 'documenti' ? 'var(--primary,#1a56db)' : 'var(--muted)' %>">Documenti (<%= documenti.length %>)</a>
 </div>
 
 <!-- ===== TAB FORMAZIONI ===== -->
@@ -97,75 +94,3 @@
 </div>
 <% } %>
 
-<!-- ===== TAB INFORTUNI ===== -->
-<% if (tab === 'infortuni') { %>
-<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:0 0 12px 12px;overflow:hidden;border-top:0">
-  <% if (infortuni.length === 0) { %>
-  <div style="padding:2.5rem;text-align:center;color:var(--muted)">
-    <svg style="width:48px;height:48px;margin:0 auto .75rem;opacity:.4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-    <p>Nessun infortunio registrato.</p>
-  </div>
-  <% } else { %>
-  <div>
-    <% infortuni.forEach(function(i) { %>
-    <div style="display:flex;align-items:center;gap:1rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
-      <div style="width:40px;height:40px;border-radius:50%;background:var(--warn,#f59e0b);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
-          <span style="font-weight:600;font-size:.9rem"><%= i.data_evento %><%= i.ora_evento ? ' ore ' + String(i.ora_evento).slice(0,5) : '' %></span>
-          <span class="badge <%= i.stato === 'chiuso' ? 'approved' : 'pending' %>" style="font-size:.65rem"><%= i.stato === 'chiuso' ? 'Chiuso' : 'Aperto' %></span>
-        </div>
-        <div style="font-size:.85rem;margin-top:.15rem"><%= i.descrizione %></div>
-        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.15rem;font-size:.78rem;color:var(--muted);flex-wrap:wrap">
-          <% if (i.luogo) { %><span>Luogo: <%= i.luogo %></span><% } %>
-          <% if (i.tipo_lesione) { %><span>· Lesione: <%= i.tipo_lesione %></span><% } %>
-          <% if (i.parte_corpo) { %><span>· <%= i.parte_corpo %></span><% } %>
-          <% if (i.giorni_prognosi) { %><span>· Prognosi: <%= i.giorni_prognosi %>gg</span><% } %>
-          <% if (i.data_rientro) { %><span>· Rientro: <%= i.data_rientro %></span><% } %>
-          <% if (i.denunciato_inail) { %><span style="color:var(--primary,#1a56db);font-weight:600">· INAIL: <%= i.numero_pratica || 'Sì' %></span><% } %>
-        </div>
-      </div>
-    </div>
-    <% }); %>
-  </div>
-  <% } %>
-</div>
-<% } %>
-
-<!-- ===== TAB DOCUMENTI ===== -->
-<% if (tab === 'documenti') { %>
-<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:0 0 12px 12px;overflow:hidden;border-top:0">
-  <% if (documenti.length === 0) { %>
-  <div style="padding:2.5rem;text-align:center;color:var(--muted)">
-    <svg style="width:48px;height:48px;margin:0 auto .75rem;opacity:.4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-    <p>Nessun documento di sicurezza disponibile.</p>
-  </div>
-  <% } else { %>
-  <div>
-    <% documenti.forEach(function(d) { var scaduto = d.data_scadenza && new Date(d.data_scadenza) < new Date(); %>
-    <div style="display:flex;align-items:center;gap:1rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6);<%= scaduto ? 'background:rgba(220,38,38,.04)' : '' %>">
-      <div style="width:40px;height:40px;border-radius:50%;background:var(--primary-light,#eef2ff);color:var(--primary,#1a56db);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
-          <span style="font-weight:700;font-size:.95rem"><%= d.titolo %></span>
-          <span style="background:var(--primary-light,#eef2ff);color:var(--primary,#1a56db);font-size:.68rem;font-weight:600;padding:.15rem .45rem;border-radius:4px"><%= d.categoria %></span>
-          <span style="font-size:.75rem;color:var(--muted)">v<%= d.versione %></span>
-          <% if (scaduto) { %><span style="display:inline-flex;align-items:center;gap:3px;background:var(--danger,#dc2626);color:#fff;font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:5px">SCADUTO</span><% } %>
-        </div>
-        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.2rem;font-size:.78rem;color:var(--muted);flex-wrap:wrap">
-          <% if (d.data_approvazione) { %><span>Approvato: <%= d.data_approvazione %></span><% } %>
-          <% if (d.data_scadenza) { %><span>· Scadenza: <strong style="color:<%= scaduto ? 'var(--danger,#dc2626)' : 'var(--text)' %>"><%= d.data_scadenza %></strong></span><% } %>
-          <% if (d.autore_nome) { %><span>· <%= d.autore_nome %></span><% } %>
-        </div>
-        <% if (d.descrizione) { %><div style="font-size:.8rem;color:var(--muted);margin-top:.15rem"><%= d.descrizione %></div><% } %>
-      </div>
-    </div>
-    <% }); %>
-  </div>
-  <% } %>
-</div>
-<% } %>

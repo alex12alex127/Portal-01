@@ -4,8 +4,19 @@
   Benvenuto, <%= typeof user !== 'undefined' && user ? user.full_name || user.username : '' %>
 </h1>
 
+<!-- ========== 1. FERIE: BUDGET + STATISTICHE ========== -->
 <% if (typeof summary !== 'undefined' && summary) { %>
 <div class="dashboard-stats p-stats">
+  <% if (typeof saldoFerie !== 'undefined' && saldoFerie) { %>
+  <div class="p-stat p-stat--<%= saldoFerie.giorni_residui < 0 ? 'danger' : saldoFerie.giorni_residui < 5 ? 'warn' : 'success' %>">
+    <div class="p-stat__value"><%= saldoFerie.budget_configurato ? Math.round(saldoFerie.giorni_residui * 10) / 10 : (summary.giorniApproved ? (26 - summary.giorniApproved) : 26) %></div>
+    <div class="p-stat__label">Ferie da utilizzare</div>
+  </div>
+  <% } %>
+  <div class="p-stat p-stat--primary">
+    <div class="p-stat__value"><%= summary.giorniApproved || 0 %></div>
+    <div class="p-stat__label">Giorni usati <%= summary.year %></div>
+  </div>
   <div class="p-stat p-stat--warn">
     <div class="p-stat__value"><%= summary.pending || 0 %></div>
     <div class="p-stat__label">In attesa</div>
@@ -14,94 +25,211 @@
     <div class="p-stat__value"><%= summary.approved || 0 %></div>
     <div class="p-stat__label">Approvate</div>
   </div>
-  <div class="p-stat p-stat--primary">
-    <div class="p-stat__value"><%= summary.giorniApproved || 0 %></div>
-    <div class="p-stat__label">Giorni usati <%= summary.year %></div>
-  </div>
-  <% if (typeof saldoFerie !== 'undefined' && saldoFerie && saldoFerie.budget_configurato) { %>
-  <div class="p-stat p-stat--<%= saldoFerie.giorni_residui < 0 ? 'danger' : saldoFerie.giorni_residui < 5 ? 'warn' : 'success' %>">
-    <div class="p-stat__value"><%= Math.round(saldoFerie.giorni_residui * 10) / 10 %></div>
-    <div class="p-stat__label">Ferie residue</div>
-  </div>
-  <% } %>
 </div>
 <% } %>
 
 <div class="p-dashboard-grid">
 
-  <% if (typeof presenzaOggi !== 'undefined') { %>
-  <div class="dashboard-presenze p-card">
-    <div class="p-card-header">
-      <h2 class="p-card-header__title">
-        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        Presenza oggi
-      </h2>
-      <a href="<%= bp %>/presenze" class="p-card-header__action">Storico →</a>
-    </div>
-    <div style="padding:var(--space-md);text-align:center">
-      <% if (presenzaOggi && presenzaOggi.ora_entrata && presenzaOggi.ora_uscita) { %>
-        <span class="p-tag p-tag--success">Completata: <%= presenzaOggi.ora_entrata %> - <%= presenzaOggi.ora_uscita %> (<%= presenzaOggi.ore_lavorate %>h)</span>
-      <% } else if (presenzaOggi && presenzaOggi.ora_entrata) { %>
-        <span class="p-tag p-tag--primary">Entrata: <%= presenzaOggi.ora_entrata %></span>
-        <a href="<%= bp %>/presenze" class="btn btn-sm" style="margin-left:.5rem">Timbra uscita</a>
-      <% } else { %>
-        <a href="<%= bp %>/presenze" class="btn btn-sm">Timbra entrata</a>
-      <% } %>
-    </div>
+<!-- ========== 2. NOTIFICHE APPROVAZIONI ========== -->
+<% if (typeof notificheApprovazioni !== 'undefined' && notificheApprovazioni.length > 0) { %>
+<div class="dashboard-approvazioni p-card">
+  <div class="p-card-header">
+    <h2 class="p-card-header__title">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      Approvazioni Ferie
+      <% var nonLette = notificheApprovazioni.filter(function(n){return !n.letta}).length; if (nonLette > 0) { %><span class="p-tag-count"><%= nonLette %></span><% } %>
+    </h2>
+    <a href="<%= bp %>/notifiche" class="p-card-header__action">Tutte →</a>
   </div>
-  <% } %>
-
-  <% if (typeof avvisiDashboard !== 'undefined' && avvisiDashboard.length > 0) { %>
-  <div class="dashboard-avvisi p-card">
-    <div class="p-card-header">
-      <h2 class="p-card-header__title">
-        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
-        Avvisi
-        <% if (typeof avvisiNonLetti !== 'undefined' && avvisiNonLetti > 0) { %><span class="p-tag-count"><%= avvisiNonLetti %></span><% } %>
-      </h2>
-      <a href="<%= bp %>/avvisi" class="p-card-header__action">Vedi tutti →</a>
-    </div>
-    <div class="p-card-body--flush">
-      <% avvisiDashboard.forEach(function(a) { %>
-      <a href="<%= bp %>/avvisi/<%= a.id %>" class="p-avviso-link<%= a.in_evidenza ? ' p-avviso-link--evidenza' : '' %>">
-        <span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo === 'success' ? 'Successo' : a.tipo %></span>
-        <span class="p-avviso-link__title"><%= a.titolo %></span>
-        <span class="p-avviso-link__date"><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' %></span>
-      </a>
-      <% }); %>
-    </div>
-  </div>
-  <% } %>
-
-  <% if (typeof notifiche !== 'undefined' && notifiche.length > 0) { %>
-  <div class="dashboard-notifiche p-card">
-    <div class="p-card-header">
-      <h2 class="p-card-header__title">
-        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
-        Notifiche
-      </h2>
-      <a href="<%= bp %>/notifiche" class="p-card-header__action">Vedi tutte →</a>
-    </div>
-    <div class="p-card-body--flush">
-      <% notifiche.forEach(function(n) { %>
-      <div class="p-notifica<%= !n.letta ? ' p-notifica--unread' : ' p-notifica--read' %>">
-        <div class="p-notifica__title"><%= n.titolo || 'Notifica' %></div>
-        <% if (n.messaggio) { %><div class="p-notifica__text"><%= n.messaggio %></div><% } %>
-        <div class="p-notifica__date"><%= n.created_at ? new Date(n.created_at).toLocaleString('it-IT') : '' %></div>
+  <div class="p-card-body--flush">
+    <% notificheApprovazioni.forEach(function(n) { %>
+    <div class="p-notifica<%= !n.letta ? ' p-notifica--unread' : ' p-notifica--read' %>">
+      <div style="display:flex;align-items:center;gap:.4rem">
+        <% if (n.tipo === 'ferie_approved') { %><span class="p-tag p-tag--success" style="font-size:.7rem">APPROVATA</span>
+        <% } else if (n.tipo === 'ferie_rejected') { %><span class="p-tag p-tag--danger" style="font-size:.7rem">RIFIUTATA</span>
+        <% } else if (n.tipo === 'ferie_approve') { %><span class="p-tag p-tag--warn" style="font-size:.7rem">DA APPROVARE</span>
+        <% } else { %><span class="p-tag p-tag--primary" style="font-size:.7rem">INVIATA</span><% } %>
+        <span class="p-notifica__title"><%= n.titolo || 'Notifica' %></span>
       </div>
-      <% }); %>
+      <% if (n.messaggio) { %><div class="p-notifica__text"><%= n.messaggio %></div><% } %>
+      <div class="p-notifica__date"><%= n.created_at %></div>
     </div>
+    <% }); %>
   </div>
-  <% } %>
+</div>
+<% } %>
+
+<!-- ========== 3. AVVISI STAFF (info, urgent, warning, success) ========== -->
+<% if (typeof avvisiDashboard !== 'undefined' && avvisiDashboard.length > 0) { %>
+<div class="dashboard-avvisi p-card">
+  <div class="p-card-header">
+    <h2 class="p-card-header__title">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+      Avvisi
+    </h2>
+    <a href="<%= bp %>/avvisi" class="p-card-header__action">Vedi tutti →</a>
+  </div>
+  <div class="p-card-body--flush">
+    <% avvisiDashboard.forEach(function(a) { %>
+    <a href="<%= bp %>/avvisi/<%= a.id %>" class="p-avviso-link<%= a.in_evidenza ? ' p-avviso-link--evidenza' : '' %>">
+      <span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'URGENTE' : a.tipo === 'success' ? 'Successo' : a.tipo %></span>
+      <span class="p-avviso-link__title"><%= a.titolo %></span>
+      <span class="p-avviso-link__date"><%= a.created_at %></span>
+    </a>
+    <% }); %>
+  </div>
+</div>
+<% } %>
+
+<!-- ========== 4. SCADENZE SICUREZZA (DPI + CORSI) ========== -->
+<% if (typeof sicurezzaScadenze !== 'undefined' && sicurezzaScadenze.totale > 0) { %>
+<div class="dashboard-sicurezza p-card">
+  <div class="p-card-header">
+    <h2 class="p-card-header__title">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+      Scadenze Sicurezza
+      <span class="p-tag-count"><%= sicurezzaScadenze.totale %></span>
+    </h2>
+    <a href="<%= bp %>/sicurezza" class="p-card-header__action">Dettagli →</a>
+  </div>
+  <div class="p-card-body--flush">
+    <% sicurezzaScadenze.formazioni.forEach(function(s) { %>
+    <div class="p-list-item" style="padding:.6rem var(--space-md)">
+      <span class="p-tag <%= s.scaduto ? 'p-tag--danger' : 'p-tag--warn' %>" style="font-size:.7rem;min-width:80px;text-align:center">CORSO</span>
+      <div class="p-list-item__body" style="min-width:0">
+        <div class="p-list-item__name" style="font-size:.85rem"><%= s.tipo %></div>
+        <div class="p-list-item__meta"><%= s.scaduto ? 'SCADUTO' : 'Scade' %>: <strong><%= s.data_scadenza %></strong></div>
+      </div>
+    </div>
+    <% }); %>
+    <% sicurezzaScadenze.dpi.forEach(function(s) { %>
+    <div class="p-list-item" style="padding:.6rem var(--space-md)">
+      <span class="p-tag <%= s.scaduto ? 'p-tag--danger' : 'p-tag--primary' %>" style="font-size:.7rem;min-width:80px;text-align:center">DPI</span>
+      <div class="p-list-item__body" style="min-width:0">
+        <div class="p-list-item__name" style="font-size:.85rem"><%= s.tipo %></div>
+        <div class="p-list-item__meta"><%= s.scaduto ? 'SCADUTO' : 'Scade' %>: <strong><%= s.data_scadenza %></strong></div>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+</div>
+<% } %>
+
+<!-- ========== 5. PRESENZA OGGI ========== -->
+<% if (typeof presenzaOggi !== 'undefined') { %>
+<div class="dashboard-presenze p-card">
+  <div class="p-card-header">
+    <h2 class="p-card-header__title">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      Presenza oggi
+    </h2>
+    <a href="<%= bp %>/presenze" class="p-card-header__action">Storico →</a>
+  </div>
+  <div style="padding:var(--space-md);text-align:center">
+    <% if (presenzaOggi && presenzaOggi.ora_entrata && presenzaOggi.ora_uscita) { %>
+      <span class="p-tag p-tag--success" style="font-size:.9rem;padding:.4rem .8rem">Completata: <%= presenzaOggi.ora_entrata %> - <%= presenzaOggi.ora_uscita %> (<%= presenzaOggi.ore_lavorate %>h)</span>
+    <% } else if (presenzaOggi && presenzaOggi.ora_entrata) { %>
+      <span class="p-tag p-tag--primary" style="padding:.4rem .8rem">Entrata: <%= presenzaOggi.ora_entrata %></span>
+      <a href="<%= bp %>/presenze" class="btn btn-sm" style="margin-left:.5rem">Timbra uscita</a>
+    <% } else { %>
+      <a href="<%= bp %>/presenze" class="btn btn-sm">Timbra entrata</a>
+    <% } %>
+  </div>
+</div>
+<% } %>
+
+<!-- ========== 6. FERIE DA APPROVARE (admin/manager) ========== -->
+<% if (typeof ferieDaApprovare !== 'undefined' && ferieDaApprovare.length > 0) { %>
+<div class="dashboard-approvare p-card">
+  <div class="p-card-header">
+    <h2 class="p-card-header__title">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      Ferie da approvare
+      <span class="p-tag-count"><%= ferieDaApprovare.length %></span>
+    </h2>
+    <a href="<%= bp %>/admin/ferie" class="p-card-header__action">Gestisci →</a>
+  </div>
+  <div class="p-card-body--flush">
+    <% ferieDaApprovare.forEach(function(f) { %>
+    <div class="p-list-item" style="padding:.6rem var(--space-md)">
+      <div class="p-list-item__avatar p-list-item__avatar--warn"><%= f.full_name ? f.full_name.charAt(0).toUpperCase() : '?' %></div>
+      <div class="p-list-item__body" style="min-width:0">
+        <div class="p-list-item__name" style="font-size:.85rem"><%= f.full_name || f.username %></div>
+        <div class="p-list-item__meta"><%= f.tipo %> · <%= f.data_inizio %> → <%= f.data_fine %> · <strong><%= f.giorni_totali %>g</strong></div>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+</div>
+<% } %>
 
 </div>
 
-<% if (typeof ultimeRichieste !== 'undefined' && ultimeRichieste.length > 0) { %>
-<div class="dashboard-ultime p-card">
+<!-- ========== 7. CALENDARIO FERIE MESE ========== -->
+<% if (typeof calendarioFerie !== 'undefined') { %>
+<div class="dashboard-calendario p-card" style="margin-top:var(--space-md)">
   <div class="p-card-header">
     <h2 class="p-card-header__title">
       <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
-      Ultime richieste
+      Calendario Ferie — <span style="text-transform:capitalize"><%= meseCorrente %></span>
+    </h2>
+    <a href="<%= bp %>/ferie" class="p-card-header__action">Le mie ferie →</a>
+  </div>
+  <div style="padding:var(--space-md);overflow-x:auto">
+    <table class="p-cal-table" style="width:100%;border-collapse:collapse;font-size:.78rem;text-align:center">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:.3rem .5rem;min-width:120px">Dipendente</th>
+          <% for (var d = 1; d <= giorniMese; d++) {
+            var dayDate = new Date(annoMese.anno, annoMese.mese - 1, d);
+            var isWeekend = dayDate.getDay() === 0 || dayDate.getDay() === 6;
+            var isToday = d === new Date().getDate() && annoMese.mese === new Date().getMonth() + 1 && annoMese.anno === new Date().getFullYear();
+          %>
+          <th style="padding:.2rem;font-size:.7rem;min-width:22px;<%= isWeekend ? 'color:var(--muted);opacity:.5;' : '' %><%= isToday ? 'background:var(--primary);color:#fff;border-radius:4px;' : '' %>"><%= d %></th>
+          <% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <%
+        var persone = {};
+        (calendarioFerie || []).forEach(function(f) {
+          var key = f.full_name || f.username;
+          if (!persone[key]) persone[key] = [];
+          persone[key].push(f);
+        });
+        Object.keys(persone).forEach(function(nome) {
+          var ferie = persone[nome];
+        %>
+        <tr>
+          <td style="text-align:left;padding:.3rem .5rem;white-space:nowrap;font-weight:500"><%= nome %></td>
+          <% for (var d = 1; d <= giorniMese; d++) {
+            var dateStr = annoMese.anno + '-' + String(annoMese.mese).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+            var inFerie = ferie.some(function(f) { return dateStr >= f.data_inizio && dateStr <= f.data_fine; });
+            var dayDate2 = new Date(annoMese.anno, annoMese.mese - 1, d);
+            var isWe = dayDate2.getDay() === 0 || dayDate2.getDay() === 6;
+          %>
+          <td style="padding:.15rem;<%= inFerie ? 'background:var(--primary);border-radius:3px;' : isWe ? 'opacity:.3;' : '' %>">
+            <% if (inFerie) { %><span style="color:#fff;font-size:.65rem;font-weight:700">F</span><% } else { %><span style="color:var(--muted);font-size:.6rem">·</span><% } %>
+          </td>
+          <% } %>
+        </tr>
+        <% }); %>
+        <% if (Object.keys(persone).length === 0) { %>
+        <tr><td colspan="<%= giorniMese + 1 %>" style="padding:var(--space-md);color:var(--muted)">Nessuno in ferie questo mese</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<!-- ========== 8. ULTIME RICHIESTE ========== -->
+<% if (typeof ultimeRichieste !== 'undefined' && ultimeRichieste.length > 0) { %>
+<div class="dashboard-ultime p-card" style="margin-top:var(--space-md)">
+  <div class="p-card-header">
+    <h2 class="p-card-header__title">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+      Le mie richieste
     </h2>
     <a href="<%= bp %>/ferie" class="p-card-header__action">Vedi tutte →</a>
   </div>
@@ -121,39 +249,37 @@
 </div>
 <% } %>
 
-<% if (typeof sicurezzaScadenze !== 'undefined' && sicurezzaScadenze.totale > 0) { %>
-<div class="dashboard-sicurezza p-scadenze">
-  <div class="p-scadenze__header">
-    <h2 class="p-scadenze__title">
-      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-      Scadenze Sicurezza
-      <span class="p-tag-count"><%= sicurezzaScadenze.totale %></span>
+<!-- ========== 9. WIDGET METEO ========== -->
+<div class="dashboard-meteo p-card" style="margin-top:var(--space-md)">
+  <div class="p-card-header">
+    <h2 class="p-card-header__title">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" /></svg>
+      Meteo
     </h2>
-    <a href="<%= bp %>/sicurezza" class="p-card-header__action">Dettagli →</a>
+    <button type="button" class="btn btn-sm btn--secondary" id="meteoSettingsBtn" title="Cambia citta">
+      <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+    </button>
   </div>
-  <div class="p-scadenze__body">
-    <% sicurezzaScadenze.formazioni.forEach(function(s) { %>
-    <div class="p-scadenze-item">
-      <span class="p-scadenze-item__type" style="background:var(--danger)">FORMAZIONE</span>
-      <span class="p-scadenze-item__name"><%= s.tipo %></span>
-      <span class="p-scadenze-item__date"><%= s.data_scadenza %></span>
+  <div id="meteoContent" style="padding:var(--space-md);text-align:center;min-height:80px">
+    <div style="color:var(--muted);font-size:.85rem">Caricamento meteo...</div>
+  </div>
+  <div id="meteoSettings" style="display:none;padding:0 var(--space-md) var(--space-md)">
+    <div style="display:flex;gap:.5rem;align-items:center">
+      <input type="text" id="meteoCitta" placeholder="es. Roma, Milano, Napoli..." style="flex:1;font-size:.85rem">
+      <button type="button" class="btn btn-sm" id="meteoSaveBtn">Salva</button>
     </div>
-    <% }); %>
-    <% sicurezzaScadenze.dpi.forEach(function(s) { %>
-    <div class="p-scadenze-item">
-      <span class="p-scadenze-item__type" style="background:var(--warn)">DPI</span>
-      <span class="p-scadenze-item__name"><%= s.tipo %></span>
-      <span class="p-scadenze-item__date"><%= s.data_scadenza %></span>
-    </div>
-    <% }); %>
   </div>
 </div>
-<% } %>
 
-<div class="dashboard-actions p-quick-actions">
+<!-- ========== 10. AZIONI RAPIDE ========== -->
+<div class="dashboard-actions p-quick-actions" style="margin-top:var(--space-md)">
   <a href="<%= bp %>/ferie" class="p-quick-action">
     <svg class="icon" style="color:var(--primary)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
     Ferie
+  </a>
+  <a href="<%= bp %>/presenze" class="p-quick-action">
+    <svg class="icon" style="color:var(--success)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    Presenze
   </a>
   <a href="<%= bp %>/avvisi" class="p-quick-action">
     <svg class="icon" style="color:var(--warn)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
@@ -163,39 +289,47 @@
     <svg class="icon" style="color:var(--danger)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
     Sicurezza
   </a>
-  <a href="<%= bp %>/ferie/calendar/ical" class="p-quick-action">
-    <svg class="icon" style="color:var(--success)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-    Esporta iCal
-  </a>
   <a href="<%= bp %>/profile/settings" class="p-quick-action">
     <svg class="icon" style="color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
     Impostazioni
   </a>
 </div>
 
-<div class="p-widget-toggle">
+<!-- ========== 11. PERSONALIZZA WIDGET ========== -->
+<div class="p-widget-toggle" style="margin-top:var(--space-md)">
   <button type="button" class="btn btn-sm btn--secondary" id="toggleWidgets">
     <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
-    Personalizza
+    Personalizza dashboard
   </button>
 </div>
-<div id="widgetSettings" class="p-widget-panel">
+<div id="widgetSettings" class="p-widget-panel" style="display:none">
   <p class="p-widget-panel__title">Mostra/nascondi sezioni</p>
   <div class="p-widget-options">
-    <label class="p-widget-option"><input type="checkbox" data-widget="stats" checked> Statistiche</label>
-    <label class="p-widget-option"><input type="checkbox" data-widget="avvisi" checked> Avvisi</label>
-    <label class="p-widget-option"><input type="checkbox" data-widget="notifiche" checked> Notifiche</label>
-    <label class="p-widget-option"><input type="checkbox" data-widget="richieste" checked> Richieste</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="stats" checked> Ferie / Statistiche</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="approvazioni" checked> Approvazioni</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="avvisi" checked> Avvisi staff</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="sicurezza" checked> Scadenze sicurezza</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="presenze" checked> Presenza oggi</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="calendario" checked> Calendario ferie</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="richieste" checked> Le mie richieste</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="meteo" checked> Meteo</label>
     <label class="p-widget-option"><input type="checkbox" data-widget="azioni" checked> Azioni rapide</label>
   </div>
 </div>
 
 <script>
 (function(){
+  // Widget visibility
   var btn = document.getElementById('toggleWidgets');
   var panel = document.getElementById('widgetSettings');
   if (!btn || !panel) return;
-  var map = { stats: '.dashboard-stats', avvisi: '.dashboard-avvisi', notifiche: '.dashboard-notifiche', richieste: '.dashboard-ultime', azioni: '.dashboard-actions' };
+  var map = {
+    stats: '.dashboard-stats', approvazioni: '.dashboard-approvazioni',
+    avvisi: '.dashboard-avvisi', sicurezza: '.dashboard-sicurezza',
+    presenze: '.dashboard-presenze', calendario: '.dashboard-calendario',
+    richieste: '.dashboard-ultime', meteo: '.dashboard-meteo',
+    azioni: '.dashboard-actions', approvare: '.dashboard-approvare'
+  };
   var saved = {};
   try { saved = JSON.parse(localStorage.getItem('portal-widgets') || '{}'); } catch(e){}
   Object.keys(map).forEach(function(k) {
@@ -212,5 +346,104 @@
     panel.querySelectorAll('[data-widget]').forEach(function(c) { prefs[c.dataset.widget] = c.checked; });
     localStorage.setItem('portal-widgets', JSON.stringify(prefs));
   });
+
+  // Meteo widget (Open-Meteo API - gratuita, no API key)
+  var meteoContent = document.getElementById('meteoContent');
+  var meteoSettingsBtn = document.getElementById('meteoSettingsBtn');
+  var meteoSettingsDiv = document.getElementById('meteoSettings');
+  var meteoCittaInput = document.getElementById('meteoCitta');
+  var meteoSaveBtn = document.getElementById('meteoSaveBtn');
+
+  var defaultCity = 'Roma';
+  var savedCity = localStorage.getItem('portal-meteo-city') || defaultCity;
+
+  var weatherCodes = {
+    0: { icon: '\u2600\uFE0F', desc: 'Sereno' },
+    1: { icon: '\uD83C\uDF24\uFE0F', desc: 'Prevalentemente sereno' },
+    2: { icon: '\u26C5', desc: 'Parzialmente nuvoloso' },
+    3: { icon: '\u2601\uFE0F', desc: 'Coperto' },
+    45: { icon: '\uD83C\uDF2B\uFE0F', desc: 'Nebbia' },
+    48: { icon: '\uD83C\uDF2B\uFE0F', desc: 'Nebbia gelata' },
+    51: { icon: '\uD83C\uDF26\uFE0F', desc: 'Pioggerella leggera' },
+    53: { icon: '\uD83C\uDF26\uFE0F', desc: 'Pioggerella' },
+    55: { icon: '\uD83C\uDF27\uFE0F', desc: 'Pioggerella intensa' },
+    61: { icon: '\uD83C\uDF27\uFE0F', desc: 'Pioggia leggera' },
+    63: { icon: '\uD83C\uDF27\uFE0F', desc: 'Pioggia' },
+    65: { icon: '\uD83C\uDF27\uFE0F', desc: 'Pioggia intensa' },
+    71: { icon: '\u2744\uFE0F', desc: 'Neve leggera' },
+    73: { icon: '\u2744\uFE0F', desc: 'Neve' },
+    75: { icon: '\u2744\uFE0F', desc: 'Neve intensa' },
+    80: { icon: '\uD83C\uDF26\uFE0F', desc: 'Rovesci leggeri' },
+    81: { icon: '\uD83C\uDF27\uFE0F', desc: 'Rovesci' },
+    82: { icon: '\u26C8\uFE0F', desc: 'Rovesci violenti' },
+    95: { icon: '\u26C8\uFE0F', desc: 'Temporale' },
+    96: { icon: '\u26C8\uFE0F', desc: 'Temporale con grandine' },
+    99: { icon: '\u26C8\uFE0F', desc: 'Temporale con grandine forte' }
+  };
+
+  function loadMeteo(city) {
+    meteoContent.innerHTML = '<div style="color:var(--muted);font-size:.85rem">Caricamento meteo per ' + city + '...</div>';
+    // Step 1: geocode
+    fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(city) + '&count=1&language=it')
+      .then(function(r) { return r.json(); })
+      .then(function(geo) {
+        if (!geo.results || !geo.results.length) {
+          meteoContent.innerHTML = '<div style="color:var(--danger);font-size:.85rem">Citta non trovata: ' + city + '</div>';
+          return;
+        }
+        var loc = geo.results[0];
+        // Step 2: weather
+        return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + loc.latitude + '&longitude=' + loc.longitude + '&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=3')
+          .then(function(r) { return r.json(); })
+          .then(function(w) {
+            var cur = w.current;
+            var wc = weatherCodes[cur.weather_code] || { icon: '\u2601\uFE0F', desc: 'N/D' };
+            var html = '<div style="display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap">';
+            html += '<div style="font-size:2.5rem;line-height:1">' + wc.icon + '</div>';
+            html += '<div style="text-align:left">';
+            html += '<div style="font-size:1.5rem;font-weight:700;line-height:1.1">' + Math.round(cur.temperature_2m) + '\u00B0C</div>';
+            html += '<div style="font-size:.82rem;color:var(--muted)">' + wc.desc + '</div>';
+            html += '<div style="font-size:.75rem;color:var(--muted)">' + loc.name + ' \u00B7 Vento ' + Math.round(cur.wind_speed_10m) + ' km/h \u00B7 Umidita ' + cur.relative_humidity_2m + '%</div>';
+            html += '</div></div>';
+            // Previsioni 3 giorni
+            if (w.daily) {
+              html += '<div style="display:flex;justify-content:center;gap:1.5rem;margin-top:.75rem;font-size:.78rem">';
+              var giorni = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+              for (var i = 0; i < Math.min(3, w.daily.time.length); i++) {
+                var dd = new Date(w.daily.time[i]);
+                var dwc = weatherCodes[w.daily.weather_code[i]] || { icon: '\u2601\uFE0F', desc: '' };
+                html += '<div style="text-align:center">';
+                html += '<div style="font-weight:600">' + giorni[dd.getDay()] + ' ' + dd.getDate() + '</div>';
+                html += '<div style="font-size:1.2rem">' + dwc.icon + '</div>';
+                html += '<div><strong>' + Math.round(w.daily.temperature_2m_max[i]) + '\u00B0</strong> / ' + Math.round(w.daily.temperature_2m_min[i]) + '\u00B0</div>';
+                html += '</div>';
+              }
+              html += '</div>';
+            }
+            meteoContent.innerHTML = html;
+          });
+      })
+      .catch(function() {
+        meteoContent.innerHTML = '<div style="color:var(--muted);font-size:.85rem">Meteo non disponibile</div>';
+      });
+  }
+
+  if (meteoSettingsBtn) meteoSettingsBtn.onclick = function() {
+    meteoSettingsDiv.style.display = meteoSettingsDiv.style.display === 'none' ? 'block' : 'none';
+    meteoCittaInput.value = savedCity;
+    meteoCittaInput.focus();
+  };
+  if (meteoSaveBtn) meteoSaveBtn.onclick = function() {
+    var city = meteoCittaInput.value.trim();
+    if (city) {
+      savedCity = city;
+      localStorage.setItem('portal-meteo-city', city);
+      meteoSettingsDiv.style.display = 'none';
+      loadMeteo(city);
+    }
+  };
+  if (meteoCittaInput) meteoCittaInput.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); meteoSaveBtn.click(); } };
+
+  loadMeteo(savedCity);
 })();
 </script>

@@ -1,5 +1,5 @@
 <h1 class="page-title">
-  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0M3.75 6H13.5M3.75 6a1.5 1.5 0 00-1.5 1.5v13.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V7.5a1.5 1.5 0 00-1.5-1.5M13.5 18.75h-9m-9 0l3-3m-3 3l3-3" /></svg>
   Dashboard
 </h1>
 
@@ -63,7 +63,7 @@
 
 <% if (typeof ultimeRichieste !== 'undefined' && ultimeRichieste.length > 0) { %>
 <div class="card dashboard-ultime">
-  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> Ultime richieste ferie</h2>
+  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v.01M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0" /></svg> Ultime richieste ferie</h2>
   <ul class="dashboard-ultime__list">
     <% ultimeRichieste.forEach(function(r) { %>
     <li><%= r.data_inizio %> → <%= r.data_fine %> · <%= r.tipo %> · <span class="badge badge--ferie <%= r.stato %>"><%= r.stato === 'pending' ? 'In attesa' : r.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span></li>

@@ -123,6 +123,8 @@ async function initDatabase() {
     // Colonna allegato per certificati medici
     await client.query('ALTER TABLE ferie ADD COLUMN IF NOT EXISTS allegato_path VARCHAR(500)');
     await client.query('ALTER TABLE ferie ADD COLUMN IF NOT EXISTS allegato_nome VARCHAR(255)');
+    // Codice protocollo INPS per malattia (rilasciato dal medico di base)
+    await client.query('ALTER TABLE ferie ADD COLUMN IF NOT EXISTS codice_protocollo VARCHAR(100)');
     // Tabella impostazioni utente
     await client.query(`
       CREATE TABLE IF NOT EXISTS user_settings (

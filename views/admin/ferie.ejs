@@ -59,6 +59,13 @@
             <span><%= f.giorni_totali %> gg</span>
             <span>·</span>
             <span style="text-transform:capitalize"><%= f.tipo %></span>
+            <% if (f.tipo === 'malattia' && f.codice_protocollo) { %>
+            <span>·</span>
+            <span style="color:var(--primary,#1a56db);font-weight:600" title="Codice protocollo medico">
+              <svg style="width:11px;height:11px;vertical-align:middle;margin-right:1px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+              <%= f.codice_protocollo %>
+            </span>
+            <% } %>
           </div>
         </div>
         <span class="badge <%= f.stato %>" style="font-size:.7rem;flex-shrink:0"><%= f.stato === 'pending' ? 'In attesa' : f.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span>
@@ -139,6 +146,9 @@
       <label>Data inizio <input type="date" id="adminFerieEditInizio" name="data_inizio" required></label>
       <label>Data fine <input type="date" id="adminFerieEditFine" name="data_fine" required></label>
       <label>Tipo <select id="adminFerieEditTipo" name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select></label>
+      <div id="adminEditProtocolloRow" style="display:none">
+        <label>Codice protocollo medico <span style="color:var(--danger,#dc2626);font-weight:600">*</span> <input type="text" id="adminFerieEditProtocollo" name="codice_protocollo" placeholder="Codice rilasciato dal medico di base" maxlength="100"></label>
+      </div>
       <label>Note <textarea id="adminFerieEditNote" name="note" rows="2" placeholder="Opzionale"></textarea></label>
       <div class="modal__actions">
         <button type="button" class="btn btn--secondary" id="adminFerieEditCancel">Annulla</button>
@@ -187,13 +197,27 @@
     var fine = entry.data_fine || entry.getAttribute('data-fine');
     var tipo = entry.tipo || entry.getAttribute('data-tipo') || 'ferie';
     var note = (entry.note != null ? entry.note : entry.getAttribute('data-note')) || '';
+    var protocollo = (entry.codice_protocollo != null ? entry.codice_protocollo : entry.getAttribute('data-protocollo')) || '';
     document.getElementById('adminFerieEditId').value = id;
     document.getElementById('adminFerieEditInizio').value = inizio;
     document.getElementById('adminFerieEditFine').value = fine;
     document.getElementById('adminFerieEditTipo').value = tipo;
     document.getElementById('adminFerieEditNote').value = note;
+    document.getElementById('adminFerieEditProtocollo').value = protocollo;
+    var protoRow = document.getElementById('adminEditProtocolloRow');
+    if (tipo === 'malattia') { protoRow.style.display = ''; } else { protoRow.style.display = 'none'; }
     document.getElementById('adminFerieEditOverlay').removeAttribute('hidden');
     document.getElementById('adminFerieEditOverlay').setAttribute('aria-hidden', 'false');
+  }
+  // Mostra/nascondi protocollo nel modale modifica admin
+  var adminEditTipo = document.getElementById('adminFerieEditTipo');
+  if (adminEditTipo) {
+    adminEditTipo.addEventListener('change', function() {
+      var row = document.getElementById('adminEditProtocolloRow');
+      var inp = document.getElementById('adminFerieEditProtocollo');
+      if (this.value === 'malattia') { row.style.display = ''; inp.required = true; }
+      else { row.style.display = 'none'; inp.required = false; inp.value = ''; }
+    });
   }
   function closeEditModal() {
     document.getElementById('adminFerieEditOverlay').setAttribute('hidden', '');
@@ -228,7 +252,7 @@
   document.getElementById('adminFerieEditForm').onsubmit = async function(e) {
     e.preventDefault();
     var id = document.getElementById('adminFerieEditId').value;
-    var payload = { _csrf: csrf, data_inizio: document.getElementById('adminFerieEditInizio').value, data_fine: document.getElementById('adminFerieEditFine').value, tipo: document.getElementById('adminFerieEditTipo').value, note: document.getElementById('adminFerieEditNote').value };
+    var payload = { _csrf: csrf, data_inizio: document.getElementById('adminFerieEditInizio').value, data_fine: document.getElementById('adminFerieEditFine').value, tipo: document.getElementById('adminFerieEditTipo').value, note: document.getElementById('adminFerieEditNote').value, codice_protocollo: document.getElementById('adminFerieEditProtocollo').value };
     try {
       var r = await fetch(base + '/admin/ferie/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       var j = await r.json();

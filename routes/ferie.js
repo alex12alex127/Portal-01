@@ -131,6 +131,10 @@ router.get('/calendar', requireAuth, async (req, res) => {
 router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) => {
   const { data_inizio, data_fine, note } = req.body;
   const tipo = req.body.tipo || 'ferie';
+  const codice_protocollo = (req.body.codice_protocollo && String(req.body.codice_protocollo).trim()) || null;
+  if (tipo === 'malattia' && !codice_protocollo) {
+    return res.status(400).json({ error: 'Il codice protocollo del medico è obbligatorio per le richieste di malattia' });
+  }
   try {
     const overlap = await db.query(
       `SELECT * FROM ferie WHERE user_id = $1 AND stato != 'rejected'
@@ -142,8 +146,8 @@ router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) 
     }
     const giorni = Math.ceil((new Date(data_fine) - new Date(data_inizio)) / (1000 * 60 * 60 * 24)) + 1;
     await db.query(
-      'INSERT INTO ferie (user_id, data_inizio, data_fine, giorni_totali, tipo, note) VALUES ($1, $2, $3, $4, $5, $6)',
-      [req.session.user.id, data_inizio, data_fine, giorni, tipo, note || null]
+      'INSERT INTO ferie (user_id, data_inizio, data_fine, giorni_totali, tipo, note, codice_protocollo) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [req.session.user.id, data_inizio, data_fine, giorni, tipo, note || null, tipo === 'malattia' ? codice_protocollo : null]
     );
     
     // Crea notifica per l'utente
@@ -180,6 +184,11 @@ router.put('/:id', requireAuth, apiLimiter, validateFerie, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
   const { data_inizio, data_fine, tipo, note } = req.body;
+  const codice_protocollo = (req.body.codice_protocollo && String(req.body.codice_protocollo).trim()) || null;
+  const tipoVal = ['ferie', 'permesso', 'malattia'].includes(tipo) ? tipo : 'ferie';
+  if (tipoVal === 'malattia' && !codice_protocollo) {
+    return res.status(400).json({ error: 'Il codice protocollo del medico è obbligatorio per le richieste di malattia' });
+  }
   try {
     const check = await db.query('SELECT id FROM ferie WHERE id = $1 AND user_id = $2 AND stato = $3', [id, req.session.user.id, 'pending']);
     if (check.rows.length === 0) return res.status(403).json({ error: 'Richiesta non trovata o non modificabile' });
@@ -189,11 +198,10 @@ router.put('/:id', requireAuth, apiLimiter, validateFerie, async (req, res) => {
       [req.session.user.id, id, data_inizio, data_fine]
     );
     if (overlap.rows.length > 0) return res.status(400).json({ error: 'Hai già una richiesta per questo periodo' });
-    const tipoVal = ['ferie', 'permesso', 'malattia'].includes(tipo) ? tipo : 'ferie';
     const giorni = Math.ceil((new Date(data_fine) - new Date(data_inizio)) / (1000 * 60 * 60 * 24)) + 1;
     await db.query(
-      'UPDATE ferie SET data_inizio = $1, data_fine = $2, giorni_totali = $3, tipo = $4, note = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6',
-      [data_inizio, data_fine, giorni, tipoVal, note || null, id]
+      'UPDATE ferie SET data_inizio = $1, data_fine = $2, giorni_totali = $3, tipo = $4, note = $5, codice_protocollo = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7',
+      [data_inizio, data_fine, giorni, tipoVal, note || null, tipoVal === 'malattia' ? codice_protocollo : null, id]
     );
     res.json({ success: true, message: 'Richiesta aggiornata' });
   } catch (err) {

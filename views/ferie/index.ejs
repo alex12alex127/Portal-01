@@ -44,6 +44,11 @@
             <label for="tipo">Tipo</label>
             <select id="tipo" name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select>
           </div>
+          <div class="ferie-form__row" id="protocolloRow" style="display:none">
+            <label for="codice_protocollo">Codice protocollo medico <span style="color:var(--danger,#dc2626);font-weight:600">*</span></label>
+            <input type="text" id="codice_protocollo" name="codice_protocollo" placeholder="Codice rilasciato dal medico di base" maxlength="100">
+            <small style="color:var(--muted);font-size:.75rem">Obbligatorio per malattia. Inserisci il codice protocollo INPS del certificato medico.</small>
+          </div>
           <div class="ferie-form__row">
             <label for="note">Note <span class="label-optional">(opzionale)</span></label>
             <textarea id="note" name="note" rows="2" placeholder="Eventuali note per il responsabile..."></textarea>
@@ -82,10 +87,16 @@
                 <span class="ferie-request-card__days"><%= f.giorni_totali %> giorni</span>
                 <span class="ferie-request-card__tipo"><%= f.tipo %></span>
               </div>
+              <% if (f.tipo === 'malattia' && f.codice_protocollo) { %>
+              <div style="font-size:.78rem;color:var(--muted);margin-top:.25rem">
+                <svg style="width:12px;height:12px;vertical-align:middle;margin-right:2px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                Protocollo: <strong><%= f.codice_protocollo %></strong>
+              </div>
+              <% } %>
               <span class="badge badge--ferie <%= f.stato %>"><%= f.stato === 'pending' ? 'In attesa' : f.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span>
               <% if (f.stato === 'pending') { %>
               <div class="ferie-request-card__actions">
-                <button type="button" class="btn-sm ferie-edit-btn" data-id="<%= f.id %>" data-inizio="<%= f.data_inizio %>" data-fine="<%= f.data_fine %>" data-tipo="<%= f.tipo %>" data-note="<%= (f.note || '') %>">Modifica</button>
+                <button type="button" class="btn-sm ferie-edit-btn" data-id="<%= f.id %>" data-inizio="<%= f.data_inizio %>" data-fine="<%= f.data_fine %>" data-tipo="<%= f.tipo %>" data-note="<%= (f.note || '') %>" data-protocollo="<%= (f.codice_protocollo || '') %>">Modifica</button>
                 <button type="button" class="btn-sm ferie-withdraw-btn" data-id="<%= f.id %>">Ritira</button>
               </div>
               <% } %>
@@ -105,6 +116,9 @@
         <label>Data inizio <input type="date" id="ferieEditInizio" name="data_inizio" required></label>
         <label>Data fine <input type="date" id="ferieEditFine" name="data_fine" required></label>
         <label>Tipo <select id="ferieEditTipo" name="tipo"><option value="ferie">Ferie</option><option value="permesso">Permesso</option><option value="malattia">Malattia</option></select></label>
+        <div id="editProtocolloRow" style="display:none">
+          <label>Codice protocollo medico <span style="color:var(--danger,#dc2626);font-weight:600">*</span> <input type="text" id="ferieEditProtocollo" name="codice_protocollo" placeholder="Codice rilasciato dal medico di base" maxlength="100"></label>
+        </div>
         <label>Note <textarea id="ferieEditNote" name="note" rows="2"></textarea></label>
         <div class="modal__actions">
           <button type="button" class="btn btn--secondary" id="ferieEditCancel">Annulla</button>
@@ -220,6 +234,17 @@
   }
 })();
 
+  // Mostra/nascondi campo protocollo in base al tipo
+  var tipoSelect = document.getElementById('tipo');
+  var protocolloRow = document.getElementById('protocolloRow');
+  var protocolloInput = document.getElementById('codice_protocollo');
+  if (tipoSelect && protocolloRow) {
+    tipoSelect.addEventListener('change', function() {
+      if (this.value === 'malattia') { protocolloRow.style.display = ''; protocolloInput.required = true; }
+      else { protocolloRow.style.display = 'none'; protocolloInput.required = false; protocolloInput.value = ''; }
+    });
+  }
+
   document.getElementById('frm').onsubmit=async function(e){
     e.preventDefault();
     var btn=this.querySelector('button[type="submit"]'), txt=btn ? btn.querySelector('.btn-text') : null, msg=document.getElementById('ferieMsg');
@@ -235,12 +260,15 @@
   };
 
   var base = window.APP_BASE || '', csrf = '<%= csrfToken %>';
-  function openFerieEdit(id, inizio, fine, tipo, note) {
+  function openFerieEdit(id, inizio, fine, tipo, note, protocollo) {
     document.getElementById('ferieEditId').value = id;
     document.getElementById('ferieEditInizio').value = inizio;
     document.getElementById('ferieEditFine').value = fine;
     document.getElementById('ferieEditTipo').value = tipo || 'ferie';
     document.getElementById('ferieEditNote').value = note || '';
+    document.getElementById('ferieEditProtocollo').value = protocollo || '';
+    var editProtoRow = document.getElementById('editProtocolloRow');
+    if (tipo === 'malattia') { editProtoRow.style.display = ''; } else { editProtoRow.style.display = 'none'; }
     document.getElementById('ferieEditOverlay').removeAttribute('hidden');
     document.getElementById('ferieEditOverlay').setAttribute('aria-hidden', 'false');
   }
@@ -249,8 +277,18 @@
     document.getElementById('ferieEditOverlay').setAttribute('aria-hidden', 'true');
   }
   document.querySelectorAll('.ferie-edit-btn').forEach(function(btn) {
-    btn.onclick = function() { openFerieEdit(this.dataset.id, this.dataset.inizio, this.dataset.fine, this.dataset.tipo, this.dataset.note); };
+    btn.onclick = function() { openFerieEdit(this.dataset.id, this.dataset.inizio, this.dataset.fine, this.dataset.tipo, this.dataset.note, this.dataset.protocollo); };
   });
+  // Mostra/nascondi protocollo nel modale modifica
+  var editTipoSelect = document.getElementById('ferieEditTipo');
+  var editProtoRow = document.getElementById('editProtocolloRow');
+  var editProtoInput = document.getElementById('ferieEditProtocollo');
+  if (editTipoSelect && editProtoRow) {
+    editTipoSelect.addEventListener('change', function() {
+      if (this.value === 'malattia') { editProtoRow.style.display = ''; editProtoInput.required = true; }
+      else { editProtoRow.style.display = 'none'; editProtoInput.required = false; editProtoInput.value = ''; }
+    });
+  }
   document.querySelectorAll('.ferie-withdraw-btn').forEach(function(btn) {
     btn.onclick = function() {
       var doWithdraw = function() {
@@ -268,7 +306,7 @@
   document.getElementById('ferieEditForm').onsubmit = async function(e) {
     e.preventDefault();
     var id = document.getElementById('ferieEditId').value;
-    var payload = { _csrf: csrf, data_inizio: document.getElementById('ferieEditInizio').value, data_fine: document.getElementById('ferieEditFine').value, tipo: document.getElementById('ferieEditTipo').value, note: document.getElementById('ferieEditNote').value };
+    var payload = { _csrf: csrf, data_inizio: document.getElementById('ferieEditInizio').value, data_fine: document.getElementById('ferieEditFine').value, tipo: document.getElementById('ferieEditTipo').value, note: document.getElementById('ferieEditNote').value, codice_protocollo: document.getElementById('ferieEditProtocollo').value };
     try {
       var r = await fetch(base + '/ferie/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       var j = await r.json();

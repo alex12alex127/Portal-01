@@ -2588,3 +2588,190 @@ tr:hover td { background: rgba(59,130,246,.03); }
   .msg-chat-input__wrap { padding: .6rem .75rem; }
   .msg-modal-nuova { width: calc(100vw - 1rem); }
 }
+
+/* ========== DASHBOARD CALENDAR — glass grid ========== */
+.dcal {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.dcal::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--glass-shine);
+  border-radius: inherit;
+  pointer-events: none; opacity: .4;
+}
+
+/* Header */
+.dcal__header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem; position: relative;
+}
+.dcal__header-left {
+  display: flex; align-items: center; gap: .5rem;
+}
+.dcal__header-left .icon {
+  width: 22px; height: 22px; color: var(--primary);
+}
+.dcal__title {
+  font-size: 1.05rem; font-weight: 700; margin: 0;
+  color: var(--text);
+}
+
+/* Weekday labels */
+.dcal__weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 4px; margin-bottom: 4px; position: relative;
+}
+.dcal__weekday {
+  text-align: center; font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em;
+  color: var(--text-muted); padding: .3rem 0;
+}
+.dcal__weekday--we { color: var(--primary); opacity: .6; }
+
+/* Grid */
+.dcal__grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 4px; position: relative;
+}
+
+/* Cell */
+.dcal__cell {
+  min-height: 72px;
+  padding: .35rem;
+  border-radius: var(--radius);
+  background: rgba(255,255,255,.03);
+  border: 1px solid transparent;
+  transition: all var(--transition);
+  position: relative;
+  display: flex; flex-direction: column;
+}
+.dcal__cell:hover:not(.dcal__cell--empty) {
+  background: rgba(59,130,246,.04);
+  border-color: var(--glass-border);
+}
+.dcal__cell--empty {
+  background: transparent; min-height: 0;
+}
+.dcal__cell--weekend {
+  background: rgba(148,163,184,.03);
+}
+.dcal__cell--weekend .dcal__day { opacity: .45; }
+
+/* Today */
+.dcal__cell--today {
+  border-color: var(--primary);
+  background: rgba(59,130,246,.06);
+  box-shadow: 0 0 12px var(--primary-glow), inset 0 0 8px rgba(59,130,246,.04);
+}
+.dcal__cell--today .dcal__day {
+  background: linear-gradient(135deg, var(--primary), #6366f1);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+/* Ferie cell */
+.dcal__cell--ferie {
+  background: rgba(59,130,246,.04);
+}
+
+/* Day number */
+.dcal__day {
+  width: 24px; height: 24px; line-height: 24px;
+  text-align: center; border-radius: 50%;
+  font-size: .75rem; font-weight: 600;
+  color: var(--text); margin-bottom: .2rem;
+  transition: all var(--transition);
+}
+
+/* Ferie dots (visible on small cells / mobile) */
+.dcal__ferie-dots {
+  display: none;
+  align-items: center; gap: 3px;
+  flex-wrap: wrap;
+}
+.dcal__dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 4px rgba(0,0,0,.15);
+}
+.dcal__dot-more {
+  font-size: .55rem; font-weight: 700;
+  color: var(--text-muted); line-height: 1;
+}
+
+/* Ferie names (visible on desktop) */
+.dcal__ferie-names {
+  display: flex; flex-direction: column; gap: 2px;
+  flex: 1; min-width: 0;
+}
+.dcal__name {
+  font-size: .62rem; font-weight: 600;
+  color: var(--text); line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding-left: .35rem;
+  border-left: 2px solid #3b82f6;
+}
+.dcal__name--more {
+  font-size: .58rem; color: var(--text-muted);
+  border-left-color: var(--border) !important;
+}
+
+/* Legend */
+.dcal__legend {
+  display: flex; flex-wrap: wrap; gap: .5rem .75rem;
+  margin-top: .85rem; padding-top: .75rem;
+  border-top: 1px solid var(--border-light);
+  position: relative;
+}
+.dcal__legend-item {
+  display: flex; align-items: center; gap: .3rem;
+}
+.dcal__legend-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px rgba(0,0,0,.1);
+}
+.dcal__legend-name {
+  font-size: .72rem; font-weight: 500; color: var(--text);
+}
+
+/* Empty state */
+.dcal__empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 1.5rem;
+  color: var(--text-muted); text-align: center;
+  position: relative;
+}
+.dcal__empty p { margin: .4rem 0 0; font-size: .85rem; }
+
+/* Dark mode */
+[data-theme="dark"] .dcal__cell { background: rgba(255,255,255,.02); }
+[data-theme="dark"] .dcal__cell--weekend { background: rgba(148,163,184,.03); }
+[data-theme="dark"] .dcal__cell--today { background: rgba(59,130,246,.08); }
+[data-theme="dark"] .dcal__cell--ferie { background: rgba(59,130,246,.06); }
+[data-theme="dark"] .dcal__cell:hover:not(.dcal__cell--empty) { background: rgba(96,165,250,.06); }
+
+/* Mobile: show dots instead of names */
+@media (max-width: 767px) {
+  .dcal { padding: .75rem; }
+  .dcal__cell { min-height: 48px; padding: .25rem; }
+  .dcal__day { width: 20px; height: 20px; line-height: 20px; font-size: .68rem; }
+  .dcal__ferie-names { display: none; }
+  .dcal__ferie-dots { display: flex; }
+  .dcal__legend-name { font-size: .65rem; }
+  .dcal__title { font-size: .92rem; }
+}
+@media (max-width: 400px) {
+  .dcal__grid { gap: 2px; }
+  .dcal__weekdays { gap: 2px; }
+  .dcal__cell { min-height: 38px; }
+  .dcal__day { width: 18px; height: 18px; line-height: 18px; font-size: .6rem; }
+  .dcal__dot { width: 5px; height: 5px; }
+}

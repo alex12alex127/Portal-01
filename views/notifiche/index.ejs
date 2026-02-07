@@ -167,7 +167,7 @@ let notifications = [];
 
 async function loadNotifications() {
   try {
-    const response = await fetch('<%= basePath %>/notifiche');
+    const response = await fetch('<%= basePath %>/notifiche/api');
     const data = await response.json();
     
     if (data.success) {

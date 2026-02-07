@@ -13,8 +13,27 @@ const router = express.Router();
 // Middleware per autenticazione su tutte le route
 router.use(requireAuth);
 
-// GET /notifiche - Lista notifiche utente
+// GET /notifiche - Lista notifiche utente (pagina HTML)
 router.get('/', async (req, res) => {
+  try {
+    const notifiche = await getNotificheUtente(req.session.user.id, 20);
+    const nonLette = await contaNotificheNonLette(req.session.user.id);
+    
+    res.render('notifiche/index', {
+      title: 'Notifiche - Portal-01',
+      activePage: 'notifiche',
+      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Notifiche' }],
+      notifiche,
+      nonLette
+    });
+  } catch (err) {
+    console.error('[notifiche]', err);
+    res.status(500).send('Errore caricamento notifiche');
+  }
+});
+
+// GET /notifiche/api - Lista notifiche utente (JSON per AJAX)
+router.get('/api', async (req, res) => {
   try {
     const notifiche = await getNotificheUtente(req.session.user.id, 20);
     const nonLette = await contaNotificheNonLette(req.session.user.id);

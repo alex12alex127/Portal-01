@@ -125,7 +125,7 @@
       </div>
       
       <div class="form-actions">
-        <button type="button" class="btn btn-secondary" onclick="hideForm()">Annulla</button>
+        <button type="button" class="btn btn-secondary js-hide-form">Annulla</button>
         <button type="submit" class="btn btn-primary">Salva</button>
       </div>
     </form>
@@ -264,12 +264,20 @@ let editingId = null;
 
 // Assicurati che il DOM sia caricato
 document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.js-create-avviso').forEach(function(btn) {
-    btn.addEventListener('click', showCreateForm);
-  });
+  document.addEventListener('click', function(e) {
+    const createBtn = e.target.closest('.js-create-avviso');
+    if (createBtn) {
+      e.preventDefault();
+      showCreateForm();
+      return;
+    }
 
-  document.querySelectorAll('.js-hide-form').forEach(function(btn) {
-    btn.addEventListener('click', hideForm);
+    const hideBtn = e.target.closest('.js-hide-form');
+    if (hideBtn) {
+      e.preventDefault();
+      hideForm();
+      return;
+    }
   });
   
   // Bottoni modifica

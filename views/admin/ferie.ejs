@@ -1,72 +1,123 @@
+<% var bp = typeof basePath !== 'undefined' ? basePath : ''; %>
 <h1 class="page-title">
-  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><path d="M22 4L12 14.01l-3-3"></path></svg>
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
   Richieste Ferie
+  <span style="font-size:.9rem;font-weight:400;color:var(--muted);margin-left:.5rem">(<%= typeof pagination !== 'undefined' ? pagination.total : ferie.length %>)</span>
 </h1>
-<div class="card">
-  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><path d="M22 4L12 14.01l-3-3"></path></svg> Tutte le richieste (<%= typeof pagination !== 'undefined' ? pagination.total : ferie.length %>)</h2>
-  <% if (typeof filtri !== 'undefined' && (typeof usersList !== 'undefined' && usersList.length)) { %>
-  <form method="get" action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/ferie" class="ferie-filtri" style="margin-bottom:1rem">
-    <label>Stato <select name="stato"><option value="">Tutte</option><option value="pending"<%= filtri.stato === 'pending' ? ' selected' : '' %>>In attesa</option><option value="approved"<%= filtri.stato === 'approved' ? ' selected' : '' %>>Approvate</option><option value="rejected"<%= filtri.stato === 'rejected' ? ' selected' : '' %>>Rifiutate</option></select></label>
-    <label>Dipendente <select name="user_id"><option value="">Tutti</option><% (usersList || []).forEach(function(u) { %><option value="<%= u.id %>"<%= filtri.user_id == u.id ? ' selected' : '' %>><%= u.username %></option><% }); %></select></label>
+
+<% if (typeof filtri !== 'undefined' && (typeof usersList !== 'undefined' && usersList.length)) { %>
+<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden;margin-bottom:1rem">
+  <form method="get" action="<%= bp %>/admin/ferie" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;padding:1rem 1.25rem">
+    <div style="min-width:130px">
+      <label style="display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.03em">Stato</label>
+      <select name="stato" style="width:100%">
+        <option value="">Tutte</option>
+        <option value="pending"<%= filtri.stato === 'pending' ? ' selected' : '' %>>In attesa</option>
+        <option value="approved"<%= filtri.stato === 'approved' ? ' selected' : '' %>>Approvate</option>
+        <option value="rejected"<%= filtri.stato === 'rejected' ? ' selected' : '' %>>Rifiutate</option>
+      </select>
+    </div>
+    <div style="min-width:150px">
+      <label style="display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.03em">Dipendente</label>
+      <select name="user_id" style="width:100%">
+        <option value="">Tutti</option>
+        <% (usersList || []).forEach(function(u) { %>
+        <option value="<%= u.id %>"<%= filtri.user_id == u.id ? ' selected' : '' %>><%= u.username %></option>
+        <% }); %>
+      </select>
+    </div>
     <input type="hidden" name="page" value="1">
     <button type="submit" class="btn btn-sm">Filtra</button>
+    <% if (filtri.stato || filtri.user_id) { %>
+    <a href="<%= bp %>/admin/ferie" class="btn btn-sm btn--secondary">Reset</a>
+    <% } %>
   </form>
-  <% } %>
+</div>
+<% } %>
+
+<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
   <% if (ferie.length === 0) { %>
-    <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Nessuna richiesta.</p>
-  <% } else { %>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Dipendente</th><th>Da</th><th>A</th><th>Giorni</th><th>Tipo</th><th>Stato</th><th>Azioni</th></tr>
-        </thead>
-        <tbody>
-          <% ferie.forEach(function(f) { %>
-          <tr data-id="<%= f.id %>">
-            <td><strong><%= f.username %></strong><br><span class="text-muted"><%= f.full_name %></span></td>
-            <td><%= f.data_inizio %></td>
-            <td><%= f.data_fine %></td>
-            <td><%= f.giorni_totali %></td>
-            <td><%= f.tipo %></td>
-            <td><span class="badge <%= f.stato %>"><%= f.stato === 'pending' ? 'In attesa' : f.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span></td>
-            <td class="admin-ferie-actions">
-              <% if (f.stato === 'pending') { %>
-                <button type="button" class="btn-sm approve-btn" data-id="<%= f.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Approva</button>
-                <button type="button" class="btn-sm reject-btn" data-id="<%= f.id %>"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> Rifiuta</button>
-              <% } %>
-              <button type="button" class="btn-sm admin-ferie-edit-btn" data-id="<%= f.id %>" data-inizio="<%= f.data_inizio %>" data-fine="<%= f.data_fine %>" data-tipo="<%= f.tipo %>" data-note="<%= f.note || '' %>" title="Modifica"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg> Modifica</button>
-              <button type="button" class="btn-sm admin-ferie-delete-btn" data-id="<%= f.id %>" title="Cancella"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> Cancella</button>
-            </td>
-          </tr>
-          <% }); %>
-        </tbody>
-      </table>
+    <div style="padding:3rem;text-align:center">
+      <svg style="width:48px;height:48px;color:var(--muted);opacity:.4;margin-bottom:.75rem" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+      <p style="margin:0;color:var(--muted);font-size:.95rem">Nessuna richiesta.</p>
     </div>
-    <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
-    <nav class="pagination" aria-label="Paginazione">
-      <span class="pagination__info">Pagina <%= pagination.page %> di <%= pagination.totalPages %> (<%= pagination.total %> totali)</span>
-      <div class="pagination__links">
-        <% if (pagination.page > 1) { %><a href="?page=<%= pagination.page - 1 %>&limit=<%= pagination.limit %>" class="btn btn-sm">Precedente</a><% } %>
-        <% if (pagination.page < pagination.totalPages) { %><a href="?page=<%= pagination.page + 1 %>&limit=<%= pagination.limit %>" class="btn btn-sm">Successivo</a><% } %>
+  <% } else { %>
+    <div>
+      <% ferie.forEach(function(f) { %>
+      <div data-id="<%= f.id %>" style="display:flex;align-items:center;gap:1rem;padding:.85rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--primary,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0"><%= f.full_name ? f.full_name.charAt(0).toUpperCase() : f.username.charAt(0).toUpperCase() %></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <span style="font-weight:600;font-size:.9rem"><%= f.full_name || f.username %></span>
+            <span style="font-size:.8rem;color:var(--muted)">@<%= f.username %></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-top:.2rem;font-size:.85rem;color:var(--muted)">
+            <span style="font-weight:500;color:var(--text)"><%= f.data_inizio %></span>
+            <span>→</span>
+            <span style="font-weight:500;color:var(--text)"><%= f.data_fine %></span>
+            <span>·</span>
+            <span><%= f.giorni_totali %> gg</span>
+            <span>·</span>
+            <span style="text-transform:capitalize"><%= f.tipo %></span>
+          </div>
+        </div>
+        <span class="badge <%= f.stato %>" style="font-size:.7rem;flex-shrink:0"><%= f.stato === 'pending' ? 'In attesa' : f.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span>
+        <div class="admin-ferie-actions" style="display:flex;gap:.35rem;flex-shrink:0">
+          <% if (f.stato === 'pending') { %>
+            <button type="button" class="approve-btn" data-id="<%= f.id %>" title="Approva" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--success,#22c55e);transition:all .15s">
+              <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            </button>
+            <button type="button" class="reject-btn" data-id="<%= f.id %>" title="Rifiuta" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--danger,#ef4444);transition:all .15s">
+              <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          <% } %>
+          <button type="button" class="admin-ferie-edit-btn" data-id="<%= f.id %>" data-inizio="<%= f.data_inizio %>" data-fine="<%= f.data_fine %>" data-tipo="<%= f.tipo %>" data-note="<%= f.note || '' %>" title="Modifica" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--primary,#4f46e5);transition:all .15s">
+            <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg>
+          </button>
+          <button type="button" class="admin-ferie-delete-btn" data-id="<%= f.id %>" title="Cancella" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--danger,#ef4444);transition:all .15s">
+            <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+          </button>
+        </div>
       </div>
-    </nav>
+      <% }); %>
+    </div>
+
+    <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.25rem;border-top:1px solid var(--border,#e5e7eb);background:var(--bg-subtle,#f9fafb)">
+      <span style="font-size:.85rem;color:var(--muted)">Pagina <%= pagination.page %> di <%= pagination.totalPages %></span>
+      <div style="display:flex;gap:.5rem">
+        <% if (pagination.page > 1) { %><a href="?page=<%= pagination.page - 1 %>&limit=<%= pagination.limit %>&stato=<%= (typeof filtri !== 'undefined' && filtri.stato) || '' %>&user_id=<%= (typeof filtri !== 'undefined' && filtri.user_id) || '' %>" class="btn btn-sm">Precedente</a><% } %>
+        <% if (pagination.page < pagination.totalPages) { %><a href="?page=<%= pagination.page + 1 %>&limit=<%= pagination.limit %>&stato=<%= (typeof filtri !== 'undefined' && filtri.stato) || '' %>&user_id=<%= (typeof filtri !== 'undefined' && filtri.user_id) || '' %>" class="btn btn-sm">Successivo</a><% } %>
+      </div>
+    </div>
     <% } %>
   <% } %>
 </div>
 
-<div class="card card--calendar admin-ferie-calendar">
-  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5M12 3v1.5m0 15v1.5m9-9h-1.5M3.75 12H5.25m13.5 0a.75.75 0 01-1.5 0H5.25a.75.75 0 010-1.5h13.5a.75.75 0 010 1.5z" /></svg> Calendario ferie</h2>
-  <p class="calendar-hint">Clicca su un giorno per vedere le richieste (approvate e in attesa) e modificarle o cancellarle.</p>
-  <div class="calendar-nav">
-    <button type="button" class="btn btn-sm calendar-prev" aria-label="Mese precedente"><span class="calendar-nav__arrow">‹</span><span class="calendar-nav__label">Prec</span></button>
-    <h3 class="calendar-title" id="adminCalendarMonthTitle">—</h3>
-    <button type="button" class="btn btn-sm calendar-next" aria-label="Mese successivo"><span class="calendar-nav__label">Succ</span><span class="calendar-nav__arrow">›</span></button>
+<div class="admin-ferie-calendar" style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden">
+  <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb);display:flex;align-items:center;gap:.5rem;font-weight:600">
+    <svg style="width:18px;height:18px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+    Calendario ferie
   </div>
-  <div class="calendar-wrap">
-    <div class="calendar-weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
-    <div class="calendar-grid" id="adminCalendarGrid"></div>
+  <div style="padding:1rem 1.25rem">
+    <p class="calendar-hint" style="margin:0 0 1rem;font-size:.85rem;color:var(--muted)">Clicca su un giorno per vedere le richieste (approvate e in attesa) e modificarle o cancellarle.</p>
+    <div class="calendar-nav">
+      <button type="button" class="btn btn-sm calendar-prev" aria-label="Mese precedente"><span class="calendar-nav__arrow">‹</span><span class="calendar-nav__label">Prec</span></button>
+      <h3 class="calendar-title" id="adminCalendarMonthTitle">—</h3>
+      <button type="button" class="btn btn-sm calendar-next" aria-label="Mese successivo"><span class="calendar-nav__label">Succ</span><span class="calendar-nav__arrow">›</span></button>
+    </div>
+    <div class="calendar-wrap">
+      <div class="calendar-weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
+      <div class="calendar-grid" id="adminCalendarGrid"></div>
+    </div>
   </div>
 </div>
+
+<style>
+.approve-btn:hover { background:var(--success,#22c55e) !important; color:#fff !important; border-color:var(--success,#22c55e) !important }
+.reject-btn:hover, .admin-ferie-delete-btn:hover { background:var(--danger,#ef4444) !important; color:#fff !important; border-color:var(--danger,#ef4444) !important }
+.admin-ferie-edit-btn:hover { background:var(--primary,#4f46e5) !important; color:#fff !important; border-color:var(--primary,#4f46e5) !important }
+</style>
 
 <!-- Modale dettaglio giorno: elenco richieste con Modifica / Cancella -->
 <div id="adminFerieOverlay" class="modal-overlay admin-ferie-modal" aria-hidden="true" hidden>

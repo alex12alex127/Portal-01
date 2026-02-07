@@ -1,48 +1,63 @@
 <h1 class="page-title">
-  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
   Gestione Avvisi
+  <span style="font-size:.9rem;font-weight:400;color:var(--muted);margin-left:.5rem">(<%= avvisi.length %>)</span>
 </h1>
 
-<div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
-    <h2 style="margin:0">Avvisi (<%= avvisi.length %>)</h2>
-    <button type="button" class="btn btn-sm" id="btnNewAvviso">+ Nuovo avviso</button>
+<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb)">
+    <span style="font-size:.9rem;color:var(--muted)"><%= avvisi.length %> avvisi totali</span>
+    <button type="button" class="btn btn-sm" id="btnNewAvviso" style="display:inline-flex;align-items:center;gap:.3rem">
+      <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+      Nuovo avviso
+    </button>
   </div>
 
   <% if (avvisi.length === 0) { %>
-    <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z\" /></svg> Nessun avviso.</p>
+    <div style="padding:3rem;text-align:center">
+      <svg style="width:48px;height:48px;color:var(--muted);opacity:.4;margin-bottom:.75rem" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+      <p style="margin:0;color:var(--muted);font-size:.95rem">Nessun avviso.</p>
+    </div>
   <% } else { %>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr><th>Titolo</th><th>Tipo</th><th>Evidenza</th><th>Visibilità</th><th>Data</th><th>Azioni</th></tr>
-        </thead>
-        <tbody>
-          <% avvisi.forEach(function(a) { %>
-          <tr data-id="<%= a.id %>">
-            <td>
-              <strong><%= a.titolo %></strong>
-              <% if (a.contenuto && a.contenuto.length > 60) { %><br><span class="text-muted" style="font-size:.85rem"><%= a.contenuto.substring(0, 60) %>...</span><% } %>
-            </td>
-            <td><span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo === 'success' ? 'Successo' : a.tipo %></span></td>
-            <td><%= a.in_evidenza ? 'Sì' : 'No' %></td>
-            <td class="text-muted" style="font-size:.85rem">
-              <% if (!a.visibile_da && !a.visibile_fino) { %>Sempre
-              <% } else { %><%= a.visibile_da ? 'Dal ' + new Date(a.visibile_da).toLocaleDateString('it-IT') : '' %> <%= a.visibile_fino ? 'al ' + new Date(a.visibile_fino).toLocaleDateString('it-IT') : '' %>
-              <% } %>
-            </td>
-            <td class="text-muted" style="font-size:.85rem"><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' %></td>
-            <td>
-              <button type="button" class="btn btn-sm btn-edit" data-id="<%= a.id %>">Modifica</button>
-              <button type="button" class="btn btn-sm btn--danger btn-del" data-id="<%= a.id %>" data-titolo="<%= a.titolo %>">Elimina</button>
-            </td>
-          </tr>
-          <% }); %>
-        </tbody>
-      </table>
+    <div>
+      <% avvisi.forEach(function(a) { %>
+      <div data-id="<%= a.id %>" style="display:flex;align-items:center;gap:1rem;padding:.85rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.25rem">
+            <span style="font-weight:600;font-size:.95rem"><%= a.titolo %></span>
+            <span class="badge badge--avviso badge--<%= a.tipo %>" style="font-size:.65rem"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo === 'success' ? 'Successo' : a.tipo %></span>
+            <% if (a.in_evidenza) { %><span style="background:var(--primary,#4f46e5);color:#fff;padding:.05rem .4rem;border-radius:999px;font-size:.65rem;font-weight:600">In evidenza</span><% } %>
+          </div>
+          <% if (a.contenuto && a.contenuto.length > 80) { %>
+          <div style="font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.2rem"><%= a.contenuto.substring(0, 80) %>...</div>
+          <% } %>
+          <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.75rem">
+            <span><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' %></span>
+            <% if (!a.visibile_da && !a.visibile_fino) { %>
+              <span>Sempre visibile</span>
+            <% } else { %>
+              <span><%= a.visibile_da ? 'Dal ' + new Date(a.visibile_da).toLocaleDateString('it-IT') : '' %> <%= a.visibile_fino ? 'al ' + new Date(a.visibile_fino).toLocaleDateString('it-IT') : '' %></span>
+            <% } %>
+          </div>
+        </div>
+        <div style="display:flex;gap:.35rem;flex-shrink:0">
+          <button type="button" class="btn-edit" data-id="<%= a.id %>" title="Modifica" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--primary,#4f46e5);transition:all .15s">
+            <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg>
+          </button>
+          <button type="button" class="btn-del" data-id="<%= a.id %>" data-titolo="<%= a.titolo %>" title="Elimina" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--danger,#ef4444);transition:all .15s">
+            <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+          </button>
+        </div>
+      </div>
+      <% }); %>
     </div>
   <% } %>
 </div>
+
+<style>
+.btn-edit:hover { background:var(--primary,#4f46e5) !important; color:#fff !important; border-color:var(--primary,#4f46e5) !important }
+.btn-del:hover { background:var(--danger,#ef4444) !important; color:#fff !important; border-color:var(--danger,#ef4444) !important }
+</style>
 
 <!-- Modale -->
 <div id="avvisoModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.5);backdrop-filter:blur(2px)">

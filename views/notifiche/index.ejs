@@ -1,62 +1,60 @@
 <h1 class="page-title">
-  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
   Notifiche
+  <% if (nonLette > 0) { %><span class="badge badge--alert" style="font-size:.85rem;margin-left:.5rem"><%= nonLette %> nuove</span><% } %>
 </h1>
 
-<div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
-    <h2 style="margin:0">
-      <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
-      Le tue notifiche
-      <% if (nonLette > 0) { %><span class="badge badge--alert" style="margin-left:.5rem"><%= nonLette %></span><% } %>
-    </h2>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb)">
+    <span style="font-size:.9rem;color:var(--muted)"><%= notifiche.length %> notifiche totali</span>
+    <div style="display:flex;gap:.5rem">
       <% if (nonLette > 0) { %>
-        <button type="button" class="btn btn-sm" id="btnMarkAllRead">Marca tutte come lette (<%= nonLette %>)</button>
+        <button type="button" class="btn btn-sm" id="btnMarkAllRead" style="font-size:.78rem">Segna tutte lette</button>
       <% } %>
       <% if (notifiche.length > 0) { %>
-        <button type="button" class="btn btn-sm btn--danger" id="btnDeleteAll">Elimina tutte</button>
+        <button type="button" class="btn btn-sm btn--danger" id="btnDeleteAll" style="font-size:.78rem">Elimina tutte</button>
       <% } %>
     </div>
   </div>
 
   <% if (notifiche.length === 0) { %>
-    <p class="empty">
-      <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-      Nessuna notifica.
-    </p>
+    <div style="padding:3rem;text-align:center">
+      <svg style="width:48px;height:48px;color:var(--muted);opacity:.4;margin-bottom:.75rem" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+      <p style="margin:0;color:var(--muted);font-size:.95rem">Nessuna notifica.</p>
+    </div>
   <% } else { %>
-    <ul class="notifiche-list" id="notificheList">
+    <div id="notificheList">
       <% notifiche.forEach(function(n) { %>
-      <li class="notifiche-item <%= n.letta ? 'letta' : 'non-letta' %>" data-id="<%= n.id %>">
-        <div class="notifiche-item__body">
-          <strong class="notifiche-item__title"><%= n.titolo || 'Notifica' %></strong>
-          <% if (n.messaggio) { %><p class="notifiche-item__msg"><%= n.messaggio %></p><% } %>
-          <span class="notifiche-item__date text-muted"><%= n.created_at ? new Date(n.created_at).toLocaleString('it-IT') : '' %></span>
+      <div class="notifiche-item <%= n.letta ? 'letta' : 'non-letta' %>" data-id="<%= n.id %>" style="display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6);transition:all .3s;<%= !n.letta ? 'border-left:3px solid var(--primary,#4f46e5);background:rgba(79,70,229,.03)' : '' %>">
+        <div style="width:36px;height:36px;border-radius:50%;background:<%= !n.letta ? 'var(--primary,#4f46e5)' : 'var(--border,#e5e7eb)' %>;color:<%= !n.letta ? '#fff' : 'var(--muted)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg style="width:16px;height:16px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
         </div>
-        <div class="notifiche-item__actions">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:<%= !n.letta ? '600' : '400' %>;font-size:.9rem;margin-bottom:.15rem"><%= n.titolo || 'Notifica' %></div>
+          <% if (n.messaggio) { %><div style="font-size:.85rem;color:var(--muted);white-space:pre-wrap;word-break:break-word;margin-bottom:.25rem"><%= n.messaggio %></div><% } %>
+          <div style="font-size:.75rem;color:var(--muted)"><%= n.created_at ? new Date(n.created_at).toLocaleString('it-IT') : '' %></div>
+        </div>
+        <div style="display:flex;gap:.3rem;flex-shrink:0;align-items:center">
           <% if (!n.letta) { %>
-            <button type="button" class="btn btn-sm btn-mark-read" data-id="<%= n.id %>" title="Marca come letta">&#x2713;</button>
+            <button type="button" class="btn-mark-read" data-id="<%= n.id %>" title="Marca come letta" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--success,#22c55e)">
+              <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            </button>
           <% } %>
-          <button type="button" class="btn btn-sm btn--danger btn-delete" data-id="<%= n.id %>" title="Elimina">&times;</button>
+          <button type="button" class="btn-delete" data-id="<%= n.id %>" title="Elimina" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--danger,#ef4444)">
+            <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
         </div>
-      </li>
+      </div>
       <% }); %>
-    </ul>
+    </div>
   <% } %>
 </div>
 
 <style>
-.notifiche-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem }
-.notifiche-item { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; padding:1rem; border:1px solid var(--border); border-radius:var(--radius); transition:opacity .3s }
-.notifiche-item.non-letta { border-left:4px solid var(--primary); background:rgba(var(--primary-rgb,59,130,246),.04) }
-.notifiche-item.letta { opacity:.7 }
-.notifiche-item__body { flex:1; min-width:0 }
-.notifiche-item__title { display:block; margin-bottom:.25rem }
-.notifiche-item__msg { margin:.25rem 0; font-size:.95rem; color:var(--muted); white-space:pre-wrap; word-break:break-word }
-.notifiche-item__date { font-size:.85rem }
-.notifiche-item__actions { display:flex; gap:.25rem; flex-shrink:0 }
 .notifiche-item.removing { opacity:0; transform:translateX(30px); transition:all .3s }
+.notifiche-item.letta { opacity:.65 }
+.btn-mark-read:hover { background:var(--success,#22c55e) !important; color:#fff !important; border-color:var(--success,#22c55e) !important }
+.btn-delete:hover { background:var(--danger,#ef4444) !important; color:#fff !important; border-color:var(--danger,#ef4444) !important }
 </style>
 
 <script>

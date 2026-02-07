@@ -26,12 +26,7 @@ const upload = multer({
   }
 });
 
-function soloData (val) {
-  if (val == null) return '';
-  if (typeof val === 'string') return val.slice(0, 10);
-  if (typeof val.toISOString === 'function') return val.toISOString().slice(0, 10);
-  return String(val).slice(0, 10);
-}
+const { soloData } = require('../lib/helpers');
 
 router.get('/', requireAuth, async (req, res) => {
   try {

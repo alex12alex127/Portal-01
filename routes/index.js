@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
+const { soloData } = require('../lib/helpers');
 
 router.get('/', (req, res) => {
   const base = req.app.get('basePath') || '';
@@ -39,7 +40,6 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       'SELECT id, data_inizio, data_fine, tipo, stato, giorni_totali FROM ferie WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5',
       [req.session.user.id]
     );
-    const soloData = (val) => (val == null ? '' : typeof val === 'string' ? val.slice(0, 10) : val.toISOString ? val.toISOString().slice(0, 10) : String(val).slice(0, 10));
     const notificheResult = await db.query(
       'SELECT id, tipo, titolo, messaggio, letta, created_at FROM notifiche WHERE user_id = $1 ORDER BY created_at DESC LIMIT 15',
       [req.session.user.id]

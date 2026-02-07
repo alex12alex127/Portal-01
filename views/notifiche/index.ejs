@@ -6,7 +6,7 @@
 
 <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb)">
-    <span style="font-size:.9rem;color:var(--muted)"><%= notifiche.length %> notifiche totali</span>
+    <span style="font-size:.9rem;color:var(--muted)"><%= typeof pagination !== 'undefined' ? pagination.total : notifiche.length %> notifiche totali</span>
     <div style="display:flex;gap:.5rem">
       <% if (nonLette > 0) { %>
         <button type="button" class="btn btn-sm" id="btnMarkAllRead" style="font-size:.78rem">Segna tutte lette</button>
@@ -47,6 +47,20 @@
       </div>
       <% }); %>
     </div>
+  <% } %>
+
+  <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+  <div class="pagination" style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.25rem;border-top:1px solid var(--border,#e5e7eb);font-size:.85rem">
+    <span class="pagination__info" style="color:var(--muted)">Pagina <%= pagination.page %> di <%= pagination.totalPages %> (<%= pagination.total %> totali)</span>
+    <div style="display:flex;gap:.35rem">
+      <% if (pagination.page > 1) { %>
+        <a href="?page=<%= pagination.page - 1 %>" class="btn btn-sm btn--secondary" style="font-size:.78rem">← Prec</a>
+      <% } %>
+      <% if (pagination.page < pagination.totalPages) { %>
+        <a href="?page=<%= pagination.page + 1 %>" class="btn btn-sm btn--secondary" style="font-size:.78rem">Succ →</a>
+      <% } %>
+    </div>
+  </div>
   <% } %>
 </div>
 
@@ -97,16 +111,17 @@
     var delBtn = e.target.closest('.btn-delete');
     if (delBtn) {
       var id = delBtn.dataset.id;
-      if (!confirm('Eliminare questa notifica?')) return;
-      try {
-        var res = await api('/notifiche/' + id, 'DELETE');
-        if (res.success) {
-          var item = document.querySelector('.notifiche-item[data-id="' + id + '"]');
-          if (item) { item.classList.add('removing'); setTimeout(function(){ item.remove(); checkEmpty(); }, 300); }
-          showMsg('Notifica eliminata', true);
-          updateBadge(res.nonLette);
-        } else { showMsg(res.error || 'Errore', false); }
-      } catch(err) { showMsg('Errore di rete', false); }
+      window.showModal({ title: 'Elimina notifica', text: 'Sei sicuro di voler eliminare questa notifica?', onConfirm: async function() {
+        try {
+          var res = await api('/notifiche/' + id, 'DELETE');
+          if (res.success) {
+            var item = document.querySelector('.notifiche-item[data-id="' + id + '"]');
+            if (item) { item.classList.add('removing'); setTimeout(function(){ item.remove(); checkEmpty(); }, 300); }
+            showMsg('Notifica eliminata', true);
+            updateBadge(res.nonLette);
+          } else { showMsg(res.error || 'Errore', false); }
+        } catch(err) { showMsg('Errore di rete', false); }
+      }});
     }
   });
 
@@ -129,20 +144,21 @@
 
   // Elimina tutte
   var btnDelAll = document.getElementById('btnDeleteAll');
-  if (btnDelAll) btnDelAll.addEventListener('click', async function() {
-    if (!confirm('Eliminare TUTTE le notifiche?')) return;
-    try {
-      var res = await api('/notifiche/delete-all', 'DELETE');
-      if (res.success) {
-        var list = document.getElementById('notificheList');
-        if (list) list.innerHTML = '';
-        btnDelAll.style.display = 'none';
-        if (btnAll) btnAll.style.display = 'none';
-        checkEmpty();
-        showMsg('Tutte le notifiche eliminate (' + (res.deletedCount || 0) + ')', true);
-        updateBadge(0);
-      } else { showMsg(res.error || 'Errore', false); }
-    } catch(err) { showMsg('Errore di rete', false); }
+  if (btnDelAll) btnDelAll.addEventListener('click', function() {
+    window.showModal({ title: 'Elimina tutte', text: 'Sei sicuro di voler eliminare TUTTE le notifiche? Questa azione è irreversibile.', onConfirm: async function() {
+      try {
+        var res = await api('/notifiche/delete-all', 'DELETE');
+        if (res.success) {
+          var list = document.getElementById('notificheList');
+          if (list) list.innerHTML = '';
+          btnDelAll.style.display = 'none';
+          if (btnAll) btnAll.style.display = 'none';
+          checkEmpty();
+          showMsg('Tutte le notifiche eliminate (' + (res.deletedCount || 0) + ')', true);
+          updateBadge(0);
+        } else { showMsg(res.error || 'Errore', false); }
+      } catch(err) { showMsg('Errore di rete', false); }
+    }});
   });
 
   function updateBadge(count) {

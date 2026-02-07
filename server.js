@@ -99,10 +99,15 @@ app.use((req, res) => {
   res.status(404);
   const accept = (req.headers.accept || '').toLowerCase();
   const wantsHtml = accept.indexOf('text/html') !== -1 || accept.indexOf('*/*') !== -1;
-  const base = BASE_PATH || '';
   if (wantsHtml) {
-    res.set('Content-Type', 'text/html; charset=utf-8');
-    res.send('<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 - Portal-01</title><link rel="stylesheet" href="' + base + '/css/style.css"></head><body><div class="container" style="padding:2rem;text-align:center"><h1>404</h1><p>Pagina non trovata.</p><p style="font-size:0.9rem;color:var(--muted, #666);word-break:break-all">Path richiesto: ' + escapeHtml(requestPath) + '</p><a href="' + base + '/" class="btn">Torna alla home</a></div></body></html>');
+    res.render('404', { title: '404 - Portal-01', layout: 'layouts/app', basePath: BASE_PATH }, (renderErr, html) => {
+      if (renderErr) {
+        res.set('Content-Type', 'text/html; charset=utf-8');
+        res.send('<!DOCTYPE html><html><body><h1>404</h1><p>Pagina non trovata.</p></body></html>');
+      } else {
+        res.send(html);
+      }
+    });
   } else {
     res.json({ error: 'Non trovato', path: requestPath });
   }

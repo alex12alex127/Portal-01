@@ -203,16 +203,17 @@
     if (delBtn) {
       var id = delBtn.dataset.id;
       var titolo = delBtn.dataset.titolo;
-      if (!confirm('Eliminare "' + titolo + '"?')) return;
-      try {
-        var r = await fetch(base + '/admin/avvisi/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf } });
-        var data = await r.json();
-        if (data.success) {
-          showMsg('Avviso eliminato', true);
-          var row = document.querySelector('tr[data-id="' + id + '"]');
-          if (row) row.remove();
-        } else { showMsg(data.error || 'Errore', false); }
-      } catch(err) { showMsg('Errore di rete', false); }
+      window.showModal({ title: 'Elimina avviso', text: 'Sei sicuro di voler eliminare "' + (titolo || '') + '"? Questa azione è irreversibile.', onConfirm: async function() {
+        try {
+          var r = await fetch(base + '/admin/avvisi/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf } });
+          var data = await r.json();
+          if (data.success) {
+            showMsg('Avviso eliminato', true);
+            var row = document.querySelector('[data-id="' + id + '"]');
+            if (row) row.remove();
+          } else { showMsg(data.error || 'Errore', false); }
+        } catch(err) { showMsg('Errore di rete', false); }
+      }});
     }
   });
 })();

@@ -4,6 +4,7 @@ const { requireAuth } = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/security');
 const {
   getNotificheUtente,
+  contaNotificheTotali,
   contaNotificheNonLette,
   marcaNotificaComeLetta,
   marcaTutteComeLette,
@@ -17,16 +18,22 @@ router.use(requireAuth);
 router.get('/', async (req, res) => {
   try {
     const userId = req.session.user.id;
-    const [notifiche, nonLette] = await Promise.all([
-      getNotificheUtente(userId, 50),
+    const limit = 20;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = (page - 1) * limit;
+    const [notifiche, total, nonLette] = await Promise.all([
+      getNotificheUtente(userId, limit, offset),
+      contaNotificheTotali(userId),
       contaNotificheNonLette(userId)
     ]);
+    const totalPages = Math.ceil(total / limit);
     res.render('notifiche/index', {
       title: 'Notifiche - Portal-01',
       activePage: 'notifiche',
       breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Notifiche' }],
       notifiche,
-      nonLette
+      nonLette,
+      pagination: { page, limit, total, totalPages }
     });
   } catch (err) {
     console.error('[notifiche]', err);

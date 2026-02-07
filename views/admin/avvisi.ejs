@@ -60,8 +60,8 @@
             <td><%= new Date(a.created_at).toLocaleDateString('it-IT') %></td>
             <td>
               <div class="btn-group">
-                <button class="btn btn-sm" onclick="editAvviso(<%= a.id %>)">Modifica</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteAvviso(<%= a.id %>, '<%= a.titolo.replace(/'/g, '\\\\\'') %>')">Elimina</button>
+                <button class="btn btn-sm edit-btn" data-id="<%= a.id %>">Modifica</button>
+                <button class="btn btn-sm btn-danger delete-btn" data-id="<%= a.id %>" data-title="<%= a.titolo %>">Elimina</button>
               </div>
             </td>
           </tr>
@@ -206,6 +206,28 @@
   padding: 1.5rem;
 }
 
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -280,7 +302,7 @@ function editAvviso(id) {
 }
 
 function deleteAvviso(id, titolo) {
-  if (confirm('Eliminare l\\'avviso "' + titolo + '"?')) {
+  if (confirm('Eliminare l avviso: ' + titolo + '?')) {
     fetch('<%= basePath %>/admin/avvisi/' + id, {
       method: 'DELETE',
       headers: {
@@ -298,10 +320,27 @@ function deleteAvviso(id, titolo) {
     })
     .catch(err => {
       console.error('Errore:', err);
-      alert('Errore durante l\\'eliminazione');
+      alert('Errore durante l eliminazione');
     });
   }
 }
+
+// Event listeners per i bottoni
+document.addEventListener('DOMContentLoaded', function() {
+  // Bottoni modifica
+  document.querySelectorAll('.edit-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      editAvviso(this.dataset.id);
+    });
+  });
+  
+  // Bottoni elimina
+  document.querySelectorAll('.delete-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      deleteAvviso(this.dataset.id, this.dataset.title);
+    });
+  });
+});
 
 // Gestione submit form
 document.getElementById('avvisoForm').addEventListener('submit', function(e) {

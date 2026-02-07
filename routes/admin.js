@@ -316,27 +316,39 @@ router.delete('/ferie/:id', requireAuth, requireManager, apiLimiter, async (req,
 router.get('/avvisi', requireAuth, requireAdmin, async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT a.id, a.titolo, a.contenuto, a.tipo, a.in_evidenza,
-             a.visibile_da, a.visibile_fino, a.created_at,
-             u.full_name AS autore_nome
+      SELECT a.*, u.full_name as autore_nome
       FROM avvisi a
-      LEFT JOIN users u ON u.id = a.created_by
+      LEFT JOIN users u ON a.created_by = u.id
       ORDER BY a.in_evidenza DESC, a.created_at DESC
     `);
-    const avvisi = result.rows.map(r => ({
-      ...r,
-      visibile_da: r.visibile_da ? String(r.visibile_da).slice(0, 10) : null,
-      visibile_fino: r.visibile_fino ? String(r.visibile_fino).slice(0, 10) : null
-    }));
     res.render('admin/avvisi', {
       title: 'Gestione Avvisi - Portal-01',
       activePage: 'adminAvvisi',
-      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Gestione Avvisi' }],
-      avvisi
+      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Amministrazione', url: '/admin' }, { label: 'Gestione Avvisi' }],
+      avvisi: result.rows
     });
   } catch (err) {
     console.error('[admin avvisi]', err);
     res.status(500).send('Errore del server');
+  }
+});
+
+// GET /admin/avvisi/api - Lista avvisi (JSON per AJAX)
+router.get('/avvisi/api', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT a.*, u.full_name as autore_nome
+      FROM avvisi a
+      LEFT JOIN users u ON a.created_by = u.id
+      ORDER BY a.in_evidenza DESC, a.created_at DESC
+    `);
+    res.json({
+      success: true,
+      avvisi: result.rows
+    });
+  } catch (err) {
+    console.error('[admin avvisi api]', err);
+    res.status(500).json({ error: 'Errore caricamento avvisi' });
   }
 });
 

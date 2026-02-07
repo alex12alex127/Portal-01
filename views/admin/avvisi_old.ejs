@@ -1,0 +1,252 @@
+<h1 class="page-title">Gestione Avvisi</h1>
+<p class="text-muted">Crea e gestisci gli avvisi visibili ai dipendenti.</p>
+
+<div class="card" style="margin-top:1rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border);">
+    <h2 style="margin:0;">Avvisi (<%= avvisi.length %>)</h2>
+    <button type="button" class="btn" id="btnCrea">Crea avviso</button>
+  </div>
+
+  <% if (avvisi.length === 0) { %>
+  <div style="text-align:center;padding:3rem 1rem;">
+    <p style="font-size:2rem;">📢</p>
+    <h3>Nessun avviso</h3>
+    <p class="text-muted">Crea il primo avviso per comunicare con i dipendenti.</p>
+    <button type="button" class="btn" id="btnCreaEmpty">Crea avviso</button>
+  </div>
+  <% } else { %>
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Titolo</th>
+          <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Tipo</th>
+          <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Periodo</th>
+          <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Stato</th>
+          <th style="padding:.75rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);">Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% var oggi = new Date().toISOString().split('T')[0]; %>
+        <% avvisi.forEach(function(a) { %>
+        <%
+          var da = a.visibile_da ? String(a.visibile_da).slice(0, 10) : '';
+          var fino = a.visibile_fino ? String(a.visibile_fino).slice(0, 10) : '';
+          var stato = 'attivo';
+          if (da && da > oggi) stato = 'programmato';
+          if (fino && fino < oggi) stato = 'scaduto';
+          var periodoLabel = (!da && !fino) ? 'Sempre' : (da ? 'Dal ' + da : '') + (fino ? ' al ' + fino : '');
+        %>
+        <tr>
+          <td style="padding:.75rem;border-bottom:1px solid var(--border);">
+            <strong><%= a.titolo %></strong>
+            <% if (a.in_evidenza) { %> <span title="In evidenza">📌</span><% } %>
+            <% if (a.contenuto && a.contenuto.length > 80) { %>
+              <br><small class="text-muted"><%= a.contenuto.substring(0, 80) %>...</small>
+            <% } %>
+          </td>
+          <td style="padding:.75rem;border-bottom:1px solid var(--border);">
+            <span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo %></span>
+          </td>
+          <td style="padding:.75rem;border-bottom:1px solid var(--border);">
+            <span class="text-muted"><%= periodoLabel %></span>
+          </td>
+          <td style="padding:.75rem;border-bottom:1px solid var(--border);">
+            <span class="badge badge--stato badge--stato-<%= stato %>"><%= stato.charAt(0).toUpperCase() + stato.slice(1) %></span>
+          </td>
+          <td style="padding:.75rem;border-bottom:1px solid var(--border);">
+            <button type="button" class="btn btn-sm js-edit" data-id="<%= a.id %>">Modifica</button>
+            <button type="button" class="btn btn-sm btn-danger js-delete" data-id="<%= a.id %>" data-title="<%= a.titolo %>">Elimina</button>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<!-- ===== MODALE ===== -->
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:8px;width:92%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h2 id="modalTitle" style="margin:0;font-size:1.15rem;color:var(--text);">Nuovo Avviso</h2>
+      <button type="button" id="btnCloseX" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text);padding:.25rem .5rem;">&times;</button>
+    </div>
+    <form id="avvisoForm" style="padding:1.5rem;">
+      <div style="margin-bottom:1rem;">
+        <label for="f_titolo" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Titolo *</label>
+        <input id="f_titolo" name="titolo" type="text" required maxlength="255" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);">
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label for="f_contenuto" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Contenuto *</label>
+        <textarea id="f_contenuto" name="contenuto" rows="4" required style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);resize:vertical;"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div>
+          <label for="f_tipo" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Tipo</label>
+          <select id="f_tipo" name="tipo" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);">
+            <option value="info">Informazione</option>
+            <option value="warning">Attenzione</option>
+            <option value="urgent">Urgente</option>
+            <option value="success">Successo</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <label style="display:flex;gap:.5rem;align-items:center;cursor:pointer;color:var(--text);">
+            <input id="f_evidenza" name="in_evidenza" type="checkbox"> In evidenza
+          </label>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div>
+          <label for="f_da" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Visibile dal</label>
+          <input id="f_da" name="visibile_da" type="date" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);">
+        </div>
+        <div>
+          <label for="f_fino" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Visibile fino al</label>
+          <input id="f_fino" name="visibile_fino" type="date" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);">
+        </div>
+      </div>
+      <p class="text-muted" style="font-size:.85rem;margin-bottom:1rem;color:var(--text);">Se lasci vuoto dal/al, l'avviso e sempre visibile.</p>
+      <div style="display:flex;gap:1rem;justify-content:flex-end;padding-top:1rem;border-top:1px solid var(--border);">
+        <button type="button" class="btn btn--secondary" id="btnAnnulla">Annulla</button>
+        <button type="submit" class="btn">Salva</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.badge--stato { display:inline-block;padding:2px 10px;border-radius:12px;font-size:.8rem;border:1px solid var(--border); }
+.badge--stato-attivo { border-color:#10b981;color:#10b981; }
+.badge--stato-programmato { border-color:#3b82f6;color:#3b82f6; }
+.badge--stato-scaduto { border-color:#ef4444;color:#ef4444; }
+@media(max-width:600px){
+  #overlay>div{width:98%;max-width:none;}
+  table{font-size:.85rem;}
+}
+</style>
+
+<script>
+(function(){
+  var basePath = '<%= basePath %>';
+  var csrf = '<%= csrfToken %>';
+  var editingId = null;
+
+  // -- DOM refs --
+  var overlay    = document.getElementById('overlay');
+  var form       = document.getElementById('avvisoForm');
+  var modalTitle = document.getElementById('modalTitle');
+  var fTitolo    = document.getElementById('f_titolo');
+  var fContenuto = document.getElementById('f_contenuto');
+  var fTipo      = document.getElementById('f_tipo');
+  var fEvidenza  = document.getElementById('f_evidenza');
+  var fDa        = document.getElementById('f_da');
+  var fFino      = document.getElementById('f_fino');
+
+  // -- Mostra / nascondi modale --
+  function openModal(title) {
+    modalTitle.textContent = title || 'Nuovo Avviso';
+    overlay.style.display = 'flex';
+  }
+  function closeModal() {
+    overlay.style.display = 'none';
+    form.reset();
+    editingId = null;
+  }
+
+  // -- Crea --
+  function startCreate() {
+    editingId = null;
+    form.reset();
+    openModal('Nuovo Avviso');
+  }
+
+  // -- Modifica --
+  function startEdit(id) {
+    editingId = id;
+    openModal('Modifica Avviso');
+    fetch(basePath + '/admin/avvisi/' + id)
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d.success) { alert(d.error || 'Errore'); closeModal(); return; }
+        var a = d.avviso;
+        fTitolo.value    = a.titolo;
+        fContenuto.value = a.contenuto;
+        fTipo.value      = a.tipo || 'info';
+        fEvidenza.checked = !!a.in_evidenza;
+        fDa.value        = a.visibile_da || '';
+        fFino.value      = a.visibile_fino || '';
+      })
+      .catch(function(){ alert('Errore di rete'); closeModal(); });
+  }
+
+  // -- Elimina --
+  function startDelete(id, title) {
+    if (!confirm('Eliminare "' + title + '"?')) return;
+    fetch(basePath + '/admin/avvisi/' + id, {
+      method: 'DELETE',
+      headers: { 'Content-Type':'application/json', 'X-CSRF-Token': csrf }
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.success) location.reload();
+      else alert(d.error || 'Errore eliminazione');
+    })
+    .catch(function(){ alert('Errore di rete'); });
+  }
+
+  // -- Salva (crea o aggiorna) --
+  function handleSubmit(e) {
+    e.preventDefault();
+    var body = {
+      titolo: fTitolo.value,
+      contenuto: fContenuto.value,
+      tipo: fTipo.value,
+      in_evidenza: fEvidenza.checked ? '1' : '',
+      visibile_da: fDa.value || '',
+      visibile_fino: fFino.value || '',
+      _csrf: csrf
+    };
+    var url = editingId ? basePath + '/admin/avvisi/' + editingId : basePath + '/admin/avvisi';
+    var method = editingId ? 'PUT' : 'POST';
+
+    fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.success) { closeModal(); location.reload(); }
+      else alert(d.error || 'Errore salvataggio');
+    })
+    .catch(function(){ alert('Errore di rete'); });
+  }
+
+  // -- Event listeners (delegati, niente onclick inline) --
+  document.addEventListener('click', function(e) {
+    // Crea
+    if (e.target.id === 'btnCrea' || e.target.id === 'btnCreaEmpty') { startCreate(); return; }
+    // Chiudi
+    if (e.target.id === 'btnCloseX' || e.target.id === 'btnAnnulla') { closeModal(); return; }
+    // Click overlay sfondo
+    if (e.target === overlay) { closeModal(); return; }
+    // Modifica
+    var editBtn = e.target.closest('.js-edit');
+    if (editBtn) { startEdit(editBtn.dataset.id); return; }
+    // Elimina
+    var delBtn = e.target.closest('.js-delete');
+    if (delBtn) { startDelete(delBtn.dataset.id, delBtn.dataset.title); return; }
+  });
+
+  // Esc chiude modale
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.style.display === 'flex') closeModal();
+  });
+
+  // Submit form
+  form.addEventListener('submit', handleSubmit);
+})();
+</script>

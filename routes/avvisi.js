@@ -56,6 +56,23 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
+// GET /avvisi/api - Lista avvisi visibili (JSON per AJAX)
+router.get('/api', requireAuth, async (req, res) => {
+  try {
+    const avvisi = await getAvvisiVisibili(req.session.user.id);
+    const nonLetti = await contaAvvisiNonLetti(req.session.user.id);
+    
+    res.json({
+      success: true,
+      avvisi,
+      nonLetti
+    });
+  } catch (err) {
+    console.error('[avvisi api]', err);
+    res.status(500).json({ error: 'Errore caricamento avvisi' });
+  }
+});
+
 // POST /avvisi/:id/letta - Marca avviso come letto (AJAX)
 router.post('/:id/letta', requireAuth, apiLimiter, async (req, res) => {
   try {

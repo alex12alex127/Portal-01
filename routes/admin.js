@@ -427,7 +427,7 @@ router.get('/avvisi', requireAuth, requireAdmin, async (req, res) => {
   try {
     const avvisi = await getAvvisiVisibili();
     
-    res.render('admin/avvisi-simple', {
+    res.render('admin/avvisi', {
       title: 'Gestione Avvisi - Portal-01',
       activePage: 'admin-avvisi',
       breadcrumbs: [

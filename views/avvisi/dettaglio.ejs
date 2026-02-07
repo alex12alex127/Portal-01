@@ -1,0 +1,172 @@
+<div class="avviso-dettaglio">
+  <div class="avviso-header">
+    <div class="avviso-tipo">
+      <span class="badge badge--<%= avviso.tipo %>"><%= getTipoLabel(avviso.tipo) %></span>
+      <% if (avviso.in_evidenza) { %>
+        <span class="badge badge--evidence">📌 In evidenza</span>
+      <% } %>
+    </div>
+    <div class="avviso-meta">
+      <span class="avviso-date">Pubblicato il <%= formatDate(avviso.created_at) %></span>
+      <% if (avviso.autore_nome) { %>
+        <span class="avviso-author">di <%= avviso.autore_nome %></span>
+      <% } %>
+    </div>
+  </div>
+
+  <h1 class="avviso-title"><%= avviso.titolo %></h1>
+  
+  <div class="avviso-content">
+    <div class="prose">
+      <%= avviso.contenuto.replace(/\n/g, '<br>') %>
+    </div>
+  </div>
+
+  <% if (avviso.visibile_da || avviso.visibile_fino) { %>
+  <div class="avviso-periodo">
+    <h3>Periodo di visibilità</h3>
+    <p>
+      <% if (avviso.visibile_da) { %>
+        Dal <strong><%= formatDate(avviso.visibile_da) %></strong>
+      <% } %>
+      <% if (avviso.visibile_fino) { %>
+        <% if (avviso.visibile_da) { %> al <% } else { %>Fino al <% } %>
+        <strong><%= formatDate(avviso.visibile_fino) %></strong>
+      <% } %>
+    </p>
+  </div>
+  <% } %>
+
+  <div class="avviso-actions">
+    <a href="<%= basePath %>/avvisi" class="btn btn-secondary">← Torna agli avvisi</a>
+  </div>
+</div>
+
+<style>
+.avviso-dettaglio {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.avviso-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.avviso-tipo {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.avviso-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.avviso-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2rem;
+  line-height: 1.2;
+}
+
+.avviso-content {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.prose {
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.prose br {
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.avviso-periodo {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.avviso-periodo h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.avviso-periodo p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.avviso-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.badge--evidence {
+  background: #ff6b35;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .avviso-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .avviso-meta {
+    align-items: flex-start;
+  }
+  
+  .avviso-title {
+    font-size: 1.5rem;
+  }
+  
+  .avviso-content {
+    padding: 1.5rem;
+  }
+}
+</style>
+
+<script>
+function getTipoLabel(tipo) {
+  const labels = {
+    'info': 'Info',
+    'warning': 'Attenzione',
+    'urgent': 'Urgente',
+    'success': 'Successo'
+  };
+  return labels[tipo] || tipo;
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('it-IT', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+</script>

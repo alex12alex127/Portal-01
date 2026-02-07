@@ -6,6 +6,15 @@ const { requireAuth, requireAdmin, requireManager } = require('../middleware/aut
 const { apiLimiter } = require('../middleware/security');
 const { creaNotifica } = require('../lib/notifiche');
 const { logAudit } = require('../lib/audit');
+const {
+  getAvvisiVisibili,
+  getAvviso,
+  creaAvviso,
+  aggiornaAvviso,
+  eliminaAvviso,
+  marcaAvvisoComeLetto,
+  contaAvvisiNonLetti
+} = require('../lib/avvisi');
 
 router.get('/users', requireAuth, requireAdmin, async (req, res) => {
   try {
@@ -410,6 +419,92 @@ router.put('/avvisi/:id', requireAuth, requireManager, apiLimiter, async (req, r
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Errore' });
+  }
+});
+
+// GET /admin/avvisi - Gestione avvisi (solo admin)
+router.get('/avvisi', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const avvisi = await getAvvisiVisibili();
+    
+    res.render('admin/avvisi', {
+      title: 'Gestione Avvisi - Portal-01',
+      activePage: 'admin-avvisi',
+      breadcrumbs: [
+        { label: 'Dashboard', url: '/dashboard' },
+        { label: 'Admin', url: '/admin' },
+        { label: 'Avvisi' }
+      ],
+      avvisi
+    });
+  } catch (err) {
+    console.error('[admin avvisi]', err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+// GET /admin/avvisi/:id - Dettaglio avviso per modifica
+router.get('/avvisi/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const avviso = await getAvviso(req.params.id);
+    if (!avviso) {
+      return res.status(404).json({ success: false, error: 'Avviso non trovato' });
+    }
+    
+    res.json({ success: true, avviso });
+  } catch (err) {
+    console.error('[admin avviso get]', err);
+    res.status(500).json({ success: false, error: 'Errore caricamento avviso' });
+  }
+});
+
+// POST /admin/avvisi - Crea nuovo avviso (solo admin)
+router.post('/avvisi', requireAuth, requireAdmin, apiLimiter, async (req, res) => {
+  try {
+    const { titolo, contenuto, tipo, in_evidenza, visibile_da, visibile_fino } = req.body;
+    
+    if (!titolo || !contenuto) {
+      return res.status(400).json({ success: false, error: 'Titolo e contenuto sono obbligatori' });
+    }
+    
+    const avviso = await creaAvviso(titolo, contenuto, tipo || 'info', {
+      in_evidenza: in_evidenza === 'on',
+      visibile_da: visibile_da || null,
+      visibile_fino: visibile_fino || null,
+      created_by: req.session.user.id
+    });
+    
+    await logAudit(req.session.user.id, 'avviso_creato', `titolo=${titolo}`, req.ip);
+    res.json({ success: true, avviso });
+  } catch (err) {
+    console.error('[admin avviso create]', err);
+    res.status(500).json({ success: false, error: 'Errore creazione avviso' });
+  }
+});
+
+// PUT /admin/avvisi/:id - Aggiorna avviso (solo admin)
+router.put('/avvisi/:id', requireAuth, requireAdmin, apiLimiter, async (req, res) => {
+  try {
+    const { titolo, contenuto, tipo, in_evidenza, visibile_da, visibile_fino } = req.body;
+    
+    if (!titolo || !contenuto) {
+      return res.status(400).json({ success: false, error: 'Titolo e contenuto sono obbligatori' });
+    }
+    
+    const avviso = await aggiornaAvviso(req.params.id, {
+      titolo,
+      contenuto,
+      tipo: tipo || 'info',
+      in_evidenza: in_evidenza === 'on',
+      visibile_da: visibile_da || null,
+      visibile_fino: visibile_fino || null
+    });
+    
+    await logAudit(req.session.user.id, 'avviso_aggiornato', `id=${req.params.id}`, req.ip);
+    res.json({ success: true, avviso });
+  } catch (err) {
+    console.error('[admin avviso update]', err);
+    res.status(500).json({ success: false, error: 'Errore aggiornamento avviso' });
   }
 });
 

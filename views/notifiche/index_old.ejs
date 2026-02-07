@@ -2,12 +2,16 @@
   <div class="page-header">
     <h1>Notifiche</h1>
     <div class="notification-actions">
-      <button class="btn btn-secondary btn-mark-all-read" style="display: none;">
-        Marca tutte come lette (0)
-      </button>
-      <button class="btn btn-danger btn-delete-all" title="Elimina tutte le notifiche" style="display: none;">
-        🗑️ Elimina tutte
-      </button>
+      <% if (nonLette > 0) { %>
+        <button class="btn btn-secondary btn-mark-all-read">
+          Marca tutte come lette (<%= nonLette %>)
+        </button>
+      <% } %>
+      <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
+        <button class="btn btn-danger btn-delete-all" title="Elimina tutte le notifiche">
+          🗑️ Elimina tutte
+        </button>
+      <% } %>
       <button class="btn btn-primary btn-refresh">
         <i class="icon">🔄</i> Aggiorna
       </button>
@@ -38,7 +42,6 @@
 .notification-actions {
   display: flex;
   gap: 0.5rem;
-  flex-wrap: wrap;
 }
 
 .notifications-list {
@@ -48,15 +51,15 @@
 }
 
 .notification-item {
-  background: var(--surface);
+  background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 8px;
   padding: 1rem;
   display: flex;
-  gap: 1rem;
   align-items: flex-start;
-  cursor: pointer;
+  gap: 1rem;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .notification-item:hover {
@@ -66,7 +69,11 @@
 
 .notification-item.unread {
   border-left: 4px solid var(--primary);
-  background: var(--surface);
+  background: var(--card-bg);
+}
+
+.notification-item.unread .notification-content {
+  font-weight: 600;
 }
 
 .notification-icon {
@@ -80,14 +87,28 @@
   flex-shrink: 0;
 }
 
-.notification-icon.info { background: var(--primary-light); color: var(--primary); }
-.notification-icon.success { background: var(--success-light); color: var(--success); }
-.notification-icon.warning { background: var(--warn-light); color: var(--warn); }
-.notification-icon.error { background: var(--danger-light); color: var(--danger); }
+.notification-icon.info {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.notification-icon.success {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.notification-icon.warning {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.notification-icon.error {
+  background: #ffebee;
+  color: #c62828;
+}
 
 .notification-content {
   flex: 1;
-  min-width: 0;
 }
 
 .notification-title {
@@ -124,7 +145,7 @@
 }
 
 .btn-icon:hover {
-  background: var(--border);
+  background: var(--hover);
 }
 
 .empty-notifications {
@@ -147,78 +168,29 @@
 </style>
 
 <script>
-// Variabili globali
 let notifications = [];
-let basePath = window.APP_BASE || '';
 
-// Funzione per mostrare toast (se non esiste già)
-function showToast(message, type = 'ok') {
-  const toast = document.createElement('div');
-  toast.className = `toast toast--${type}`;
-  toast.textContent = message;
-  toast.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    border-radius: 6px;
-    color: white;
-    font-weight: 500;
-    z-index: 1000;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-    background: ${type === 'ok' ? 'var(--success)' : 'var(--danger)'};
-  `;
-  
-  document.body.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.style.transform = 'translateX(0)';
-  }, 100);
-  
-  setTimeout(() => {
-    toast.style.transform = 'translateX(100%)';
-    setTimeout(() => {
-      if (toast.parentNode) {
-        toast.parentNode.removeChild(toast);
-      }
-    }, 300);
-  }, 3000);
-}
-
-// Carica le notifiche dall'API
 async function loadNotifications() {
   try {
-    console.log('Caricamento notifiche da:', `${basePath}/notifiche/api`);
-    const response = await fetch(`${basePath}/notifiche/api`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
+    const response = await fetch('<%= basePath %>/notifiche/api');
     const data = await response.json();
-    console.log('Dati ricevuti:', data);
     
     if (data.success) {
-      notifications = data.notifiche || [];
+      notifications = data.notifiche;
       renderNotifications();
-      updateNotificationCount(data.nonLette || 0);
-      updateActionButtons(data.nonLette || 0, notifications.length);
-    } else {
-      throw new Error(data.error || 'Errore caricamento');
+      updateNotificationCount(data.nonLette);
     }
   } catch (err) {
     console.error('Errore caricamento notifiche:', err);
     document.getElementById('notificationsList').innerHTML = 
-      '<div class="empty-notifications"><div class="icon">❌</div><h3>Errore</h3><p>Impossibile caricare le notifiche</p><button class="btn btn-primary" onclick="loadNotifications()">Riprova</button></div>';
+      '<div class="empty-notifications">Errore nel caricamento delle notifiche</div>';
   }
 }
 
-// Renderizza le notifiche nel DOM
 function renderNotifications() {
   const container = document.getElementById('notificationsList');
   
-  if (!notifications || notifications.length === 0) {
+  if (notifications.length === 0) {
     container.innerHTML = `
       <div class="empty-notifications">
         <div class="icon">📭</div>
@@ -236,8 +208,8 @@ function renderNotifications() {
         ${getNotificationIcon(notification.tipo)}
       </div>
       <div class="notification-content">
-        <div class="notification-title">${escapeHtml(notification.titolo)}</div>
-        ${notification.messaggio ? `<div class="notification-message">${escapeHtml(notification.messaggio)}</div>` : ''}
+        <div class="notification-title">${notification.titolo}</div>
+        ${notification.messaggio ? `<div class="notification-message">${notification.messaggio}</div>` : ''}
         <div class="notification-time">${formatTime(notification.created_at)}</div>
       </div>
       <div class="notification-actions-item">
@@ -249,7 +221,6 @@ function renderNotifications() {
   `).join('');
 }
 
-// Funzioni helper
 function getNotificationType(type) {
   const types = {
     'ferie_create': 'info',
@@ -296,73 +267,43 @@ function formatTime(dateString) {
   return date.toLocaleDateString('it-IT');
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// Funzioni API
 async function markAsRead(id) {
   try {
-    console.log('Marcatura notifica come letta:', id);
     const notification = notifications.find(n => n.id === id);
     if (notification && !notification.letta) {
-      const response = await fetch(`${basePath}/notifiche/${id}/read`, { method: 'POST' });
-      const data = await response.json();
-      console.log('Risposta marcatura:', data);
-      
-      if (data.success) {
-        notification.letta = true;
-        renderNotifications();
-        updateNotificationCount(data.nonLette);
-        updateActionButtons(data.nonLette, notifications.length);
-        showToast('Notifica marcata come letta', 'ok');
-      }
+      await fetch(`${basePath}/notifiche/${id}/read`, { method: 'POST' });
+      notification.letta = true;
+      renderNotifications();
+      updateNotificationCount();
     }
   } catch (err) {
     console.error('Errore marcatura notifica:', err);
-    showToast('Errore durante la marcatura della notifica', 'error');
   }
 }
 
 async function markAllRead() {
   try {
-    const response = await fetch(`${basePath}/notifiche/read-all`, { method: 'POST' });
-    const data = await response.json();
-    
-    if (data.success) {
-      notifications.forEach(n => n.letta = true);
-      renderNotifications();
-      updateNotificationCount(0);
-      updateActionButtons(0, notifications.length);
-      showToast('Tutte le notifiche sono state marcate come lette', 'ok');
-    }
+    await fetch(`${basePath}/notifiche/read-all`, { method: 'POST' });
+    notifications.forEach(n => n.letta = true);
+    renderNotifications();
+    updateNotificationCount(0);
   } catch (err) {
     console.error('Errore marcatura notifiche:', err);
-    showToast('Errore durante la marcatura delle notifiche', 'error');
   }
 }
 
-async function deleteNotification(id) {
+async function deleteNotification(event, id) {
+  event.stopPropagation();
+  
   if (!confirm('Sei sicuro di voler eliminare questa notifica?')) return;
   
   try {
-    console.log('Eliminazione notifica:', id);
-    const response = await fetch(`${basePath}/notifiche/${id}`, { method: 'DELETE' });
-    const data = await response.json();
-    console.log('Risposta eliminazione:', data);
-    
-    if (data.success) {
-      notifications = notifications.filter(n => n.id !== id);
-      renderNotifications();
-      updateNotificationCount(data.nonLette);
-      updateActionButtons(data.nonLette, notifications.length);
-      showToast('Notifica eliminata', 'ok');
-    }
+    await fetch(`${basePath}/notifiche/${id}`, { method: 'DELETE' });
+    notifications = notifications.filter(n => n.id !== id);
+    renderNotifications();
+    updateNotificationCount();
   } catch (err) {
     console.error('Errore eliminazione notifica:', err);
-    showToast('Errore durante l\'eliminazione della notifica', 'error');
   }
 }
 
@@ -370,19 +311,32 @@ async function deleteAllNotifications() {
   if (!confirm('Sei sicuro di voler eliminare TUTTE le notifiche? Questa azione non è reversibile.')) return;
   
   try {
-    const response = await fetch(`${basePath}/notifiche/delete-all`, { method: 'DELETE' });
-    const data = await response.json();
+    // Usa il nuovo endpoint bulk per eliminare tutte le notifiche
+    await fetch(`${basePath}/notifiche/delete-all`, { method: 'DELETE' });
     
-    if (data.success) {
-      notifications = [];
-      renderNotifications();
-      updateNotificationCount(0);
-      updateActionButtons(0, 0);
-      showToast('Tutte le notifiche sono state eliminate', 'ok');
-    }
+    // Svuota l'array locale e aggiorna UI
+    notifications = [];
+    renderNotifications();
+    updateNotificationCount(0);
+    
+    // Mostra messaggio di successo
+    showToast('Tutte le notifiche sono state eliminate', 'ok');
   } catch (err) {
     console.error('Errore eliminazione notifiche:', err);
     showToast('Errore durante l\'eliminazione delle notifiche', 'error');
+  }
+}
+
+function updateNotificationCount(count) {
+  const badge = document.querySelector('.notification-badge');
+  if (badge) {
+    const newCount = count !== undefined ? count : notifications.filter(n => !n.letta).length;
+    if (newCount > 0) {
+      badge.textContent = newCount;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
   }
 }
 
@@ -390,44 +344,7 @@ function refreshNotifications() {
   loadNotifications();
 }
 
-// Aggiorna il badge delle notifiche nella sidebar
-function updateNotificationCount(count) {
-  const badge = document.querySelector('.notification-badge');
-  if (badge) {
-    const newCount = count !== undefined ? count : notifications.filter(n => !n.letta).length;
-    if (newCount > 0) {
-      badge.textContent = newCount;
-      badge.style.display = 'inline-block';
-    } else {
-      badge.style.display = 'none';
-    }
-  }
-}
-
-// Aggiorna i pulsanti di azione in base allo stato
-function updateActionButtons(nonLette, totalCount) {
-  const markAllBtn = document.querySelector('.btn-mark-all-read');
-  const deleteAllBtn = document.querySelector('.btn-delete-all');
-  
-  if (markAllBtn) {
-    if (nonLette > 0) {
-      markAllBtn.style.display = 'inline-flex';
-      markAllBtn.textContent = `Marca tutte come lette (${nonLette})`;
-    } else {
-      markAllBtn.style.display = 'none';
-    }
-  }
-  
-  if (deleteAllBtn) {
-    if (totalCount > 0) {
-      deleteAllBtn.style.display = 'inline-flex';
-    } else {
-      deleteAllBtn.style.display = 'none';
-    }
-  }
-}
-
-// Event delegation per tutti i click
+// Event delegation per click su notifiche e pulsanti azione
 document.addEventListener('click', function(e) {
   // Click su una notifica per marcarla come letta
   const notificationItem = e.target.closest('.notification-item');
@@ -444,7 +361,7 @@ document.addEventListener('click', function(e) {
     e.stopPropagation();
     const id = deleteBtn.dataset.id;
     if (id) {
-      deleteNotification(parseInt(id));
+      deleteNotification(e, parseInt(id));
     }
   }
   
@@ -467,8 +384,6 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// Inizializzazione al caricamento della pagina
-document.addEventListener('DOMContentLoaded', function() {
-  loadNotifications();
-});
+// Carica le notifiche al caricamento della pagina
+document.addEventListener('DOMContentLoaded', loadNotifications);
 </script>

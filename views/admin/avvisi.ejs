@@ -70,21 +70,21 @@
 <div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;">
   <div style="background:var(--card-bg, #fff);border-radius:8px;width:92%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.2);">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
-      <h2 id="modalTitle" style="margin:0;font-size:1.15rem;">Nuovo Avviso</h2>
+      <h2 id="modalTitle" style="margin:0;font-size:1.15rem;color:var(--text);">Nuovo Avviso</h2>
       <button type="button" id="btnCloseX" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text);padding:.25rem .5rem;">&times;</button>
     </div>
     <form id="avvisoForm" style="padding:1.5rem;">
       <div style="margin-bottom:1rem;">
-        <label for="f_titolo" style="display:block;margin-bottom:.4rem;font-weight:500;">Titolo *</label>
+        <label for="f_titolo" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Titolo *</label>
         <input id="f_titolo" name="titolo" type="text" required maxlength="255" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);">
       </div>
       <div style="margin-bottom:1rem;">
-        <label for="f_contenuto" style="display:block;margin-bottom:.4rem;font-weight:500;">Contenuto *</label>
+        <label for="f_contenuto" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Contenuto *</label>
         <textarea id="f_contenuto" name="contenuto" rows="4" required style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);resize:vertical;"></textarea>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div>
-          <label for="f_tipo" style="display:block;margin-bottom:.4rem;font-weight:500;">Tipo</label>
+          <label for="f_tipo" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Tipo</label>
           <select id="f_tipo" name="tipo" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);">
             <option value="info">Informazione</option>
             <option value="warning">Attenzione</option>
@@ -93,22 +93,22 @@
           </select>
         </div>
         <div style="display:flex;align-items:flex-end;">
-          <label style="display:flex;gap:.5rem;align-items:center;cursor:pointer;">
+          <label style="display:flex;gap:.5rem;align-items:center;cursor:pointer;color:var(--text);">
             <input id="f_evidenza" name="in_evidenza" type="checkbox"> In evidenza
           </label>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div>
-          <label for="f_da" style="display:block;margin-bottom:.4rem;font-weight:500;">Visibile dal</label>
+          <label for="f_da" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Visibile dal</label>
           <input id="f_da" name="visibile_da" type="date" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);">
         </div>
         <div>
-          <label for="f_fino" style="display:block;margin-bottom:.4rem;font-weight:500;">Visibile fino al</label>
+          <label for="f_fino" style="display:block;margin-bottom:.4rem;font-weight:500;color:var(--text);">Visibile fino al</label>
           <input id="f_fino" name="visibile_fino" type="date" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);">
         </div>
       </div>
-      <p class="text-muted" style="font-size:.85rem;margin-bottom:1rem;">Se lasci vuoto dal/al, l'avviso e sempre visibile.</p>
+      <p class="text-muted" style="font-size:.85rem;margin-bottom:1rem;color:var(--text);">Se lasci vuoto dal/al, l'avviso e sempre visibile.</p>
       <div style="display:flex;gap:1rem;justify-content:flex-end;padding-top:1rem;border-top:1px solid var(--border);">
         <button type="button" class="btn btn--secondary" id="btnAnnulla">Annulla</button>
         <button type="submit" class="btn">Salva</button>

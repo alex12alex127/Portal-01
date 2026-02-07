@@ -389,6 +389,7 @@ class AdminAnnouncementManager {
     // Click su "Crea avviso"
     const createBtn = e.target.closest('.btn-create');
     if (createBtn) {
+      console.log('[AdminAnnouncementManager] Click su crea avviso rilevato');
       this.openModal();
     }
     
@@ -579,14 +580,23 @@ class AdminAnnouncementManager {
   }
 
   openModal() {
+    console.log('[AdminAnnouncementManager] Apertura modale...');
     const modal = document.getElementById('announcementModal');
-    modal.style.display = 'flex';
+    console.log('[AdminAnnouncementManager] Modal trovato:', !!modal);
     
-    if (!this.editingId) {
-      // Reset form per nuovo avviso
-      document.getElementById('announcementForm').reset();
-      document.getElementById('modalTitle').textContent = 'Nuovo Avviso';
-      this.editingId = null;
+    if (modal) {
+      modal.style.display = 'flex';
+      console.log('[AdminAnnouncementManager] Modal visualizzata');
+      
+      if (!this.editingId) {
+        // Reset form per nuovo avviso
+        document.getElementById('announcementForm').reset();
+        document.getElementById('modalTitle').textContent = 'Nuovo Avviso';
+        this.editingId = null;
+        console.log('[AdminAnnouncementManager] Form resettato per nuovo avviso');
+      }
+    } else {
+      console.error('[AdminAnnouncementManager] Modal non trovata!');
     }
   }
 

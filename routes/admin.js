@@ -400,28 +400,6 @@ router.get('/avvisi/:id/modifica', requireAuth, requireManager, async (req, res)
   }
 });
 
-router.put('/avvisi/:id', requireAuth, requireManager, apiLimiter, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
-  const { titolo, contenuto, tipo, in_evidenza, visibile_da, visibile_fino } = req.body || {};
-  if (!titolo || !String(titolo).trim()) return res.status(400).json({ error: 'Titolo obbligatorio' });
-  if (!contenuto || !String(contenuto).trim()) return res.status(400).json({ error: 'Contenuto obbligatorio' });
-  const tipoVal = TIPI_AVVISO.includes(tipo) ? tipo : 'info';
-  const evidenza = in_evidenza === 'on' || in_evidenza === '1' || in_evidenza === true;
-  try {
-    const r = await db.query(
-      'UPDATE avvisi SET titolo = $1, contenuto = $2, tipo = $3, in_evidenza = $4, visibile_da = $5, visibile_fino = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING id',
-      [String(titolo).trim(), String(contenuto).trim(), tipoVal, evidenza, visibile_da || null, visibile_fino || null, id]
-    );
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Avviso non trovato' });
-    await logAudit(req.session.user.id, 'avviso_modificato', `id=${id}`, req.ip);
-    res.json({ success: true, message: 'Avviso aggiornato' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Errore' });
-  }
-});
-
 // GET /admin/avvisi - Gestione avvisi (solo admin)
 router.get('/avvisi', requireAuth, requireAdmin, async (req, res) => {
   try {
@@ -468,7 +446,7 @@ router.post('/avvisi', requireAuth, requireAdmin, apiLimiter, async (req, res) =
     }
     
     const avviso = await creaAvviso(titolo, contenuto, tipo || 'info', {
-      in_evidenza: in_evidenza === 'on',
+      in_evidenza: in_evidenza === 'on' || in_evidenza === '1' || in_evidenza === true,
       visibile_da: visibile_da || null,
       visibile_fino: visibile_fino || null,
       created_by: req.session.user.id
@@ -495,7 +473,7 @@ router.put('/avvisi/:id', requireAuth, requireAdmin, apiLimiter, async (req, res
       titolo,
       contenuto,
       tipo: tipo || 'info',
-      in_evidenza: in_evidenza === 'on',
+      in_evidenza: in_evidenza === 'on' || in_evidenza === '1' || in_evidenza === true,
       visibile_da: visibile_da || null,
       visibile_fino: visibile_fino || null
     });

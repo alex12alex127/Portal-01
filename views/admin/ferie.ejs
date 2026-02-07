@@ -7,7 +7,7 @@
 
 <% if (typeof filtri !== 'undefined' && (typeof usersList !== 'undefined' && usersList.length)) { %>
 <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden;margin-bottom:1rem">
-  <form method="get" action="<%= bp %>/admin/ferie" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;padding:1rem 1.25rem">
+  <form method="get" action="<%= bp %>/admin/ferie" class="rsp-flex-form" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;padding:1rem 1.25rem">
     <div style="min-width:130px">
       <label style="display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.03em">Stato</label>
       <select name="stato" style="width:100%">
@@ -44,7 +44,7 @@
   <% } else { %>
     <div>
       <% ferie.forEach(function(f) { %>
-      <div data-id="<%= f.id %>" style="display:flex;align-items:center;gap:1rem;padding:.85rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
+      <div data-id="<%= f.id %>" class="rsp-list-row" style="display:flex;align-items:center;gap:1rem;padding:.85rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
         <div style="width:38px;height:38px;border-radius:50%;background:var(--primary,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0"><%= f.full_name ? f.full_name.charAt(0).toUpperCase() : f.username.charAt(0).toUpperCase() %></div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">

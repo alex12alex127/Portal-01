@@ -5,23 +5,23 @@
 </h1>
 
 <% if (typeof summary !== 'undefined' && summary) { %>
-<div class="dashboard-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem">
+<div class="dashboard-stats rsp-grid-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem">
   <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1.25rem;text-align:center">
-    <div style="font-size:2rem;font-weight:700;color:var(--warn,#f59e0b)"><%= summary.pending || 0 %></div>
+    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--warn,#f59e0b)"><%= summary.pending || 0 %></div>
     <div style="font-size:.8rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.03em;margin-top:.25rem">In attesa</div>
   </div>
   <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1.25rem;text-align:center">
-    <div style="font-size:2rem;font-weight:700;color:var(--success,#22c55e)"><%= summary.approved || 0 %></div>
+    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--success,#22c55e)"><%= summary.approved || 0 %></div>
     <div style="font-size:.8rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.03em;margin-top:.25rem">Approvate</div>
   </div>
   <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1.25rem;text-align:center">
-    <div style="font-size:2rem;font-weight:700;color:var(--primary,#4f46e5)"><%= summary.giorniApproved || 0 %></div>
+    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--primary,#4f46e5)"><%= summary.giorniApproved || 0 %></div>
     <div style="font-size:.8rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.03em;margin-top:.25rem">Giorni usati <%= summary.year %></div>
   </div>
 </div>
 <% } %>
 
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1rem;margin-bottom:1.5rem">
+<div class="rsp-grid-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1rem;margin-bottom:1.5rem">
 
   <% if (typeof avvisiDashboard !== 'undefined' && avvisiDashboard.length > 0) { %>
   <div class="dashboard-avvisi" style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden">
@@ -93,7 +93,7 @@
 </div>
 <% } %>
 
-<div class="dashboard-actions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1.5rem">
+<div class="dashboard-actions rsp-quick-actions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;margin-bottom:1.5rem">
   <a href="<%= bp %>/ferie" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
     <svg style="width:24px;height:24px;color:var(--primary)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
     Ferie

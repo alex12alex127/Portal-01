@@ -4,7 +4,7 @@
   Il mio profilo
 </h1>
 
-<div style="display:grid;grid-template-columns:280px 1fr;gap:1.5rem;align-items:start">
+<div class="rsp-grid-sidebar" style="display:grid;grid-template-columns:280px 1fr;gap:1.5rem;align-items:start">
 
   <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden;text-align:center;padding:2rem 1.5rem">
     <div style="width:72px;height:72px;border-radius:50%;background:var(--primary,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;margin:0 auto .75rem"><%= profile.full_name ? profile.full_name.charAt(0).toUpperCase() : profile.username.charAt(0).toUpperCase() %></div>
@@ -31,7 +31,7 @@
       </div>
       <form id="pf" style="padding:1.25rem">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div class="rsp-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
           <div>
             <label for="pf-username" style="display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.03em">Username</label>
             <input id="pf-username" type="text" value="<%= profile.username %>" disabled style="width:100%;opacity:.6">
@@ -59,7 +59,7 @@
       </div>
       <form id="pw" style="padding:1.25rem">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div class="rsp-grid-3" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
           <div>
             <label for="pw-current" style="display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.03em">Attuale</label>
             <input id="pw-current" type="password" name="current_password" required style="width:100%">
@@ -94,11 +94,6 @@
   </div>
 </div>
 
-<style>
-@media (max-width: 768px) {
-  .profile-grid { grid-template-columns: 1fr !important; }
-}
-</style>
 <script>
   document.getElementById('pf').onsubmit=async function(e){ e.preventDefault(); var m=document.getElementById('pfMsg'); m.textContent=''; m.className=''; var btn=this.querySelector('button'), txt=btn.querySelector('.btn-text'); btn.disabled=true; if(txt) txt.textContent='Salvataggio...'; try{ var r=await fetch((window.APP_BASE||'')+'/profile/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))}); var j; try{j=await r.json();}catch(_){j={};} m.textContent=j.success?j.message:j.error; m.className=j.success?'message-ok':'message-error'; }catch(x){ m.textContent='Errore'; m.className='message-error'; } btn.disabled=false; if(txt) txt.textContent='Aggiorna profilo'; };
   document.getElementById('pw').onsubmit=async function(e){ e.preventDefault(); var m=document.getElementById('pwMsg'); m.textContent=''; m.className=''; var btn=this.querySelector('button'), txt=btn.querySelector('.btn-text'); btn.disabled=true; if(txt) txt.textContent='Salvataggio...'; try{ var r=await fetch((window.APP_BASE||'')+'/profile/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))}); var j; try{j=await r.json();}catch(_){j={};} m.textContent=j.success?j.message:j.error; m.className=j.success?'message-ok':'message-error'; if(j.success) this.reset(); }catch(x){ m.textContent='Errore'; m.className='message-error'; } btn.disabled=false; if(txt) txt.textContent='Cambia password'; };

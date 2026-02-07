@@ -1,44 +1,44 @@
 <% var bp = typeof basePath !== 'undefined' ? basePath : ''; %>
-<h1 class="page-title">
+<h1 class="page-title animate-in">
   <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
   Benvenuto, <%= typeof user !== 'undefined' && user ? user.full_name || user.username : '' %>
 </h1>
 
 <% if (typeof summary !== 'undefined' && summary) { %>
-<div class="dashboard-stats rsp-grid-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem">
-  <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1.25rem;text-align:center">
-    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--warn,#f59e0b)"><%= summary.pending || 0 %></div>
-    <div style="font-size:.8rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.03em;margin-top:.25rem">In attesa</div>
+<div class="dashboard-stats p-stats">
+  <div class="p-stat p-stat--warn">
+    <div class="p-stat__value"><%= summary.pending || 0 %></div>
+    <div class="p-stat__label">In attesa</div>
   </div>
-  <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1.25rem;text-align:center">
-    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--success,#22c55e)"><%= summary.approved || 0 %></div>
-    <div style="font-size:.8rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.03em;margin-top:.25rem">Approvate</div>
+  <div class="p-stat p-stat--success">
+    <div class="p-stat__value"><%= summary.approved || 0 %></div>
+    <div class="p-stat__label">Approvate</div>
   </div>
-  <div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:1.25rem;text-align:center">
-    <div class="rsp-stat-value" style="font-size:2rem;font-weight:700;color:var(--primary,#1a56db)"><%= summary.giorniApproved || 0 %></div>
-    <div style="font-size:.8rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.03em;margin-top:.25rem">Giorni usati <%= summary.year %></div>
+  <div class="p-stat p-stat--primary">
+    <div class="p-stat__value"><%= summary.giorniApproved || 0 %></div>
+    <div class="p-stat__label">Giorni usati <%= summary.year %></div>
   </div>
 </div>
 <% } %>
 
-<div class="rsp-grid-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1rem;margin-bottom:1.5rem">
+<div class="p-dashboard-grid">
 
   <% if (typeof avvisiDashboard !== 'undefined' && avvisiDashboard.length > 0) { %>
-  <div class="dashboard-avvisi" style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb)">
-      <h2 style="margin:0;font-size:1rem;display:flex;align-items:center;gap:.5rem">
-        <svg style="width:18px;height:18px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+  <div class="dashboard-avvisi p-card">
+    <div class="p-card-header">
+      <h2 class="p-card-header__title">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
         Avvisi
-        <% if (typeof avvisiNonLetti !== 'undefined' && avvisiNonLetti > 0) { %><span class="badge badge--alert"><%= avvisiNonLetti %></span><% } %>
+        <% if (typeof avvisiNonLetti !== 'undefined' && avvisiNonLetti > 0) { %><span class="p-tag-count"><%= avvisiNonLetti %></span><% } %>
       </h2>
-      <a href="<%= bp %>/avvisi" style="font-size:.8rem;color:var(--primary)">Vedi tutti →</a>
+      <a href="<%= bp %>/avvisi" class="p-card-header__action">Vedi tutti →</a>
     </div>
-    <div style="padding:.5rem 0">
+    <div class="p-card-body--flush">
       <% avvisiDashboard.forEach(function(a) { %>
-      <a href="<%= bp %>/avvisi/<%= a.id %>" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;text-decoration:none;color:inherit;transition:background .15s;<%= a.in_evidenza ? 'background:rgba(26,86,219,.04)' : '' %>">
-        <span class="badge badge--avviso badge--<%= a.tipo %>" style="font-size:.7rem;flex-shrink:0"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo === 'success' ? 'Successo' : a.tipo %></span>
-        <span style="flex:1;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><%= a.titolo %></span>
-        <span style="font-size:.75rem;color:var(--muted);flex-shrink:0"><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' %></span>
+      <a href="<%= bp %>/avvisi/<%= a.id %>" class="p-avviso-link<%= a.in_evidenza ? ' p-avviso-link--evidenza' : '' %>">
+        <span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : a.tipo === 'success' ? 'Successo' : a.tipo %></span>
+        <span class="p-avviso-link__title"><%= a.titolo %></span>
+        <span class="p-avviso-link__date"><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' %></span>
       </a>
       <% }); %>
     </div>
@@ -46,20 +46,20 @@
   <% } %>
 
   <% if (typeof notifiche !== 'undefined' && notifiche.length > 0) { %>
-  <div class="dashboard-notifiche" style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb)">
-      <h2 style="margin:0;font-size:1rem;display:flex;align-items:center;gap:.5rem">
-        <svg style="width:18px;height:18px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+  <div class="dashboard-notifiche p-card">
+    <div class="p-card-header">
+      <h2 class="p-card-header__title">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
         Notifiche
       </h2>
-      <a href="<%= bp %>/notifiche" style="font-size:.8rem;color:var(--primary)">Vedi tutte →</a>
+      <a href="<%= bp %>/notifiche" class="p-card-header__action">Vedi tutte →</a>
     </div>
-    <div style="padding:.5rem 0">
+    <div class="p-card-body--flush">
       <% notifiche.forEach(function(n) { %>
-      <div style="padding:.6rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6);<%= !n.letta ? 'border-left:3px solid var(--primary)' : 'opacity:.7' %>">
-        <div style="font-weight:600;font-size:.9rem"><%= n.titolo || 'Notifica' %></div>
-        <% if (n.messaggio) { %><div style="font-size:.82rem;color:var(--muted);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><%= n.messaggio %></div><% } %>
-        <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem"><%= n.created_at ? new Date(n.created_at).toLocaleString('it-IT') : '' %></div>
+      <div class="p-notifica<%= !n.letta ? ' p-notifica--unread' : ' p-notifica--read' %>">
+        <div class="p-notifica__title"><%= n.titolo || 'Notifica' %></div>
+        <% if (n.messaggio) { %><div class="p-notifica__text"><%= n.messaggio %></div><% } %>
+        <div class="p-notifica__date"><%= n.created_at ? new Date(n.created_at).toLocaleString('it-IT') : '' %></div>
       </div>
       <% }); %>
     </div>
@@ -69,24 +69,24 @@
 </div>
 
 <% if (typeof ultimeRichieste !== 'undefined' && ultimeRichieste.length > 0) { %>
-<div class="dashboard-ultime" style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb)">
-    <h2 style="margin:0;font-size:1rem;display:flex;align-items:center;gap:.5rem">
-      <svg style="width:18px;height:18px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+<div class="dashboard-ultime p-card">
+  <div class="p-card-header">
+    <h2 class="p-card-header__title">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
       Ultime richieste
     </h2>
-    <a href="<%= bp %>/ferie" style="font-size:.8rem;color:var(--primary)">Vedi tutte →</a>
+    <a href="<%= bp %>/ferie" class="p-card-header__action">Vedi tutte →</a>
   </div>
-  <div style="padding:.25rem 0">
+  <div class="p-card-body--flush">
     <% ultimeRichieste.forEach(function(r) { %>
-    <div style="display:flex;align-items:center;gap:.75rem;padding:.65rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
-      <div style="flex:1;display:flex;align-items:center;gap:.5rem;font-size:.9rem">
-        <span style="font-weight:600"><%= r.data_inizio %></span>
-        <span style="color:var(--muted)">→</span>
-        <span style="font-weight:600"><%= r.data_fine %></span>
+    <div class="p-ferie-item">
+      <div class="p-ferie-item__dates">
+        <strong><%= r.data_inizio %></strong>
+        <span class="p-ferie-item__tipo">→</span>
+        <strong><%= r.data_fine %></strong>
       </div>
-      <span style="font-size:.8rem;color:var(--muted);text-transform:capitalize"><%= r.tipo %></span>
-      <span class="badge badge--ferie <%= r.stato %>" style="font-size:.7rem"><%= r.stato === 'pending' ? 'In attesa' : r.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span>
+      <span class="p-ferie-item__tipo"><%= r.tipo %></span>
+      <span class="badge badge--ferie <%= r.stato %>"><%= r.stato === 'pending' ? 'In attesa' : r.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span>
     </div>
     <% }); %>
   </div>
@@ -94,71 +94,71 @@
 <% } %>
 
 <% if (typeof sicurezzaScadenze !== 'undefined' && sicurezzaScadenze.totale > 0) { %>
-<div class="dashboard-sicurezza" style="background:var(--card-bg,#fff);border:1px solid var(--danger,#dc2626);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb);background:rgba(220,38,38,.04)">
-    <h2 style="margin:0;font-size:1rem;display:flex;align-items:center;gap:.5rem;color:var(--danger,#dc2626)">
-      <svg style="width:18px;height:18px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+<div class="dashboard-sicurezza p-scadenze">
+  <div class="p-scadenze__header">
+    <h2 class="p-scadenze__title">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
       Scadenze Sicurezza
-      <span style="background:var(--danger,#dc2626);color:#fff;font-size:.7rem;font-weight:700;padding:.15rem .45rem;border-radius:10px"><%= sicurezzaScadenze.totale %></span>
+      <span class="p-tag-count"><%= sicurezzaScadenze.totale %></span>
     </h2>
-    <a href="<%= bp %>/sicurezza" style="font-size:.8rem;color:var(--primary)">Dettagli →</a>
+    <a href="<%= bp %>/sicurezza" class="p-card-header__action">Dettagli →</a>
   </div>
-  <div style="padding:.5rem 0">
+  <div class="p-scadenze__body">
     <% sicurezzaScadenze.formazioni.forEach(function(s) { %>
-    <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
-      <span style="background:var(--danger,#dc2626);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;flex-shrink:0">FORMAZIONE</span>
-      <span style="flex:1;font-size:.85rem"><%= s.tipo %></span>
-      <span style="font-size:.78rem;color:var(--danger,#dc2626);font-weight:600"><%= s.data_scadenza %></span>
+    <div class="p-scadenze-item">
+      <span class="p-scadenze-item__type" style="background:var(--danger)">FORMAZIONE</span>
+      <span class="p-scadenze-item__name"><%= s.tipo %></span>
+      <span class="p-scadenze-item__date"><%= s.data_scadenza %></span>
     </div>
     <% }); %>
     <% sicurezzaScadenze.dpi.forEach(function(s) { %>
-    <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
-      <span style="background:var(--warn,#f59e0b);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;flex-shrink:0">DPI</span>
-      <span style="flex:1;font-size:.85rem"><%= s.tipo %></span>
-      <span style="font-size:.78rem;color:var(--danger,#dc2626);font-weight:600"><%= s.data_scadenza %></span>
+    <div class="p-scadenze-item">
+      <span class="p-scadenze-item__type" style="background:var(--warn)">DPI</span>
+      <span class="p-scadenze-item__name"><%= s.tipo %></span>
+      <span class="p-scadenze-item__date"><%= s.data_scadenza %></span>
     </div>
     <% }); %>
   </div>
 </div>
 <% } %>
 
-<div class="dashboard-actions rsp-quick-actions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;margin-bottom:1.5rem">
-  <a href="<%= bp %>/ferie" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
-    <svg style="width:24px;height:24px;color:var(--primary)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+<div class="dashboard-actions p-quick-actions">
+  <a href="<%= bp %>/ferie" class="p-quick-action">
+    <svg class="icon" style="color:var(--primary)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
     Ferie
   </a>
-  <a href="<%= bp %>/avvisi" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
-    <svg style="width:24px;height:24px;color:var(--warn,#f59e0b)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+  <a href="<%= bp %>/avvisi" class="p-quick-action">
+    <svg class="icon" style="color:var(--warn)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
     Avvisi
   </a>
-  <a href="<%= bp %>/sicurezza" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
-    <svg style="width:24px;height:24px;color:var(--danger,#dc2626)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+  <a href="<%= bp %>/sicurezza" class="p-quick-action">
+    <svg class="icon" style="color:var(--danger)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
     Sicurezza
   </a>
-  <a href="<%= bp %>/ferie/calendar/ical" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
-    <svg style="width:24px;height:24px;color:var(--success,#22c55e)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+  <a href="<%= bp %>/ferie/calendar/ical" class="p-quick-action">
+    <svg class="icon" style="color:var(--success)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
     Esporta iCal
   </a>
-  <a href="<%= bp %>/profile/settings" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
-    <svg style="width:24px;height:24px;color:var(--muted,#6b7280)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+  <a href="<%= bp %>/profile/settings" class="p-quick-action">
+    <svg class="icon" style="color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
     Impostazioni
   </a>
 </div>
 
-<div style="text-align:right;margin-bottom:.5rem">
-  <button type="button" class="btn btn-sm btn--secondary" id="toggleWidgets" style="font-size:.8rem">
-    <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+<div class="p-widget-toggle">
+  <button type="button" class="btn btn-sm btn--secondary" id="toggleWidgets">
+    <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
     Personalizza
   </button>
 </div>
-<div id="widgetSettings" style="display:none;padding:1rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;margin-bottom:1rem">
-  <p style="margin:0 0 .75rem;font-weight:600;font-size:.9rem">Mostra/nascondi sezioni</p>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.5rem">
-    <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.85rem;padding:.4rem .5rem;border:1px solid var(--border,#e5e7eb);border-radius:8px"><input type="checkbox" data-widget="stats" checked> Statistiche</label>
-    <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.85rem;padding:.4rem .5rem;border:1px solid var(--border,#e5e7eb);border-radius:8px"><input type="checkbox" data-widget="avvisi" checked> Avvisi</label>
-    <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.85rem;padding:.4rem .5rem;border:1px solid var(--border,#e5e7eb);border-radius:8px"><input type="checkbox" data-widget="notifiche" checked> Notifiche</label>
-    <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.85rem;padding:.4rem .5rem;border:1px solid var(--border,#e5e7eb);border-radius:8px"><input type="checkbox" data-widget="richieste" checked> Richieste</label>
-    <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.85rem;padding:.4rem .5rem;border:1px solid var(--border,#e5e7eb);border-radius:8px"><input type="checkbox" data-widget="azioni" checked> Azioni rapide</label>
+<div id="widgetSettings" class="p-widget-panel">
+  <p class="p-widget-panel__title">Mostra/nascondi sezioni</p>
+  <div class="p-widget-options">
+    <label class="p-widget-option"><input type="checkbox" data-widget="stats" checked> Statistiche</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="avvisi" checked> Avvisi</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="notifiche" checked> Notifiche</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="richieste" checked> Richieste</label>
+    <label class="p-widget-option"><input type="checkbox" data-widget="azioni" checked> Azioni rapide</label>
   </div>
 </div>
 

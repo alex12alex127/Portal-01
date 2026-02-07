@@ -21,6 +21,7 @@
         <%- body %>
       </div>
     </main>
+    <%- include('../partials/bottom-nav', { activePage: typeof activePage !== 'undefined' ? activePage : '' }) %>
   </div>
   <script src="<%= typeof basePath !== 'undefined' ? basePath : '' %>/js/app.js"></script>
   <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('<%= typeof basePath !== "undefined" ? basePath : "" %>/sw.js').catch(function(){});}</script>

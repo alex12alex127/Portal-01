@@ -197,6 +197,76 @@ async function initDatabase() {
     await client.query('CREATE INDEX IF NOT EXISTS idx_festivita_data ON festivita(data)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_festivita_ricorrente ON festivita(ricorrente)');
 
+    // ===== IMPOSTAZIONI AZIENDALI =====
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS impostazioni (
+        chiave VARCHAR(100) PRIMARY KEY,
+        valore TEXT,
+        tipo VARCHAR(20) DEFAULT 'text',
+        categoria VARCHAR(50) DEFAULT 'generale',
+        descrizione VARCHAR(255),
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // ===== REPARTI =====
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS reparti (
+        id SERIAL PRIMARY KEY,
+        nome VARCHAR(100) NOT NULL UNIQUE,
+        descrizione TEXT,
+        responsabile_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // ===== ANAGRAFICA DIPENDENTI ESTESA =====
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reparto_id INTEGER REFERENCES reparti(id) ON DELETE SET NULL');
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS responsabile_id INTEGER REFERENCES users(id) ON DELETE SET NULL');
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS data_assunzione DATE');
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS tipo_contratto VARCHAR(30) DEFAULT \'full-time\'');
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS ore_settimanali NUMERIC(4,1) DEFAULT 40');
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS telefono VARCHAR(30)');
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS codice_fiscale VARCHAR(20)');
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS matricola VARCHAR(30)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_users_reparto ON users(reparto_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_users_responsabile ON users(responsabile_id)');
+
+    // ===== BUDGET FERIE =====
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS budget_ferie (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        anno INTEGER NOT NULL,
+        giorni_spettanti NUMERIC(5,1) NOT NULL DEFAULT 26,
+        giorni_aggiuntivi NUMERIC(5,1) DEFAULT 0,
+        note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, anno)
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_budget_ferie_user_anno ON budget_ferie(user_id, anno)');
+
+    // ===== PRESENZE / TIMBRATURE =====
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS presenze (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        data DATE NOT NULL,
+        ora_entrata TIME,
+        ora_uscita TIME,
+        ore_lavorate NUMERIC(4,1),
+        ore_straordinario NUMERIC(4,1) DEFAULT 0,
+        tipo VARCHAR(30) DEFAULT 'ordinario',
+        note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_presenze_user_data ON presenze(user_id, data)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_presenze_data ON presenze(data)');
+
     console.log('Tabelle e indici create/verificate');
   } finally {
     client.release();

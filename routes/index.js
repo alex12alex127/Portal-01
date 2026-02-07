@@ -4,6 +4,8 @@ const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 const { soloData } = require('../lib/helpers');
 const { getScadenzeSicurezza } = require('../lib/sicurezza');
+const { getSaldoFerie } = require('../lib/budget_ferie');
+const { getPresenzaOggi } = require('../lib/presenze');
 
 router.get('/', (req, res) => {
   const base = req.app.get('basePath') || '';
@@ -62,6 +64,12 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       };
       sicurezzaScadenze.totale = sicurezzaScadenze.formazioni.length + sicurezzaScadenze.dpi.length;
     } catch (_) { /* tabelle non ancora create */ }
+    // Budget ferie
+    let saldoFerie = { giorni_spettanti: 0, giorni_usati: 0, giorni_pendenti: 0, giorni_residui: 0, budget_configurato: false };
+    try { saldoFerie = await getSaldoFerie(req.session.user.id, year); } catch (_) {}
+    // Presenza oggi
+    let presenzaOggi = null;
+    try { presenzaOggi = await getPresenzaOggi(req.session.user.id); } catch (_) {}
     res.render('dashboard', {
       title: 'Panoramica - Portal-01',
       activePage: 'dashboard',
@@ -70,7 +78,9 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       ultimeRichieste: ultimeRichieste.rows.map(r => ({ ...r, data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine) })),
       notifiche,
       avvisiDashboard: avvisiDashboard,
-      sicurezzaScadenze
+      sicurezzaScadenze,
+      saldoFerie,
+      presenzaOggi
     });
   } catch (err) {
     console.error(err);

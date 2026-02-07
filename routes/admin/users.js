@@ -37,13 +37,17 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
       listParams
     );
     const totalPages = Math.ceil(total / limit) || 1;
+    const repartiResult = await db.query('SELECT id, nome FROM reparti ORDER BY nome');
+    const allUsersResult = await db.query('SELECT id, full_name, username FROM users WHERE is_active = true ORDER BY full_name');
     res.render('admin/users', {
       title: 'Gestione Utenti - Portal-01',
       activePage: 'admin',
       breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Gestione Utenti' }],
       users: result.rows,
       pagination: { page, limit, total, totalPages },
-      filtri: { q, role: roleFilter }
+      filtri: { q, role: roleFilter },
+      repartiList: repartiResult.rows,
+      allUsers: allUsersResult.rows
     });
   } catch (err) {
     console.error(err);
@@ -88,6 +92,55 @@ router.delete('/:id', requireAuth, requireAdmin, apiLimiter, async (req, res) =>
   try {
     await db.query('DELETE FROM users WHERE id = $1', [id]);
     res.json({ success: true, message: 'Utente eliminato' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
+// Aggiorna anagrafica estesa utente
+router.put('/:id/anagrafica', requireAuth, requireAdmin, apiLimiter, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
+  const { reparto_id, responsabile_id, data_assunzione, tipo_contratto, ore_settimanali, telefono, codice_fiscale, matricola } = req.body;
+  const tipiContratto = ['full-time', 'part-time', 'apprendistato', 'determinato', 'collaborazione'];
+  const tipoVal = tipiContratto.includes(tipo_contratto) ? tipo_contratto : 'full-time';
+  try {
+    await db.query(
+      `UPDATE users SET reparto_id = $1, responsabile_id = $2, data_assunzione = $3,
+       tipo_contratto = $4, ore_settimanali = $5, telefono = $6, codice_fiscale = $7, matricola = $8,
+       updated_at = CURRENT_TIMESTAMP WHERE id = $9`,
+      [reparto_id || null, responsabile_id || null, data_assunzione || null,
+       tipoVal, ore_settimanali || 40, telefono || null, codice_fiscale || null, matricola || null, id]
+    );
+    await logAudit(req.session.user.id, 'anagrafica_aggiornata', `user_id=${id}`, req.ip);
+    res.json({ success: true, message: 'Anagrafica aggiornata' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
+// API: dettaglio utente con anagrafica estesa
+router.get('/:id/detail', requireAuth, requireAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
+  try {
+    const r = await db.query(
+      `SELECT u.id, u.username, u.email, u.full_name, u.role, u.is_active, u.reparto_id, u.responsabile_id,
+              u.data_assunzione, u.tipo_contratto, u.ore_settimanali, u.telefono, u.codice_fiscale, u.matricola,
+              r.nome AS reparto_nome, resp.full_name AS responsabile_nome
+       FROM users u
+       LEFT JOIN reparti r ON r.id = u.reparto_id
+       LEFT JOIN users resp ON resp.id = u.responsabile_id
+       WHERE u.id = $1`, [id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Utente non trovato' });
+    const user = r.rows[0];
+    if (user.data_assunzione) {
+      user.data_assunzione = typeof user.data_assunzione === 'string' ? user.data_assunzione.slice(0, 10) : user.data_assunzione.toISOString().slice(0, 10);
+    }
+    res.json({ success: true, user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Errore' });

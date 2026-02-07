@@ -92,6 +92,7 @@ app.use(BASE_PATH + '/profile', require('./routes/profile'));
 app.use(BASE_PATH + '/admin', require('./routes/admin/index'));
 app.use(BASE_PATH + '/sicurezza', require('./routes/sicurezza'));
 app.use(BASE_PATH + '/notifiche', require('./routes/notifiche'));
+app.use(BASE_PATH + '/presenze', require('./routes/presenze'));
 app.use(BASE_PATH + '/api/v1', require('./routes/api'));
 
 app.use((req, res) => {
@@ -133,7 +134,14 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 db.initDatabase()
-  .then(() => console.log('Database pronto'))
+  .then(async () => {
+    console.log('Database pronto');
+    try {
+      const { initImpostazioni } = require('./lib/impostazioni');
+      await initImpostazioni();
+      console.log('Impostazioni inizializzate');
+    } catch (e) { console.warn('Init impostazioni:', e.message); }
+  })
   .catch((err) => {
     console.error('Database:', err.message);
     console.error('Imposta DATABASE_URL e riavvia. Vedi DOKPLOY-POSTGRES.md');

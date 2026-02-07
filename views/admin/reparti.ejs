@@ -1,0 +1,123 @@
+<% var bp = typeof basePath !== 'undefined' ? basePath : ''; %>
+<h1 class="page-title animate-in">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
+  Reparti
+</h1>
+
+<div class="p-stats">
+  <div class="p-stat p-stat--primary">
+    <div class="p-stat__value"><%= reparti.length %></div>
+    <div class="p-stat__label">Reparti</div>
+  </div>
+  <div class="p-stat p-stat--success">
+    <div class="p-stat__value"><%= reparti.reduce(function(s,r){return s+r.num_dipendenti},0) %></div>
+    <div class="p-stat__label">Dipendenti assegnati</div>
+  </div>
+</div>
+
+<div class="p-card" style="margin-bottom:var(--space-md)">
+  <div class="p-card-header">
+    <span class="p-list-item__sub">Gestione reparti</span>
+    <button type="button" class="btn btn-sm" id="btnNewReparto">+ Nuovo reparto</button>
+  </div>
+</div>
+
+<div class="p-card">
+  <% if (reparti.length === 0) { %>
+  <div class="p-empty"><p>Nessun reparto configurato.</p></div>
+  <% } else { %>
+  <div class="p-card-body--flush">
+    <% reparti.forEach(function(r) { %>
+    <div class="p-list-item">
+      <div class="p-list-item__avatar p-list-item__avatar--primary"><%= r.nome.charAt(0).toUpperCase() %></div>
+      <div class="p-list-item__body">
+        <div class="p-list-item__title">
+          <span class="p-list-item__name"><%= r.nome %></span>
+          <span class="p-tag p-tag--primary"><%= r.num_dipendenti %> dip.</span>
+        </div>
+        <div class="p-list-item__meta">
+          <% if (r.responsabile_nome) { %><span>Resp: <strong><%= r.responsabile_nome %></strong></span><% } else { %><span>Nessun responsabile</span><% } %>
+          <% if (r.descrizione) { %><span>· <%= r.descrizione %></span><% } %>
+        </div>
+      </div>
+      <div class="p-list-item__actions">
+        <button type="button" class="btn-sm rep-edit-btn" data-id="<%= r.id %>" data-nome="<%= r.nome %>" data-descrizione="<%= r.descrizione || '' %>" data-responsabile="<%= r.responsabile_id || '' %>">Modifica</button>
+        <button type="button" class="btn-sm rep-del-btn" data-id="<%= r.id %>" data-nome="<%= r.nome %>">Elimina</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+</div>
+
+<!-- Modale -->
+<div id="repModal" class="modal-overlay admin-ferie-modal" aria-hidden="true" hidden>
+  <div class="modal admin-ferie-modal__box admin-ferie-modal__box--form" role="dialog" aria-modal="true" style="max-width:480px">
+    <h3 class="modal__title" id="repModalTitle">Nuovo reparto</h3>
+    <form id="repForm" class="admin-ferie-edit-form p-modal-form">
+      <input type="hidden" id="repId">
+      <input type="hidden" id="repMethod" value="POST">
+      <label>Nome reparto <input type="text" id="repNome" required placeholder="es. Produzione, Amministrazione..."></label>
+      <label>Descrizione <textarea id="repDescrizione" rows="2" placeholder="Opzionale"></textarea></label>
+      <label>Responsabile
+        <select id="repResponsabile">
+          <option value="">-- Nessuno --</option>
+          <% (usersList || []).forEach(function(u) { %>
+          <option value="<%= u.id %>"><%= u.full_name || u.username %></option>
+          <% }); %>
+        </select>
+      </label>
+      <div class="modal__actions">
+        <button type="button" class="btn btn--secondary" id="repCancel">Annulla</button>
+        <button type="submit" class="btn">Salva</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+var csrf = '<%= csrfToken %>';
+var base = window.APP_BASE || '';
+function openRepModal(title, data) {
+  document.getElementById('repModalTitle').textContent = title;
+  document.getElementById('repId').value = data ? data.id : '';
+  document.getElementById('repMethod').value = data ? 'PUT' : 'POST';
+  document.getElementById('repNome').value = data ? data.nome : '';
+  document.getElementById('repDescrizione').value = data ? data.descrizione : '';
+  document.getElementById('repResponsabile').value = data ? data.responsabile : '';
+  document.getElementById('repModal').removeAttribute('hidden');
+}
+function closeRepModal() { document.getElementById('repModal').setAttribute('hidden', ''); }
+document.getElementById('repCancel').onclick = closeRepModal;
+document.getElementById('repModal').onclick = function(e) { if (e.target === this) closeRepModal(); };
+document.getElementById('btnNewReparto').onclick = function() { openRepModal('Nuovo reparto', null); };
+document.querySelectorAll('.rep-edit-btn').forEach(function(btn) {
+  btn.onclick = function() { openRepModal('Modifica reparto', this.dataset); };
+});
+document.querySelectorAll('.rep-del-btn').forEach(function(btn) {
+  btn.onclick = function() {
+    var id = this.dataset.id, nome = this.dataset.nome;
+    window.showModal({ title: 'Elimina reparto', text: 'Eliminare "' + nome + '"? I dipendenti assegnati verranno scollegati.', onConfirm: async function() {
+      try {
+        var r = await fetch(base + '/admin/reparti/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
+        var j = await r.json();
+        window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+        if (j.success) location.reload();
+      } catch (x) { window.showToast('Errore', 'error'); }
+    }});
+  };
+});
+document.getElementById('repForm').onsubmit = async function(e) {
+  e.preventDefault();
+  var id = document.getElementById('repId').value;
+  var method = document.getElementById('repMethod').value;
+  var url = base + '/admin/reparti' + (id ? '/' + id : '');
+  var payload = { _csrf: csrf, nome: document.getElementById('repNome').value, descrizione: document.getElementById('repDescrizione').value, responsabile_id: document.getElementById('repResponsabile').value || null };
+  try {
+    var r = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    var j = await r.json();
+    window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+    if (j.success) { closeRepModal(); location.reload(); }
+  } catch (x) { window.showToast('Errore', 'error'); }
+};
+</script>

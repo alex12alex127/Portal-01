@@ -159,12 +159,23 @@ router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) 
       `La tua richiesta di ${tipo} dal ${data_inizio} al ${data_fine} è stata inviata ed è in attesa di approvazione.`
     );
     
-    // Crea notifiche per admin/manager
-    const adminResult = await db.query(
-      'SELECT id FROM users WHERE role IN ($1, $2) AND is_active = true',
-      ['admin', 'manager']
-    );
+    // Notifica al responsabile diretto (se assegnato), altrimenti a tutti admin/manager
+    const userInfo = await db.query('SELECT responsabile_id FROM users WHERE id = $1', [req.session.user.id]);
+    const responsabileId = userInfo.rows[0] ? userInfo.rows[0].responsabile_id : null;
     
+    if (responsabileId) {
+      await creaNotifica(
+        responsabileId,
+        'ferie_approve',
+        'Nuova richiesta ferie da approvare',
+        `${req.session.user.full_name} ha richiesto ${tipo} dal ${data_inizio} al ${data_fine}.`
+      );
+    }
+    // Notifica sempre anche admin
+    const adminResult = await db.query(
+      'SELECT id FROM users WHERE role = $1 AND is_active = true AND id != $2',
+      ['admin', responsabileId || 0]
+    );
     for (const admin of adminResult.rows) {
       await creaNotifica(
         admin.id,

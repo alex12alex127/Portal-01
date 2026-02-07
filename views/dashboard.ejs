@@ -18,10 +18,38 @@
     <div class="p-stat__value"><%= summary.giorniApproved || 0 %></div>
     <div class="p-stat__label">Giorni usati <%= summary.year %></div>
   </div>
+  <% if (typeof saldoFerie !== 'undefined' && saldoFerie && saldoFerie.budget_configurato) { %>
+  <div class="p-stat p-stat--<%= saldoFerie.giorni_residui < 0 ? 'danger' : saldoFerie.giorni_residui < 5 ? 'warn' : 'success' %>">
+    <div class="p-stat__value"><%= Math.round(saldoFerie.giorni_residui * 10) / 10 %></div>
+    <div class="p-stat__label">Ferie residue</div>
+  </div>
+  <% } %>
 </div>
 <% } %>
 
 <div class="p-dashboard-grid">
+
+  <% if (typeof presenzaOggi !== 'undefined') { %>
+  <div class="dashboard-presenze p-card">
+    <div class="p-card-header">
+      <h2 class="p-card-header__title">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        Presenza oggi
+      </h2>
+      <a href="<%= bp %>/presenze" class="p-card-header__action">Storico →</a>
+    </div>
+    <div style="padding:var(--space-md);text-align:center">
+      <% if (presenzaOggi && presenzaOggi.ora_entrata && presenzaOggi.ora_uscita) { %>
+        <span class="p-tag p-tag--success">Completata: <%= presenzaOggi.ora_entrata %> - <%= presenzaOggi.ora_uscita %> (<%= presenzaOggi.ore_lavorate %>h)</span>
+      <% } else if (presenzaOggi && presenzaOggi.ora_entrata) { %>
+        <span class="p-tag p-tag--primary">Entrata: <%= presenzaOggi.ora_entrata %></span>
+        <a href="<%= bp %>/presenze" class="btn btn-sm" style="margin-left:.5rem">Timbra uscita</a>
+      <% } else { %>
+        <a href="<%= bp %>/presenze" class="btn btn-sm">Timbra entrata</a>
+      <% } %>
+    </div>
+  </div>
+  <% } %>
 
   <% if (typeof avvisiDashboard !== 'undefined' && avvisiDashboard.length > 0) { %>
   <div class="dashboard-avvisi p-card">

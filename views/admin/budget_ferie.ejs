@@ -1,0 +1,135 @@
+<% var bp = typeof basePath !== 'undefined' ? basePath : ''; %>
+<h1 class="page-title animate-in">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" /></svg>
+  Budget Ferie <%= anno %>
+</h1>
+
+<!-- Anno selector -->
+<div class="p-filter">
+  <form method="get" action="<%= bp %>/admin/budget-ferie" class="p-filter__inner">
+    <div class="p-filter__field">
+      <span class="p-filter__label">Anno</span>
+      <select name="anno" onchange="this.form.submit()">
+        <% for (var y = new Date().getFullYear() + 1; y >= new Date().getFullYear() - 3; y--) { %>
+        <option value="<%= y %>" <%= y === anno ? 'selected' : '' %>><%= y %></option>
+        <% } %>
+      </select>
+    </div>
+    <button type="button" class="btn btn-sm btn--secondary" id="btnInitBudget">Inizializza budget <%= anno %></button>
+  </form>
+</div>
+
+<!-- Stats -->
+<div class="p-stats">
+  <div class="p-stat p-stat--primary">
+    <div class="p-stat__value"><%= budget.length %></div>
+    <div class="p-stat__label">Dipendenti</div>
+  </div>
+  <div class="p-stat p-stat--success">
+    <div class="p-stat__value"><%= budget.filter(function(b){return b.giorni_spettanti > 0}).length %></div>
+    <div class="p-stat__label">Con budget</div>
+  </div>
+  <div class="p-stat p-stat--warn">
+    <div class="p-stat__value"><%= Math.round(budget.reduce(function(s,b){return s+b.giorni_usati},0) * 10) / 10 %></div>
+    <div class="p-stat__label">Giorni usati</div>
+  </div>
+  <div class="p-stat p-stat--danger">
+    <div class="p-stat__value"><%= budget.filter(function(b){return b.giorni_residui < 0}).length %></div>
+    <div class="p-stat__label">In eccesso</div>
+  </div>
+</div>
+
+<!-- Tabella -->
+<div class="p-card">
+  <% if (budget.length === 0) { %>
+  <div class="p-empty"><p>Nessun dipendente attivo.</p></div>
+  <% } else { %>
+  <div class="p-card-body--flush">
+    <% budget.forEach(function(b) { var overBudget = b.giorni_residui < 0 && b.giorni_spettanti > 0; %>
+    <div class="p-list-item<%= overBudget ? ' p-list-item--alert' : '' %>">
+      <div class="p-list-item__avatar <%= overBudget ? 'p-list-item__avatar--danger' : 'p-list-item__avatar--primary' %>"><%= b.full_name ? b.full_name.charAt(0).toUpperCase() : '?' %></div>
+      <div class="p-list-item__body">
+        <div class="p-list-item__title">
+          <span class="p-list-item__name"><%= b.full_name || b.username %></span>
+          <% if (b.reparto_nome) { %><span class="p-tag p-tag--primary"><%= b.reparto_nome %></span><% } %>
+          <% if (!b.budget_configurato && !b.giorni_spettanti) { %><span class="p-tag p-tag--muted">NO BUDGET</span><% } %>
+          <% if (overBudget) { %><span class="p-tag p-tag--danger">ECCESSO</span><% } %>
+        </div>
+        <div class="p-list-item__meta">
+          <span>Spettanti: <strong><%= b.giorni_spettanti %></strong></span>
+          <% if (b.giorni_aggiuntivi) { %><span>+ <%= b.giorni_aggiuntivi %> extra</span><% } %>
+          <span>· Usati: <strong><%= b.giorni_usati %></strong></span>
+          <span>· Pendenti: <strong><%= b.giorni_pendenti %></strong></span>
+          <span>· Residui: <strong style="color:<%= b.giorni_residui < 0 ? 'var(--danger)' : b.giorni_residui < 5 ? 'var(--warning)' : 'var(--success)' %>"><%= Math.round(b.giorni_residui * 10) / 10 %></strong></span>
+        </div>
+      </div>
+      <div class="p-list-item__actions">
+        <button type="button" class="btn-sm budget-edit-btn" data-uid="<%= b.user_id %>" data-name="<%= b.full_name %>" data-spettanti="<%= b.giorni_spettanti %>" data-aggiuntivi="<%= b.giorni_aggiuntivi %>" data-note="<%= b.note || '' %>">Modifica</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+</div>
+
+<!-- Modale -->
+<div id="budgetModal" class="modal-overlay admin-ferie-modal" aria-hidden="true" hidden>
+  <div class="modal admin-ferie-modal__box admin-ferie-modal__box--form" role="dialog" aria-modal="true" style="max-width:420px">
+    <h3 class="modal__title" id="budgetModalTitle">Modifica budget</h3>
+    <form id="budgetForm" class="admin-ferie-edit-form p-modal-form">
+      <input type="hidden" id="budgetUserId">
+      <div class="p-form-grid-2">
+        <label>Giorni spettanti <input type="number" id="budgetSpettanti" step="0.5" min="0" required></label>
+        <label>Giorni aggiuntivi <input type="number" id="budgetAggiuntivi" step="0.5" min="0" value="0"></label>
+      </div>
+      <label>Note <textarea id="budgetNote" rows="2" placeholder="es. Anzianità, bonus..."></textarea></label>
+      <div class="modal__actions">
+        <button type="button" class="btn btn--secondary" id="budgetCancel">Annulla</button>
+        <button type="submit" class="btn">Salva</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+var csrf = '<%= csrfToken %>', base = window.APP_BASE || '', anno = <%= anno %>;
+function closeBudgetModal() { document.getElementById('budgetModal').setAttribute('hidden', ''); }
+document.getElementById('budgetCancel').onclick = closeBudgetModal;
+document.getElementById('budgetModal').onclick = function(e) { if (e.target === this) closeBudgetModal(); };
+
+document.querySelectorAll('.budget-edit-btn').forEach(function(btn) {
+  btn.onclick = function() {
+    document.getElementById('budgetModalTitle').textContent = 'Budget: ' + this.dataset.name;
+    document.getElementById('budgetUserId').value = this.dataset.uid;
+    document.getElementById('budgetSpettanti').value = this.dataset.spettanti;
+    document.getElementById('budgetAggiuntivi').value = this.dataset.aggiuntivi;
+    document.getElementById('budgetNote').value = this.dataset.note;
+    document.getElementById('budgetModal').removeAttribute('hidden');
+  };
+});
+
+document.getElementById('budgetForm').onsubmit = async function(e) {
+  e.preventDefault();
+  var uid = document.getElementById('budgetUserId').value;
+  try {
+    var r = await fetch(base + '/admin/budget-ferie/' + uid, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _csrf: csrf, anno: anno, giorni_spettanti: document.getElementById('budgetSpettanti').value, giorni_aggiuntivi: document.getElementById('budgetAggiuntivi').value, note: document.getElementById('budgetNote').value })
+    });
+    var j = await r.json();
+    window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+    if (j.success) { closeBudgetModal(); location.reload(); }
+  } catch (x) { window.showToast('Errore', 'error'); }
+};
+
+document.getElementById('btnInitBudget').onclick = function() {
+  window.showModal({ title: 'Inizializza budget ' + anno, text: 'Verrà creato il budget di default per tutti i dipendenti attivi che non ne hanno ancora uno per il ' + anno + '.', onConfirm: async function() {
+    try {
+      var r = await fetch(base + '/admin/budget-ferie/init', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf, anno: anno }) });
+      var j = await r.json();
+      window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+      if (j.success) location.reload();
+    } catch (x) { window.showToast('Errore', 'error'); }
+  }});
+};
+</script>

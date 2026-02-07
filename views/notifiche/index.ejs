@@ -1,48 +1,69 @@
-<h1 class="page-title">
+<%
+  var bp = typeof basePath !== 'undefined' ? basePath : '';
+  var currentTab = typeof tab !== 'undefined' ? tab : 'notifiche';
+  var _avvisi = typeof avvisi !== 'undefined' ? avvisi : [];
+  var _avvNL = typeof avvisiNonLettiCount !== 'undefined' ? avvisiNonLettiCount : 0;
+%>
+<h1 class="page-title animate-in">
   <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
-  Notifiche
-  <% if (nonLette > 0) { %><span class="badge badge--alert" style="font-size:.85rem;margin-left:.5rem"><%= nonLette %> nuove</span><% } %>
+  Comunicazioni
 </h1>
 
-<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;overflow:hidden">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb)">
-    <span style="font-size:.9rem;color:var(--muted)"><%= typeof pagination !== 'undefined' ? pagination.total : notifiche.length %> notifiche totali</span>
+<!-- Tabs -->
+<div class="p-tabs" style="margin-bottom:1rem">
+  <a href="<%= bp %>/notifiche?tab=notifiche" class="p-tab <%= currentTab === 'notifiche' ? 'p-tab--active' : '' %>">
+    Notifiche
+    <% if (nonLette > 0) { %><span class="p-tag p-tag--danger" style="margin-left:.35rem;font-size:.65rem"><%= nonLette %></span><% } %>
+  </a>
+  <a href="<%= bp %>/notifiche?tab=avvisi" class="p-tab <%= currentTab === 'avvisi' ? 'p-tab--active' : '' %>">
+    Avvisi
+    <% if (_avvNL > 0) { %><span class="p-tag p-tag--warn" style="margin-left:.35rem;font-size:.65rem"><%= _avvNL %></span><% } %>
+  </a>
+</div>
+
+<!-- ========== TAB: NOTIFICHE ========== -->
+<div id="tabNotifiche" style="<%= currentTab !== 'notifiche' ? 'display:none' : '' %>">
+<div class="p-card">
+  <div class="p-card-header">
+    <span style="font-size:.85rem;color:var(--muted)"><%= typeof pagination !== 'undefined' ? pagination.total : notifiche.length %> notifiche</span>
     <div style="display:flex;gap:.5rem">
       <% if (nonLette > 0) { %>
         <button type="button" class="btn btn-sm" id="btnMarkAllRead" style="font-size:.78rem">Segna tutte lette</button>
       <% } %>
       <% if (notifiche.length > 0) { %>
-        <button type="button" class="btn btn-sm btn--danger" id="btnDeleteAll" style="font-size:.78rem">Elimina tutte</button>
+        <button type="button" class="btn btn-sm" id="btnDeleteAll" style="font-size:.78rem;background:var(--danger);color:#fff">Elimina tutte</button>
       <% } %>
     </div>
   </div>
 
   <% if (notifiche.length === 0) { %>
-    <div style="padding:3rem;text-align:center">
-      <svg style="width:48px;height:48px;color:var(--muted);opacity:.4;margin-bottom:.75rem" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
-      <p style="margin:0;color:var(--muted);font-size:.95rem">Nessuna notifica.</p>
+    <div class="p-empty">
+      <svg class="icon" style="width:48px;height:48px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+      <p>Nessuna notifica.</p>
     </div>
   <% } else { %>
-    <div id="notificheList">
+    <div class="p-card-body--flush" id="notificheList">
       <% notifiche.forEach(function(n) { %>
-      <div class="notifiche-item rsp-list-row-start <%= n.letta ? 'letta' : 'non-letta' %>" data-id="<%= n.id %>" style="display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6);transition:all .3s;<%= !n.letta ? 'border-left:3px solid var(--primary,#1a56db);background:rgba(26,86,219,.04)' : '' %>">
-        <div style="width:36px;height:36px;border-radius:50%;background:<%= !n.letta ? 'var(--primary,#1a56db)' : 'var(--border,#e5e7eb)' %>;color:<%= !n.letta ? '#fff' : 'var(--muted)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg style="width:16px;height:16px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
-        </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:<%= !n.letta ? '600' : '400' %>;font-size:.9rem;margin-bottom:.15rem"><%= n.titolo || 'Notifica' %></div>
-          <% if (n.messaggio) { %><div style="font-size:.85rem;color:var(--muted);white-space:pre-wrap;word-break:break-word;margin-bottom:.25rem"><%= n.messaggio %></div><% } %>
-          <div style="font-size:.75rem;color:var(--muted)"><%= n.created_at ? new Date(n.created_at).toLocaleString('it-IT') : '' %></div>
-        </div>
-        <div style="display:flex;gap:.3rem;flex-shrink:0;align-items:center">
-          <% if (!n.letta) { %>
-            <button type="button" class="btn-mark-read" data-id="<%= n.id %>" title="Marca come letta" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--success,#22c55e)">
+      <div class="p-notifica notifiche-item <%= n.letta ? 'p-notifica--read letta' : 'p-notifica--unread non-letta' %>" data-id="<%= n.id %>">
+        <div style="display:flex;align-items:flex-start;gap:.75rem">
+          <div style="width:32px;height:32px;border-radius:50%;background:<%= !n.letta ? 'var(--primary)' : 'var(--border)' %>;color:<%= !n.letta ? '#fff' : 'var(--muted)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="p-notifica__title"><%= n.titolo || 'Notifica' %></div>
+            <% if (n.messaggio) { %><div class="p-notifica__text" style="white-space:pre-wrap;word-break:break-word"><%= n.messaggio %></div><% } %>
+            <div class="p-notifica__date"><%= n.created_at ? new Date(n.created_at).toLocaleString('it-IT') : '' %></div>
+          </div>
+          <div style="display:flex;gap:.3rem;flex-shrink:0;align-items:center">
+            <% if (!n.letta) { %>
+            <button type="button" class="btn-mark-read rsp-btn-circle" data-id="<%= n.id %>" title="Marca come letta" style="color:var(--success)">
               <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
             </button>
-          <% } %>
-          <button type="button" class="btn-delete" data-id="<%= n.id %>" title="Elimina" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#ddd);background:var(--card-bg,#fff);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--danger,#ef4444)">
-            <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
+            <% } %>
+            <button type="button" class="btn-delete rsp-btn-circle" data-id="<%= n.id %>" title="Elimina" style="color:var(--danger)">
+              <svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
         </div>
       </div>
       <% }); %>
@@ -50,25 +71,53 @@
   <% } %>
 
   <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
-  <div class="pagination" style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.25rem;border-top:1px solid var(--border,#e5e7eb);font-size:.85rem">
-    <span class="pagination__info" style="color:var(--muted)">Pagina <%= pagination.page %> di <%= pagination.totalPages %> (<%= pagination.total %> totali)</span>
+  <div class="p-card-footer" style="font-size:.85rem">
+    <span style="color:var(--muted)">Pagina <%= pagination.page %> di <%= pagination.totalPages %></span>
     <div style="display:flex;gap:.35rem">
-      <% if (pagination.page > 1) { %>
-        <a href="?page=<%= pagination.page - 1 %>" class="btn btn-sm btn--secondary" style="font-size:.78rem">← Prec</a>
-      <% } %>
-      <% if (pagination.page < pagination.totalPages) { %>
-        <a href="?page=<%= pagination.page + 1 %>" class="btn btn-sm btn--secondary" style="font-size:.78rem">Succ →</a>
-      <% } %>
+      <% if (pagination.page > 1) { %><a href="?tab=notifiche&page=<%= pagination.page - 1 %>" class="btn btn-sm btn--secondary" style="font-size:.78rem">&larr; Prec</a><% } %>
+      <% if (pagination.page < pagination.totalPages) { %><a href="?tab=notifiche&page=<%= pagination.page + 1 %>" class="btn btn-sm btn--secondary" style="font-size:.78rem">Succ &rarr;</a><% } %>
     </div>
   </div>
   <% } %>
 </div>
+</div>
+
+<!-- ========== TAB: AVVISI ========== -->
+<div id="tabAvvisi" style="<%= currentTab !== 'avvisi' ? 'display:none' : '' %>">
+<% if (_avvisi.length === 0) { %>
+  <div class="p-card">
+    <div class="p-empty">
+      <svg class="icon" style="width:48px;height:48px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <p>Nessun avviso attivo.</p>
+    </div>
+  </div>
+<% } else { %>
+  <div class="avvisi-list">
+    <% _avvisi.forEach(function(a) { %>
+    <a href="<%= bp %>/avvisi/<%= a.id %>" class="avviso-card<%= a.in_evidenza ? ' avviso-card--evidenza' : '' %><%= a.tipo === 'urgent' ? ' avviso-card--urgent' : a.tipo === 'warning' ? ' avviso-card--warning' : '' %>" style="display:block;text-decoration:none">
+      <div class="avviso-card__head">
+        <div class="avviso-card__meta">
+          <span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'URGENTE' : a.tipo === 'success' ? 'Successo' : a.tipo %></span>
+          <% if (a.in_evidenza) { %><span class="avviso-card__pin">&#128204;</span><% } %>
+          <span><%= a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' %></span>
+        </div>
+        <h3 class="avviso-card__titolo"><%= a.titolo %></h3>
+      </div>
+      <% if (a.contenuto) { %>
+      <div class="avviso-card__body">
+        <div class="avviso-card__contenuto--pre" style="max-height:80px;overflow:hidden"><%= a.contenuto.substring(0, 200) %><%= a.contenuto.length > 200 ? '...' : '' %></div>
+      </div>
+      <% } %>
+    </a>
+    <% }); %>
+  </div>
+<% } %>
+</div>
 
 <style>
 .notifiche-item.removing { opacity:0; transform:translateX(30px); transition:all .3s }
-.notifiche-item.letta { opacity:.65 }
-.btn-mark-read:hover { background:var(--success,#22c55e) !important; color:#fff !important; border-color:var(--success,#22c55e) !important }
-.btn-delete:hover { background:var(--danger,#ef4444) !important; color:#fff !important; border-color:var(--danger,#ef4444) !important }
+.btn-mark-read:hover { background:var(--success) !important; color:#fff !important; border-color:var(--success) !important }
+.btn-delete:hover { background:var(--danger) !important; color:#fff !important; border-color:var(--danger) !important }
 </style>
 
 <script>
@@ -76,9 +125,23 @@
   var base = window.APP_BASE || '';
   var csrf = '<%= csrfToken %>';
 
+  // Tab switching (client-side for instant feel)
+  document.querySelectorAll('.p-tab').forEach(function(tab) {
+    tab.addEventListener('click', function(e) {
+      var href = tab.getAttribute('href');
+      var isAvvisi = href.indexOf('tab=avvisi') !== -1;
+      document.getElementById('tabNotifiche').style.display = isAvvisi ? 'none' : '';
+      document.getElementById('tabAvvisi').style.display = isAvvisi ? '' : 'none';
+      document.querySelectorAll('.p-tab').forEach(function(t) { t.classList.remove('p-tab--active'); });
+      tab.classList.add('p-tab--active');
+      // Update URL without reload
+      history.replaceState(null, '', href);
+      e.preventDefault();
+    });
+  });
+
   function showMsg(txt, ok) {
     var el = document.createElement('div');
-    el.className = 'toast-msg ' + (ok ? 'toast--ok' : 'toast--err');
     el.textContent = txt;
     el.style.cssText = 'position:fixed;top:1rem;right:1rem;padding:.75rem 1.25rem;border-radius:var(--radius);color:#fff;font-weight:500;z-index:9999;background:' + (ok ? 'var(--success,#22c55e)' : 'var(--danger,#ef4444)');
     document.body.appendChild(el);
@@ -91,7 +154,6 @@
   }
 
   document.addEventListener('click', async function(e) {
-    // Marca singola come letta
     var markBtn = e.target.closest('.btn-mark-read');
     if (markBtn) {
       var id = markBtn.dataset.id;
@@ -99,7 +161,7 @@
         var res = await api('/notifiche/' + id + '/read', 'POST');
         if (res.success) {
           var item = document.querySelector('.notifiche-item[data-id="' + id + '"]');
-          if (item) { item.classList.remove('non-letta'); item.classList.add('letta'); }
+          if (item) { item.classList.remove('non-letta','p-notifica--unread'); item.classList.add('letta','p-notifica--read'); }
           markBtn.remove();
           showMsg('Notifica marcata come letta', true);
           updateBadge(res.nonLette);
@@ -107,69 +169,73 @@
       } catch(err) { showMsg('Errore di rete', false); }
     }
 
-    // Elimina singola
     var delBtn = e.target.closest('.btn-delete');
     if (delBtn) {
-      var id = delBtn.dataset.id;
-      window.showModal({ title: 'Elimina notifica', text: 'Sei sicuro di voler eliminare questa notifica?', onConfirm: async function() {
-        try {
-          var res = await api('/notifiche/' + id, 'DELETE');
-          if (res.success) {
-            var item = document.querySelector('.notifiche-item[data-id="' + id + '"]');
-            if (item) { item.classList.add('removing'); setTimeout(function(){ item.remove(); checkEmpty(); }, 300); }
-            showMsg('Notifica eliminata', true);
-            updateBadge(res.nonLette);
-          } else { showMsg(res.error || 'Errore', false); }
-        } catch(err) { showMsg('Errore di rete', false); }
-      }});
+      var id2 = delBtn.dataset.id;
+      if (typeof window.showModal === 'function') {
+        window.showModal({ title: 'Elimina notifica', text: 'Sei sicuro?', onConfirm: function() { doDelete(id2); } });
+      } else { doDelete(id2); }
     }
   });
 
-  // Marca tutte come lette
+  async function doDelete(id) {
+    try {
+      var res = await api('/notifiche/' + id, 'DELETE');
+      if (res.success) {
+        var item = document.querySelector('.notifiche-item[data-id="' + id + '"]');
+        if (item) { item.classList.add('removing'); setTimeout(function(){ item.remove(); checkEmpty(); }, 300); }
+        showMsg('Notifica eliminata', true);
+        updateBadge(res.nonLette);
+      } else { showMsg(res.error || 'Errore', false); }
+    } catch(err) { showMsg('Errore di rete', false); }
+  }
+
   var btnAll = document.getElementById('btnMarkAllRead');
   if (btnAll) btnAll.addEventListener('click', async function() {
     try {
       var res = await api('/notifiche/read-all', 'POST');
       if (res.success) {
         document.querySelectorAll('.notifiche-item.non-letta').forEach(function(el) {
-          el.classList.remove('non-letta'); el.classList.add('letta');
+          el.classList.remove('non-letta','p-notifica--unread'); el.classList.add('letta','p-notifica--read');
         });
         document.querySelectorAll('.btn-mark-read').forEach(function(b) { b.remove(); });
         btnAll.style.display = 'none';
-        showMsg('Tutte le notifiche marcate come lette (' + (res.updatedCount || 0) + ')', true);
+        showMsg('Tutte lette (' + (res.updatedCount || 0) + ')', true);
         updateBadge(0);
       } else { showMsg(res.error || 'Errore', false); }
     } catch(err) { showMsg('Errore di rete', false); }
   });
 
-  // Elimina tutte
   var btnDelAll = document.getElementById('btnDeleteAll');
   if (btnDelAll) btnDelAll.addEventListener('click', function() {
-    window.showModal({ title: 'Elimina tutte', text: 'Sei sicuro di voler eliminare TUTTE le notifiche? Questa azione è irreversibile.', onConfirm: async function() {
-      try {
-        var res = await api('/notifiche/delete-all', 'DELETE');
+    var doIt = function() {
+      api('/notifiche/delete-all', 'DELETE').then(function(res) {
         if (res.success) {
           var list = document.getElementById('notificheList');
           if (list) list.innerHTML = '';
           btnDelAll.style.display = 'none';
           if (btnAll) btnAll.style.display = 'none';
           checkEmpty();
-          showMsg('Tutte le notifiche eliminate (' + (res.deletedCount || 0) + ')', true);
+          showMsg('Tutte eliminate (' + (res.deletedCount || 0) + ')', true);
           updateBadge(0);
         } else { showMsg(res.error || 'Errore', false); }
-      } catch(err) { showMsg('Errore di rete', false); }
-    }});
+      }).catch(function() { showMsg('Errore di rete', false); });
+    };
+    if (typeof window.showModal === 'function') {
+      window.showModal({ title: 'Elimina tutte', text: 'Eliminare TUTTE le notifiche?', onConfirm: doIt });
+    } else { doIt(); }
   });
 
   function updateBadge(count) {
-    var b = document.querySelector('.sidebar .notification-badge');
-    if (b) { if (count > 0) { b.textContent = count; b.style.display = ''; } else { b.style.display = 'none'; } }
+    document.querySelectorAll('.sidebar .notification-badge').forEach(function(b) {
+      if (count > 0) { b.textContent = count; b.style.display = ''; } else { b.style.display = 'none'; }
+    });
   }
 
   function checkEmpty() {
     var list = document.getElementById('notificheList');
     if (list && list.children.length === 0) {
-      list.outerHTML = '<p class="empty">Nessuna notifica.</p>';
+      list.outerHTML = '<div class="p-empty"><p>Nessuna notifica.</p></div>';
     }
   }
 })();

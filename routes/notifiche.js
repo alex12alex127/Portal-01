@@ -11,28 +11,35 @@ const {
   eliminaNotifica,
   eliminaTutteNotifiche
 } = require('../lib/notifiche');
+const { getAvvisiVisibili, contaAvvisiNonLetti } = require('../lib/avvisi');
 
 router.use(requireAuth);
 
-// GET /notifiche - Pagina principale
+// GET /notifiche - Comunicazioni (Notifiche + Avvisi)
 router.get('/', async (req, res) => {
   try {
     const userId = req.session.user.id;
+    const tab = req.query.tab || 'notifiche';
     const limit = 20;
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const offset = (page - 1) * limit;
-    const [notifiche, total, nonLette] = await Promise.all([
+    const [notifiche, total, nonLette, avvisi, avvisiNonLettiCount] = await Promise.all([
       getNotificheUtente(userId, limit, offset),
       contaNotificheTotali(userId),
-      contaNotificheNonLette(userId)
+      contaNotificheNonLette(userId),
+      getAvvisiVisibili(userId),
+      contaAvvisiNonLetti(userId)
     ]);
     const totalPages = Math.ceil(total / limit);
     res.render('notifiche/index', {
-      title: 'Notifiche - Portal-01',
+      title: 'Comunicazioni - Portal-01',
       activePage: 'notifiche',
-      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Notifiche' }],
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Comunicazioni' }],
+      tab,
       notifiche,
       nonLette,
+      avvisi,
+      avvisiNonLettiCount,
       pagination: { page, limit, total, totalPages }
     });
   } catch (err) {

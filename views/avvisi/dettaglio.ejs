@@ -1,13 +1,21 @@
+<%
+  var tipoLabels = { info: 'Info', warning: 'Attenzione', urgent: 'Urgente', success: 'Successo' };
+  function fmtDate(v) {
+    if (!v) return '';
+    var d = new Date(v);
+    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+%>
 <div class="avviso-dettaglio">
   <div class="avviso-header">
     <div class="avviso-tipo">
-      <span class="badge badge--<%= avviso.tipo %>"><%= getTipoLabel(avviso.tipo) %></span>
+      <span class="badge badge--<%= avviso.tipo %>"><%= tipoLabels[avviso.tipo] || avviso.tipo %></span>
       <% if (avviso.in_evidenza) { %>
         <span class="badge badge--evidence">📌 In evidenza</span>
       <% } %>
     </div>
     <div class="avviso-meta">
-      <span class="avviso-date">Pubblicato il <%= formatDate(avviso.created_at) %></span>
+      <span class="avviso-date">Pubblicato il <%= fmtDate(avviso.created_at) %></span>
       <% if (avviso.autore_nome) { %>
         <span class="avviso-author">di <%= avviso.autore_nome %></span>
       <% } %>
@@ -18,7 +26,7 @@
   
   <div class="avviso-content">
     <div class="prose">
-      <%= avviso.contenuto.replace(/\n/g, '<br>') %>
+      <%- avviso.contenuto.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>') %>
     </div>
   </div>
 
@@ -27,11 +35,11 @@
     <h3>Periodo di visibilità</h3>
     <p>
       <% if (avviso.visibile_da) { %>
-        Dal <strong><%= formatDate(avviso.visibile_da) %></strong>
+        Dal <strong><%= fmtDate(avviso.visibile_da) %></strong>
       <% } %>
       <% if (avviso.visibile_fino) { %>
         <% if (avviso.visibile_da) { %> al <% } else { %>Fino al <% } %>
-        <strong><%= formatDate(avviso.visibile_fino) %></strong>
+        <strong><%= fmtDate(avviso.visibile_fino) %></strong>
       <% } %>
     </p>
   </div>
@@ -149,24 +157,3 @@
 }
 </style>
 
-<script>
-function getTipoLabel(tipo) {
-  const labels = {
-    'info': 'Info',
-    'warning': 'Attenzione',
-    'urgent': 'Urgente',
-    'success': 'Successo'
-  };
-  return labels[tipo] || tipo;
-}
-
-function formatDate(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('it-IT', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
-</script>

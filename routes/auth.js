@@ -8,7 +8,7 @@ const { loginLimiter, registerLimiter, apiLimiter, checkLoginAttempts, recordLog
 
 router.get('/login', (req, res) => {
   const base = req.app.get('basePath') || '';
-  if (req.session && req.session.userId) return res.redirect(base + '/dashboard');
+  if (req.session && req.session.user) return res.redirect(base + '/dashboard');
   res.render('auth/login', { layout: 'layouts/auth', title: 'Login - Portal-01' });
 });
 
@@ -48,7 +48,7 @@ router.post('/login', loginLimiter, checkLoginAttempts, validateLogin, async (re
 
 router.get('/register', (req, res) => {
   const base = req.app.get('basePath') || '';
-  if (req.session && req.session.userId) return res.redirect(base + '/dashboard');
+  if (req.session && req.session.user) return res.redirect(base + '/dashboard');
   res.render('auth/register', { layout: 'layouts/auth', title: 'Registrazione - Portal-01' });
 });
 
@@ -75,7 +75,7 @@ router.get('/logout', (req, res) => {
 
 router.get('/forgot-password', (req, res) => {
   const base = req.app.get('basePath') || '';
-  if (req.session && req.session.userId) return res.redirect(base + '/dashboard');
+  if (req.session && req.session.user) return res.redirect(base + '/dashboard');
   res.render('auth/forgot-password', { layout: 'layouts/auth', title: 'Recupero password - Portal-01' });
 });
 
@@ -122,7 +122,7 @@ router.post('/forgot-password', loginLimiter, apiLimiter, async (req, res) => {
 
 router.get('/reset-password', (req, res) => {
   const base = req.app.get('basePath') || '';
-  if (req.session && req.session.userId) return res.redirect(base + '/dashboard');
+  if (req.session && req.session.user) return res.redirect(base + '/dashboard');
   const token = (req.query && req.query.token) || '';
   res.render('auth/reset-password', { layout: 'layouts/auth', title: 'Nuova password - Portal-01', token });
 });

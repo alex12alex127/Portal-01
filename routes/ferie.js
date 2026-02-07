@@ -61,7 +61,7 @@ router.get('/summary', requireAuth, async (req, res) => {
     const year = parseInt(req.query.year, 10) || new Date().getFullYear();
     const r = await db.query(
       `SELECT stato, COUNT(*)::int AS n, COALESCE(SUM(giorni_totali), 0)::int AS giorni FROM ferie WHERE user_id = $1 AND EXTRACT(YEAR FROM data_inizio) = $2 GROUP BY stato`,
-      [req.session.userId, year]
+      [req.session.user.id, year]
     );
     const summary = { pending: 0, approved: 0, rejected: 0, giorniPending: 0, giorniApproved: 0, giorniRejected: 0 };
     r.rows.forEach(row => {
@@ -120,7 +120,7 @@ router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) 
     const overlap = await db.query(
       `SELECT * FROM ferie WHERE user_id = $1 AND stato != 'rejected'
        AND ( (data_inizio <= $2 AND data_fine >= $2) OR (data_inizio <= $3 AND data_fine >= $3) OR (data_inizio >= $2 AND data_fine <= $3) )`,
-      [req.session.userId, data_inizio, data_fine]
+      [req.session.user.id, data_inizio, data_fine]
     );
     if (overlap.rows.length > 0) {
       return res.status(400).json({ error: 'Hai già una richiesta per questo periodo' });
@@ -128,12 +128,12 @@ router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) 
     const giorni = Math.ceil((new Date(data_fine) - new Date(data_inizio)) / (1000 * 60 * 60 * 24)) + 1;
     await db.query(
       'INSERT INTO ferie (user_id, data_inizio, data_fine, giorni_totali, tipo, note) VALUES ($1, $2, $3, $4, $5, $6)',
-      [req.session.userId, data_inizio, data_fine, giorni, tipo, note || null]
+      [req.session.user.id, data_inizio, data_fine, giorni, tipo, note || null]
     );
     
     // Crea notifica per l'utente
     await creaNotifica(
-      req.session.userId,
+      req.session.user.id,
       'ferie_create',
       'Richiesta ferie inviata',
       `La tua richiesta di ${tipo} dal ${data_inizio} al ${data_fine} è stata inviata ed è in attesa di approvazione.`
@@ -166,12 +166,12 @@ router.put('/:id', requireAuth, apiLimiter, validateFerie, async (req, res) => {
   if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
   const { data_inizio, data_fine, tipo, note } = req.body;
   try {
-    const check = await db.query('SELECT id FROM ferie WHERE id = $1 AND user_id = $2 AND stato = $3', [id, req.session.userId, 'pending']);
+    const check = await db.query('SELECT id FROM ferie WHERE id = $1 AND user_id = $2 AND stato = $3', [id, req.session.user.id, 'pending']);
     if (check.rows.length === 0) return res.status(403).json({ error: 'Richiesta non trovata o non modificabile' });
     const overlap = await db.query(
       `SELECT * FROM ferie WHERE user_id = $1 AND id != $2 AND stato != 'rejected'
        AND ( (data_inizio <= $3 AND data_fine >= $3) OR (data_inizio <= $4 AND data_fine >= $4) OR (data_inizio >= $3 AND data_fine <= $4) )`,
-      [req.session.userId, id, data_inizio, data_fine]
+      [req.session.user.id, id, data_inizio, data_fine]
     );
     if (overlap.rows.length > 0) return res.status(400).json({ error: 'Hai già una richiesta per questo periodo' });
     const tipoVal = ['ferie', 'permesso', 'malattia'].includes(tipo) ? tipo : 'ferie';
@@ -191,7 +191,7 @@ router.post('/:id/withdraw', requireAuth, apiLimiter, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
   try {
-    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3 AND stato = $4 RETURNING id', ['rejected', id, req.session.userId, 'pending']);
+    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3 AND stato = $4 RETURNING id', ['rejected', id, req.session.user.id, 'pending']);
     if (r.rows.length === 0) return res.status(403).json({ error: 'Richiesta non trovata o non ritirabile' });
     res.json({ success: true, message: 'Richiesta ritirata' });
   } catch (err) {

@@ -3,16 +3,16 @@
     <h1>Notifiche</h1>
     <div class="notification-actions">
       <% if (nonLette > 0) { %>
-        <button class="btn btn-secondary" onclick="markAllRead()">
+        <button class="btn btn-secondary btn-mark-all-read">
           Marca tutte come lette (<%= nonLette %>)
         </button>
       <% } %>
       <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
-        <button class="btn btn-danger" onclick="deleteAllNotifications()" title="Elimina tutte le notifiche">
+        <button class="btn btn-danger btn-delete-all" title="Elimina tutte le notifiche">
           🗑️ Elimina tutte
         </button>
       <% } %>
-      <button class="btn btn-primary" onclick="refreshNotifications()">
+      <button class="btn btn-primary btn-refresh">
         <i class="icon">🔄</i> Aggiorna
       </button>
     </div>
@@ -344,7 +344,7 @@ function refreshNotifications() {
   loadNotifications();
 }
 
-// Event delegation per click su notifiche e pulsanti elimina
+// Event delegation per click su notifiche e pulsanti azione
 document.addEventListener('click', function(e) {
   // Click su una notifica per marcarla come letta
   const notificationItem = e.target.closest('.notification-item');
@@ -355,7 +355,7 @@ document.addEventListener('click', function(e) {
     }
   }
   
-  // Click sul pulsante elimina
+  // Click sul pulsante elimina singola notifica
   const deleteBtn = e.target.closest('.btn-delete-notification');
   if (deleteBtn) {
     e.stopPropagation();
@@ -363,6 +363,24 @@ document.addEventListener('click', function(e) {
     if (id) {
       deleteNotification(e, parseInt(id));
     }
+  }
+  
+  // Click su "Marca tutte come lette"
+  const markAllBtn = e.target.closest('.btn-mark-all-read');
+  if (markAllBtn) {
+    markAllRead();
+  }
+  
+  // Click su "Elimina tutte"
+  const deleteAllBtn = e.target.closest('.btn-delete-all');
+  if (deleteAllBtn) {
+    deleteAllNotifications();
+  }
+  
+  // Click su "Aggiorna"
+  const refreshBtn = e.target.closest('.btn-refresh');
+  if (refreshBtn) {
+    refreshNotifications();
   }
 });
 

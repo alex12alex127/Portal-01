@@ -15,18 +15,18 @@
       Panoramica
     </a>
     <a href="<%= bp %>/ferie" class="sidebar__link <%= active === 'ferie' ? 'active' : '' %>">
-      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v.01M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0" /></svg>
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
       Ferie
     </a>
     <a href="<%= bp %>/avvisi" class="sidebar__link <%= active === 'avvisi' ? 'active' : '' %>">
-      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0M3.75 6H13.5M3.75 6a1.5 1.5 0 00-1.5 1.5v13.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V7.5a1.5 1.5 0 00-1.5-1.5M13.5 18.75h-9m-9 0l3-3m-3 3l3-3" /></svg>
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
       Avvisi
       <% if (typeof avvisiNonLetti !== 'undefined' && avvisiNonLetti > 0) { %>
         <span class="notification-badge" style="display: inline-block;"><%= avvisiNonLetti %></span>
       <% } %>
     </a>
     <a href="<%= bp %>/notifiche" class="sidebar__link <%= active === 'notifiche' ? 'active' : '' %>">
-      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v.01M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0" /></svg>
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
       Notifiche
       <% if (typeof notificheNonLette !== 'undefined' && notificheNonLette > 0) { %>
         <span class="notification-badge" style="display: inline-block;"><%= notificheNonLette %></span>
@@ -40,16 +40,16 @@
     <span class="sidebar__group-label">Amministrazione</span>
     <% if (user.role === 'admin') { %>
     <a href="<%= bp %>/admin/users" class="sidebar__link <%= active === 'admin' ? 'active' : '' %>">
-      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0120 11a11.955 11.955 0 01-8.618 4.016z" /></svg>
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
       Gestione Utenti
     </a>
     <% } %>
     <a href="<%= bp %>/admin/ferie" class="sidebar__link <%= active === 'adminFerie' ? 'active' : '' %>">
-      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       Approva Ferie
     </a>
     <a href="<%= bp %>/admin/avvisi" class="sidebar__link <%= active === 'adminAvvisi' ? 'active' : '' %>">
-      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0M3.75 6H13.5M3.75 6a1.5 1.5 0 00-1.5 1.5v13.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V7.5a1.5 1.5 0 00-1.5-1.5M13.5 18.75h-9m-9 0l3-3m-3 3l3-3" /></svg>
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 00.7.996l.002.001a.75.75 0 00.715-.83l-1.97-9.852a.75.75 0 00-.715-.83l-.001-.001a.75.75 0 00-.852.852l.708 2.836a.75.75 0 00-.7.996l-.001.001a.75.75 0 00.715.83l1.97 9.852a.75.75 0 00.715.83l.001.001a.75.75 0 00.852-.852l-.708-2.836a.75.75 0 00.7-.996l.002-.001a.75.75 0 00-.715-.83l-1.97-9.852a.75.75 0 00-.715-.83l-.001-.001a.75.75 0 00-.852.852l.708 2.836a.75.75 0 00-.7.996l-.001.001a.75.75 0 00.715.83l1.97 9.852a.75.75 0 00.715.83l.001.001a.75.75 0 00.852-.852l-.708-2.836a.75.75 0 00-.7-.996z" /></svg>
       Gestione Avvisi
     </a>
     <% } %>

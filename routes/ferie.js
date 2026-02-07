@@ -4,6 +4,7 @@ const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 const { validateFerie } = require('../middleware/validation');
 const { apiLimiter } = require('../middleware/security');
+const { creaNotifica } = require('../lib/notifiche');
 
 function soloData (val) {
   if (val == null) return '';
@@ -129,6 +130,30 @@ router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) 
       'INSERT INTO ferie (user_id, data_inizio, data_fine, giorni_totali, tipo, note) VALUES ($1, $2, $3, $4, $5, $6)',
       [req.session.userId, data_inizio, data_fine, giorni, tipo, note || null]
     );
+    
+    // Crea notifica per l'utente
+    await creaNotifica(
+      req.session.userId,
+      'ferie_create',
+      'Richiesta ferie inviata',
+      `La tua richiesta di ${tipo} dal ${data_inizio} al ${data_fine} è stata inviata ed è in attesa di approvazione.`
+    );
+    
+    // Crea notifiche per admin/manager
+    const adminResult = await db.query(
+      'SELECT id FROM users WHERE role IN ($1, $2) AND is_active = true',
+      ['admin', 'manager']
+    );
+    
+    for (const admin of adminResult.rows) {
+      await creaNotifica(
+        admin.id,
+        'ferie_approve',
+        'Nuova richiesta ferie da approvare',
+        `${req.session.user.full_name} ha richiesto ${tipo} dal ${data_inizio} al ${data_fine}.`
+      );
+    }
+    
     res.json({ success: true, message: 'Richiesta inviata' });
   } catch (err) {
     console.error(err);

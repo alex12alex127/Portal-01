@@ -1,64 +1,153 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/security');
+const {
+  getAvvisiVisibili,
+  getAvviso,
+  creaAvviso,
+  aggiornaAvviso,
+  eliminaAvviso,
+  marcaAvvisoComeLetto,
+  contaAvvisiNonLetti
+} = require('../lib/avvisi');
 
-const oggi = () => new Date().toISOString().slice(0, 10);
-
-function isVisibile(avviso) {
-  const da = avviso.visibile_da ? String(avviso.visibile_da).slice(0, 10) : null;
-  const fino = avviso.visibile_fino ? String(avviso.visibile_fino).slice(0, 10) : null;
-  const today = oggi();
-  if (da && today < da) return false;
-  if (fino && today > fino) return false;
-  return true;
-}
-
+// GET /avvisi - Lista avvisi visibili (per tutti gli utenti autenticati)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const result = await db.query(`
-      SELECT a.id, a.titolo, a.contenuto, a.tipo, a.in_evidenza, a.visibile_da, a.visibile_fino, a.created_at, a.updated_at,
-             u.full_name AS autore_nome
-      FROM avvisi a
-      LEFT JOIN users u ON u.id = a.created_by
-      ORDER BY a.in_evidenza DESC, a.created_at DESC
-    `);
-    const lettiResult = await db.query('SELECT avviso_id FROM avvisi_letti WHERE user_id = $1', [req.session.userId]);
-    const lettiSet = new Set(lettiResult.rows.map(r => r.avviso_id));
-    const avvisi = result.rows
-      .map(r => ({
-        ...r,
-        visibile_da: r.visibile_da ? String(r.visibile_da).slice(0, 10) : null,
-        visibile_fino: r.visibile_fino ? String(r.visibile_fino).slice(0, 10) : null,
-        created_at: r.created_at,
-        letto: lettiSet.has(r.id)
-      }))
-      .filter(a => isVisibile(a));
+    const avvisi = await getAvvisiVisibili(req.session.user.id);
+    const nonLetti = await contaAvvisiNonLetti(req.session.user.id);
+    
     res.render('avvisi/index', {
       title: 'Avvisi - Portal-01',
       activePage: 'avvisi',
       breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Avvisi' }],
-      avvisi
+      avvisi,
+      nonLetti,
+      isAdmin: req.session.user.role === 'admin'
     });
   } catch (err) {
-    console.error(err);
+    console.error('[avvisi]', err);
     res.status(500).send('Errore del server');
   }
 });
 
-router.post('/:id/letta', requireAuth, apiLimiter, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
+// GET /avvisi/:id - Dettaglio avviso
+router.get('/:id', requireAuth, async (req, res) => {
   try {
-    await db.query(
-      'INSERT INTO avvisi_letti (user_id, avviso_id) VALUES ($1, $2) ON CONFLICT (user_id, avviso_id) DO NOTHING',
-      [req.session.userId, id]
-    );
+    const avviso = await getAvviso(req.params.id);
+    if (!avviso) {
+      return res.status(404).send('Avviso non trovato');
+    }
+    
+    // Marca come letto
+    await marcaAvvisoComeLetto(req.params.id, req.session.user.id);
+    
+    res.render('avvisi/dettaglio', {
+      title: avviso.titolo + ' - Portal-01',
+      activePage: 'avvisi',
+      breadcrumbs: [
+        { label: 'Dashboard', url: '/dashboard' },
+        { label: 'Avvisi', url: '/avvisi' },
+        { label: avviso.titolo }
+      ],
+      avviso
+    });
+  } catch (err) {
+    console.error('[avviso dettaglio]', err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+// POST /avvisi/:id/letta - Marca avviso come letto (AJAX)
+router.post('/:id/letta', requireAuth, apiLimiter, async (req, res) => {
+  try {
+    await marcaAvvisoComeLetto(req.params.id, req.session.user.id);
+    const nonLetti = await contaAvvisiNonLetti(req.session.user.id);
+    res.json({ success: true, nonLetti });
+  } catch (err) {
+    console.error('[avviso letto]', err);
+    res.status(500).json({ error: 'Errore' });
+  }
+});
+
+// GET /admin/avvisi - Gestione avvisi (solo admin)
+router.get('/admin', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    const avvisi = await getAvvisiVisibili();
+    
+    res.render('admin/avvisi', {
+      title: 'Gestione Avvisi - Portal-01',
+      activePage: 'admin-avvisi',
+      breadcrumbs: [
+        { label: 'Dashboard', url: '/dashboard' },
+        { label: 'Admin', url: '/admin' },
+        { label: 'Avvisi' }
+      ],
+      avvisi
+    });
+  } catch (err) {
+    console.error('[admin avvisi]', err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+// POST /admin/avvisi - Crea nuovo avviso (solo admin)
+router.post('/admin', requireAuth, requireRole('admin'), apiLimiter, async (req, res) => {
+  try {
+    const { titolo, contenuto, tipo, in_evidenza, visibile_da, visibile_fino } = req.body;
+    
+    if (!titolo || !contenuto) {
+      return res.status(400).json({ error: 'Titolo e contenuto sono obbligatori' });
+    }
+    
+    const avviso = await creaAvviso(titolo, contenuto, tipo || 'info', {
+      in_evidenza: in_evidenza === 'on',
+      visibile_da: visibile_da || null,
+      visibile_fino: visibile_fino || null,
+      created_by: req.session.user.id
+    });
+    
+    res.json({ success: true, avviso });
+  } catch (err) {
+    console.error('[admin avviso create]', err);
+    res.status(500).json({ error: 'Errore creazione avviso' });
+  }
+});
+
+// PUT /admin/avvisi/:id - Aggiorna avviso (solo admin)
+router.put('/admin/:id', requireAuth, requireRole('admin'), apiLimiter, async (req, res) => {
+  try {
+    const { titolo, contenuto, tipo, in_evidenza, visibile_da, visibile_fino } = req.body;
+    
+    if (!titolo || !contenuto) {
+      return res.status(400).json({ error: 'Titolo e contenuto sono obbligatori' });
+    }
+    
+    const avviso = await aggiornaAvviso(req.params.id, {
+      titolo,
+      contenuto,
+      tipo: tipo || 'info',
+      in_evidenza: in_evidenza === 'on',
+      visibile_da: visibile_da || null,
+      visibile_fino: visibile_fino || null
+    });
+    
+    res.json({ success: true, avviso });
+  } catch (err) {
+    console.error('[admin avviso update]', err);
+    res.status(500).json({ error: 'Errore aggiornamento avviso' });
+  }
+});
+
+// DELETE /admin/avvisi/:id - Elimina avviso (solo admin)
+router.delete('/admin/:id', requireAuth, requireRole('admin'), apiLimiter, async (req, res) => {
+  try {
+    await eliminaAvviso(req.params.id);
     res.json({ success: true });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Errore' });
+    console.error('[admin avviso delete]', err);
+    res.status(500).json({ error: 'Errore eliminazione avviso' });
   }
 });
 

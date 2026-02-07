@@ -255,6 +255,26 @@ img, video { max-width: 100%; display: block; }
 .sidebar__link.active .icon { color: #67e8f9; }
 .sidebar__link.logout { color: var(--side-muted); }
 .sidebar__link.logout:hover { color: #fca5a5; }
+
+/* Badge notifiche nella sidebar */
+.notification-badge {
+  background: var(--danger);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  margin-left: auto;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
 .sidebar__foot {
   padding: var(--space-lg);
   border-top: 1px solid rgba(255,255,255,.1);

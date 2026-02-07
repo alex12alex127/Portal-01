@@ -2,69 +2,430 @@
   <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
   Gestione Avvisi
 </h1>
+
+<div class="admin-avvisi-actions">
+  <button class="btn" onclick="showCreateModal()">
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> 
+    Nuovo Avviso
+  </button>
+</div>
+
 <div class="card">
   <div class="admin-avvisi-header">
     <h2>Tutti gli avvisi (<%= avvisi.length %>)</h2>
-    <a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/avvisi/nuovo" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> Nuovo avviso</a>
   </div>
-  <% if (typeof filtri !== 'undefined') { %>
-  <form method="get" action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/avvisi" class="ferie-filtri" style="margin-bottom:1rem">
-    <label>Tipo <select name="tipo"><option value="">Tutti</option><option value="info"<%= filtri.tipo === 'info' ? ' selected' : '' %>>Informazione</option><option value="warning"<%= filtri.tipo === 'warning' ? ' selected' : '' %>>Attenzione</option><option value="urgent"<%= filtri.tipo === 'urgent' ? ' selected' : '' %>>Urgente</option><option value="manutenzione"<%= filtri.tipo === 'manutenzione' ? ' selected' : '' %>>Manutenzione</option></select></label>
-    <label><input type="checkbox" name="evidenza" value="1"<%= filtri.evidenza ? ' checked' : '' %>> Solo in evidenza</label>
-    <button type="submit" class="btn btn-sm">Filtra</button>
-  </form>
-  <% } %>
+  
   <% if (avvisi.length === 0) { %>
-  <p class="empty">Nessun avviso. <a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/avvisi/nuovo">Creane uno</a>.</p>
+    <div class="empty">
+      <div class="empty-icon">📢</div>
+      <h3>Nessun avviso</h3>
+      <p>Crea il primo avviso per comunicare con i dipendenti.</p>
+      <button class="btn" onclick="showCreateModal()">Crea Avviso</button>
+    </div>
   <% } else { %>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Titolo</th>
-          <th>Tipo</th>
-          <th>Periodo</th>
-          <th>Evidenza</th>
-          <th>Azioni</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% avvisi.forEach(function(a) { %>
-        <tr data-id="<%= a.id %>">
-          <td><strong><%= a.titolo %></strong></td>
-          <td><span class="badge badge--avviso badge--<%= a.tipo %>"><%= a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'Urgente' : 'Manutenzione' %></span></td>
-          <td><%= a.visibile_da || '—' %> / <%= a.visibile_fino || '—' %></td>
-          <td><%= a.in_evidenza ? '📌 Sì' : '—' %></td>
-          <td>
-            <a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/avvisi/<%= a.id %>/modifica" class="btn-sm">Modifica</a>
-            <button type="button" class="btn-sm admin-avvisi-delete" data-id="<%= a.id %>" data-titolo="<%= a.titolo %>">Elimina</button>
-          </td>
-        </tr>
-        <% }); %>
-      </tbody>
-    </table>
-  </div>
+    <div class="avvisi-grid">
+      <% avvisi.forEach(function(a) { %>
+        <div class="avviso-card" data-id="<%= a.id %>">
+          <div class="avviso-header">
+            <h3><%= a.titolo %></h3>
+            <div class="avviso-badges">
+              <span class="badge badge--<%= a.tipo %>"><%= getTipoLabel(a.tipo) %></span>
+              <% if (a.in_evidenza) { %>
+                <span class="badge badge--evidence">📌 In evidenza</span>
+              <% } %>
+            </div>
+          </div>
+          
+          <div class="avviso-content">
+            <p><%= a.contenuto.length > 150 ? a.contenuto.substring(0, 150) + '...' : a.contenuto %></p>
+          </div>
+          
+          <div class="avviso-meta">
+            <div class="avviso-period">
+              <% if (a.visibile_da || a.visibile_fino) { %>
+                <span>📅 
+                  <% if (a.visibile_da) { %>Dal <%= formatDate(a.visibile_da) %><% } %>
+                  <% if (a.visibile_fino) { %> al <%= formatDate(a.visibile_fino) %><% } %>
+                </span>
+              <% } else { %>
+                <span>📅 Sempre visibile</span>
+              <% } %>
+            </div>
+            <div class="avviso-author">
+              Autore: <%= a.autore_nome || 'Sistema' %>
+            </div>
+            <div class="avviso-date">
+              Creato: <%= formatDate(a.created_at) %>
+            </div>
+          </div>
+          
+          <div class="avviso-actions">
+            <button class="btn btn-sm" onclick="editAvviso(<%= a.id %>)">Modifica</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteAvviso(<%= a.id %>, '<%= a.titolo.replace(/"/g, '&quot;') %>')">Elimina</button>
+          </div>
+        </div>
+      <% }); %>
+    </div>
   <% } %>
 </div>
+
+<!-- Modale creazione/modifica avviso -->
+<div id="avvisoModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalTitle">Nuovo Avviso</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    
+    <form id="avvisoForm">
+      <div class="form-group">
+        <label for="titolo">Titolo *</label>
+        <input type="text" id="titolo" name="titolo" required maxlength="255">
+      </div>
+      
+      <div class="form-group">
+        <label for="contenuto">Contenuto *</label>
+        <textarea id="contenuto" name="contenuto" rows="5" required></textarea>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" name="tipo">
+            <option value="info">Informazione</option>
+            <option value="warning">Attenzione</option>
+            <option value="urgent">Urgente</option>
+            <option value="success">Successo</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="in_evidenza" name="in_evidenza">
+            In evidenza
+          </label>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="visibile_da">Visibile dal</label>
+          <input type="date" id="visibile_da" name="visibile_da">
+        </div>
+        
+        <div class="form-group">
+          <label for="visibile_fino">Visibile fino al</label>
+          <input type="date" id="visibile_fino" name="visibile_fino">
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+        <button type="submit" class="btn btn-primary">Salva</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.admin-avvisi-actions {
+  margin-bottom: 1.5rem;
+}
+
+.avvisi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.avviso-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.avviso-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.avviso-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.avviso-header h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.avviso-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-end;
+}
+
+.avviso-content {
+  margin-bottom: 1rem;
+}
+
+.avviso-content p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.avviso-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.avviso-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.modal form {
+  padding: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.badge--evidence {
+  background: #ff6b35;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .avvisi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
 <script>
-(function(){
-  var base = window.APP_BASE || '', csrf = '<%= csrfToken %>';
-  document.querySelectorAll('.admin-avvisi-delete').forEach(function(btn) {
-    btn.onclick = function() {
-      var id = this.dataset.id, titolo = this.dataset.titolo || 'questo avviso';
-      if (typeof window.showModal === 'function') {
-        window.showModal({ title: 'Elimina avviso', text: 'Eliminare definitivamente "' + titolo + '"?', onConfirm: function() {
-          fetch(base + '/admin/avvisi/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) })
-            .then(function(r) { return r.json(); })
-            .then(function(j) {
-              if (typeof window.showToast === 'function') window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
-              if (j.success) location.reload();
-            });
-        }});
-      } else if (confirm('Eliminare questo avviso?')) {
-        fetch(base + '/admin/avvisi/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) }).then(function(r) { return r.json(); }).then(function(j) { if (j.success) location.reload(); });
+let editingId = null;
+
+function getTipoLabel(tipo) {
+  const labels = {
+    'info': 'Info',
+    'warning': 'Attenzione',
+    'urgent': 'Urgente',
+    'success': 'Successo'
+  };
+  return labels[tipo] || tipo;
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('it-IT');
+}
+
+function showCreateModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Nuovo Avviso';
+  document.getElementById('avvisoForm').reset();
+  document.getElementById('avvisoModal').style.display = 'flex';
+}
+
+function editAvviso(id) {
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Modifica Avviso';
+  
+  // Carica i dati dell'avviso
+  fetch(`${basePath}/avvisi/${id}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const avviso = data.avviso;
+        document.getElementById('titolo').value = avviso.titolo;
+        document.getElementById('contenuto').value = avviso.contenuto;
+        document.getElementById('tipo').value = avviso.tipo;
+        document.getElementById('in_evidenza').checked = avviso.in_evidenza;
+        document.getElementById('visibile_da').value = avviso.visibile_da || '';
+        document.getElementById('visibile_fino').value = avviso.visibile_fino || '';
+        document.getElementById('avvisoModal').style.display = 'flex';
       }
-    };
+    })
+    .catch(err => {
+      console.error('Errore caricamento avviso:', err);
+      if (typeof showToast === 'function') {
+        showToast('Errore nel caricamento dell\'avviso', 'error');
+      }
+    });
+}
+
+function closeModal() {
+  document.getElementById('avvisoModal').style.display = 'none';
+  document.getElementById('avvisoForm').reset();
+  editingId = null;
+}
+
+function deleteAvviso(id, titolo) {
+  if (typeof showModal === 'function') {
+    showModal({
+      title: 'Elimina avviso',
+      text: `Eliminare definitivamente "${titolo}"?`,
+      onConfirm: () => {
+        fetch(`${basePath}/admin/avvisi/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            if (typeof showToast === 'function') {
+              showToast('Avviso eliminato', 'ok');
+            }
+            location.reload();
+          } else {
+            if (typeof showToast === 'function') {
+              showToast(data.error || 'Errore eliminazione', 'error');
+            }
+          }
+        })
+        .catch(err => {
+          console.error('Errore eliminazione:', err);
+          if (typeof showToast === 'function') {
+            showToast('Errore durante l\'eliminazione', 'error');
+          }
+        });
+      }
+    });
+  } else if (confirm(`Eliminare l'avviso "${titolo}"?`)) {
+    fetch(`${basePath}/admin/avvisi/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) location.reload();
+    });
+  }
+}
+
+// Gestione submit form
+document.getElementById('avvisoForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const data = Object.fromEntries(formData.entries());
+  data._csrf = csrfToken;
+  
+  const url = editingId ? 
+    `${basePath}/admin/avvisi/${editingId}` : 
+    `${basePath}/admin/avvisi`;
+  const method = editingId ? 'PUT' : 'POST';
+  
+  fetch(url, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      if (typeof showToast === 'function') {
+        showToast(editingId ? 'Avviso aggiornato' : 'Avviso creato', 'ok');
+      }
+      location.reload();
+    } else {
+      if (typeof showToast === 'function') {
+        showToast(data.error || 'Errore salvataggio', 'error');
+      }
+    }
+  })
+  .catch(err => {
+    console.error('Errore salvataggio:', err);
+    if (typeof showToast === 'function') {
+      showToast('Errore durante il salvataggio', 'error');
+    }
   });
-})();
+});
+
+// Chiudi modale cliccando fuori
+document.getElementById('avvisoModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeModal();
+  }
+});
 </script>

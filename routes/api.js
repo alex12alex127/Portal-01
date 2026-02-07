@@ -21,6 +21,7 @@ router.get('/', (req, res) => {
       'GET /api/v1/avvisi/:id': 'Dettaglio avviso',
       'GET /api/v1/notifiche': 'Lista notifiche utente',
       'GET /api/v1/notifiche/count': 'Conteggio notifiche non lette',
+      'GET /api/v1/counts': 'Conteggi real-time (notifiche, messaggi, avvisi)',
       'GET /api/v1/stats': 'Statistiche generali (admin)'
     },
     authentication: 'Session-based. Effettua login via /auth/login prima di usare le API.',
@@ -189,6 +190,44 @@ router.get('/stats', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('[api stats]', err);
     res.status(500).json({ error: 'Errore del server' });
+  }
+});
+
+// GET /api/v1/counts - Conteggi real-time (notifiche, messaggi, avvisi)
+router.get('/counts', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const [notifiche, avvisi, messaggi] = await Promise.all([
+      db.query('SELECT COUNT(*)::int AS count FROM notifiche WHERE user_id = $1 AND letta = false', [userId]),
+      db.query(`
+        SELECT COUNT(*)::int AS count FROM avvisi a
+        WHERE (a.visibile_da IS NULL OR a.visibile_da <= CURRENT_DATE)
+          AND (a.visibile_fino IS NULL OR a.visibile_fino >= CURRENT_DATE)
+          AND NOT EXISTS (SELECT 1 FROM avvisi_letti al WHERE al.avviso_id = a.id AND al.user_id = $1)
+      `, [userId]),
+      db.query(`
+        SELECT COALESCE(SUM(unread.cnt), 0)::int AS count
+        FROM conversazione_partecipanti cp
+        JOIN LATERAL (
+          SELECT COUNT(*)::int AS cnt
+          FROM messaggi m
+          WHERE m.conversazione_id = cp.conversazione_id
+            AND m.created_at > cp.ultimo_letto
+            AND m.sender_id != $1
+        ) unread ON true
+        WHERE cp.user_id = $1 AND cp.archiviata = false
+      `, [userId])
+    ]);
+    res.json({
+      success: true,
+      notifiche: notifiche.rows[0].count,
+      avvisi: avvisi.rows[0].count,
+      messaggi: messaggi.rows[0].count,
+      timestamp: Date.now()
+    });
+  } catch (err) {
+    console.error('[api counts]', err);
+    res.status(500).json({ success: false, error: 'Errore conteggi' });
   }
 });
 

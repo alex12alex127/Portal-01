@@ -408,14 +408,16 @@ router.post('/avvisi', requireAuth, requireAdmin, apiLimiter, async (req, res) =
     if (!titolo || !String(titolo).trim()) return res.status(400).json({ success: false, error: 'Titolo obbligatorio' });
     if (!contenuto || !String(contenuto).trim()) return res.status(400).json({ success: false, error: 'Contenuto obbligatorio' });
     const evidenza = in_evidenza === 'on' || in_evidenza === '1' || in_evidenza === true;
+    const vDa = (visibile_da && String(visibile_da).trim()) ? String(visibile_da).trim() : null;
+    const vFino = (visibile_fino && String(visibile_fino).trim()) ? String(visibile_fino).trim() : null;
     const avviso = await creaAvviso(
       String(titolo).trim(),
       String(contenuto).trim(),
       tipo || 'info',
       {
         in_evidenza: evidenza,
-        visibile_da: visibile_da || null,
-        visibile_fino: visibile_fino || null,
+        visibile_da: vDa,
+        visibile_fino: vFino,
         created_by: req.session.user.id
       }
     );
@@ -434,13 +436,15 @@ router.put('/avvisi/:id', requireAuth, requireAdmin, apiLimiter, async (req, res
     if (!titolo || !String(titolo).trim()) return res.status(400).json({ success: false, error: 'Titolo obbligatorio' });
     if (!contenuto || !String(contenuto).trim()) return res.status(400).json({ success: false, error: 'Contenuto obbligatorio' });
     const evidenza = in_evidenza === 'on' || in_evidenza === '1' || in_evidenza === true;
+    const vDa = (visibile_da && String(visibile_da).trim()) ? String(visibile_da).trim() : null;
+    const vFino = (visibile_fino && String(visibile_fino).trim()) ? String(visibile_fino).trim() : null;
     const avviso = await aggiornaAvviso(req.params.id, {
       titolo: String(titolo).trim(),
       contenuto: String(contenuto).trim(),
       tipo: tipo || 'info',
       in_evidenza: evidenza,
-      visibile_da: visibile_da || null,
-      visibile_fino: visibile_fino || null
+      visibile_da: vDa,
+      visibile_fino: vFino
     });
     await logAudit(req.session.user.id, 'avviso_aggiornato', `id=${req.params.id}`, req.ip);
     res.json({ success: true, avviso });

@@ -55,6 +55,9 @@ img, video { max-width: 100%; display: block; }
   --transition: 0.2s ease;
   /* Mobile — tap target minimo */
   --touch-min: 44px;
+  --card-bg: #ffffff;
+  --muted: #64748b;
+  --bg-subtle: #f9fafb;
 }
 
 [data-theme="dark"] {
@@ -77,6 +80,9 @@ img, video { max-width: 100%; display: block; }
   --shadow: 0 1px 2px rgba(0,0,0,.2);
   --shadow-md: 0 4px 12px rgba(0,0,0,.25);
   --shadow-lg: 0 12px 24px rgba(0,0,0,.3);
+  --card-bg: #1e293b;
+  --muted: #94a3b8;
+  --bg-subtle: #1a2332;
 }
 
 /* Tema scuro — elementi che devono usare sempre colori leggibili */
@@ -184,6 +190,131 @@ img, video { max-width: 100%; display: block; }
 }
 [data-theme="dark"] .theme-toggle__label {
   color: inherit;
+}
+
+/* Dark mode — pagine ridisegnate (inline styles con fallback #fff) */
+[data-theme="dark"] .container [style*="card-bg"] {
+  background: var(--card-bg) !important;
+  color: var(--text);
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] .container [style*="card-bg"] [style*="color"] {
+  color: inherit;
+}
+[data-theme="dark"] .container [style*="card-bg"] [style*="border-bottom"],
+[data-theme="dark"] .container [style*="card-bg"] [style*="border-top"] {
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] .container [style*="font-size"][style*="color:var(--muted"] {
+  color: var(--text-muted) !important;
+}
+[data-theme="dark"] .container [style*="font-weight"][style*="color:var(--text)"] {
+  color: var(--text) !important;
+}
+[data-theme="dark"] .rsp-card,
+[data-theme="dark"] .rsp-card-header,
+[data-theme="dark"] .rsp-card-body,
+[data-theme="dark"] .rsp-card-footer {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+[data-theme="dark"] .rsp-list-row,
+[data-theme="dark"] .rsp-list-row-start {
+  color: var(--text);
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] .rsp-label {
+  color: var(--text-muted) !important;
+}
+[data-theme="dark"] .rsp-stat-value {
+  color: inherit;
+}
+[data-theme="dark"] .rsp-avatar {
+  color: #fff;
+}
+[data-theme="dark"] .rsp-btn-circle {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+[data-theme="dark"] .rsp-empty {
+  color: var(--text-muted);
+}
+[data-theme="dark"] .rsp-meta-row {
+  color: var(--text-muted);
+}
+[data-theme="dark"] .rsp-flex-form label {
+  color: var(--text-muted) !important;
+}
+[data-theme="dark"] .page-title {
+  color: var(--text);
+}
+[data-theme="dark"] .avviso-card {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+[data-theme="dark"] .avviso-card a {
+  color: var(--text) !important;
+}
+[data-theme="dark"] .notifiche-item {
+  color: var(--text);
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] .dashboard-avvisi,
+[data-theme="dark"] .dashboard-notifiche,
+[data-theme="dark"] .dashboard-ultime,
+[data-theme="dark"] .dashboard-actions a {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+[data-theme="dark"] #avvisoModal > div {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] #widgetSettings {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+[data-theme="dark"] #widgetSettings label {
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+[data-theme="dark"] .user-card {
+  background: var(--card-bg) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+[data-theme="dark"] .user-card__header {
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] .user-card__name {
+  color: var(--text);
+}
+[data-theme="dark"] .user-card__username,
+[data-theme="dark"] .user-card__label {
+  color: var(--text-muted);
+}
+[data-theme="dark"] .user-card__value {
+  color: var(--text);
+}
+[data-theme="dark"] .user-card__actions {
+  background: var(--bg-subtle) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] .user-card__actions .btn-action {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+[data-theme="dark"] .user-card__role {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
 }
 
 /* Layout — mobile-first */

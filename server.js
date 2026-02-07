@@ -8,6 +8,7 @@ const path = require('path');
 const db = require('./config/database');
 const { helmetConfig, csrfProtection } = require('./middleware/security');
 const { sanitizeInput } = require('./middleware/validation');
+const { addGlobalCounts } = require('./middleware/global');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -68,6 +69,9 @@ app.use((req, res, next) => {
   if (req.session && req.session.user) res.locals.user = req.session.user;
   next();
 });
+
+// Middleware per conteggi globali (dopo session, prima routes)
+app.use(addGlobalCounts);
 
 if (!isProd) {
   app.use((req, res, next) => {

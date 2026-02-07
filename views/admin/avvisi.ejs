@@ -100,6 +100,7 @@
 <script>
 (function(){
   var base = window.APP_BASE || '';
+  var csrf = '<%= csrfToken %>';
   var modal = document.getElementById('avvisoModal');
   var form = document.getElementById('avvisoForm');
 
@@ -149,7 +150,7 @@
     try {
       var url = id ? base + '/admin/avvisi/' + id : base + '/admin/avvisi';
       var method = id ? 'PUT' : 'POST';
-      var r = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      var r = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf }, body: JSON.stringify(body) });
       var data = await r.json();
       if (data.success) {
         showMsg(id ? 'Avviso aggiornato' : 'Avviso creato', true);
@@ -189,7 +190,7 @@
       var titolo = delBtn.dataset.titolo;
       if (!confirm('Eliminare "' + titolo + '"?')) return;
       try {
-        var r = await fetch(base + '/admin/avvisi/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+        var r = await fetch(base + '/admin/avvisi/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf } });
         var data = await r.json();
         if (data.success) {
           showMsg('Avviso eliminato', true);

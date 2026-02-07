@@ -55,6 +55,7 @@
 <script>
 (function(){
   var base = window.APP_BASE || '';
+  var csrf = '<%= csrfToken %>';
   function showMsg(txt, ok) {
     var el = document.createElement('div');
     el.textContent = txt;
@@ -68,7 +69,7 @@
     if (!btn) return;
     var id = btn.dataset.id;
     try {
-      var r = await fetch(base + '/avvisi/' + id + '/letta', { method:'POST', headers:{'Content-Type':'application/json'} });
+      var r = await fetch(base + '/avvisi/' + id + '/letta', { method:'POST', headers:{'Content-Type':'application/json', 'X-CSRF-Token': csrf} });
       var data = await r.json();
       if (data.success) {
         var card = document.querySelector('.avviso-card[data-id="' + id + '"]');

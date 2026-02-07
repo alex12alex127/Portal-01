@@ -6,7 +6,7 @@
 </h1>
 
 <div class="admin-actions">
-  <button class="btn" onclick="showCreateForm()">
+  <button type="button" class="btn js-create-avviso">
     <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
     </svg> 
@@ -24,7 +24,7 @@
       <div class="empty-icon">📢</div>
       <h3>Nessun avviso</h3>
       <p>Crea il primo avviso per comunicare con i dipendenti.</p>
-      <button class="btn" onclick="showCreateForm()">Crea Avviso</button>
+      <button type="button" class="btn js-create-avviso">Crea Avviso</button>
     </div>
   <% } else { %>
     <div class="table-responsive">
@@ -77,7 +77,7 @@
   <div class="form-modal">
     <div class="form-header">
       <h2 id="formTitle">Nuovo Avviso</h2>
-      <button class="btn-close" onclick="hideForm()">&times;</button>
+      <button type="button" class="btn-close js-hide-form">&times;</button>
     </div>
     
     <form id="avvisoForm">
@@ -264,7 +264,13 @@ let editingId = null;
 
 // Assicurati che il DOM sia caricato
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM caricato - Admin Avvisi');
+  document.querySelectorAll('.js-create-avviso').forEach(function(btn) {
+    btn.addEventListener('click', showCreateForm);
+  });
+
+  document.querySelectorAll('.js-hide-form').forEach(function(btn) {
+    btn.addEventListener('click', hideForm);
+  });
   
   // Bottoni modifica
   document.querySelectorAll('.edit-btn').forEach(function(btn) {
@@ -282,8 +288,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function showCreateForm() {
-  console.log('showCreateForm chiamato');
-  
   // Verifica che gli elementi esistano
   const formTitle = document.getElementById('formTitle');
   const avvisoForm = document.getElementById('avvisoForm');
@@ -299,8 +303,6 @@ function showCreateForm() {
   formTitle.textContent = 'Nuovo Avviso';
   avvisoForm.reset();
   formContainer.style.display = 'flex';
-  
-  console.log('Form mostrato correttamente');
 }
 
 function hideForm() {

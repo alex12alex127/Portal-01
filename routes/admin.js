@@ -414,7 +414,7 @@ router.put('/avvisi/:id', requireAuth, requireManager, apiLimiter, async (req, r
       [String(titolo).trim(), String(contenuto).trim(), tipoVal, evidenza, visibile_da || null, visibile_fino || null, id]
     );
     if (r.rows.length === 0) return res.status(404).json({ error: 'Avviso non trovato' });
-    await logAudit(req.session.userId, 'avviso_modificato', `id=${id}`, req.ip);
+    await logAudit(req.session.user.id, 'avviso_modificato', `id=${id}`, req.ip);
     res.json({ success: true, message: 'Avviso aggiornato' });
   } catch (err) {
     console.error(err);
@@ -514,7 +514,7 @@ router.delete('/avvisi/:id', requireAuth, requireManager, apiLimiter, async (req
   try {
     const r = await db.query('DELETE FROM avvisi WHERE id = $1 RETURNING id', [id]);
     if (r.rows.length === 0) return res.status(404).json({ error: 'Avviso non trovato' });
-    await logAudit(req.session.userId, 'avviso_eliminato', `id=${id}`, req.ip);
+    await logAudit(req.session.user.id, 'avviso_eliminato', `id=${id}`, req.ip);
     res.json({ success: true, message: 'Avviso eliminato' });
   } catch (err) {
     console.error(err);

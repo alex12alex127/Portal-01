@@ -113,11 +113,6 @@ app.use((req, res) => {
   }
 });
 
-function escapeHtml(s) {
-  if (typeof s !== 'string') return '';
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
 app.use((err, req, res, _next) => {
   console.error('[Error]', err);
   res.status(500);

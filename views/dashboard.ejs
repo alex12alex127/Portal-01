@@ -115,28 +115,6 @@
 </div>
 <% } %>
 
-<!-- ========== 5. PRESENZA OGGI ========== -->
-<% if (typeof presenzaOggi !== 'undefined') { %>
-<div class="dashboard-presenze p-card">
-  <div class="p-card-header">
-    <h2 class="p-card-header__title">
-      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-      Presenza oggi
-    </h2>
-    <a href="<%= bp %>/presenze" class="p-card-header__action">Storico →</a>
-  </div>
-  <div style="padding:var(--space-md);text-align:center">
-    <% if (presenzaOggi && presenzaOggi.ora_entrata && presenzaOggi.ora_uscita) { %>
-      <span class="p-tag p-tag--success" style="font-size:.9rem;padding:.4rem .8rem">Completata: <%= presenzaOggi.ora_entrata %> - <%= presenzaOggi.ora_uscita %> (<%= presenzaOggi.ore_lavorate %>h)</span>
-    <% } else if (presenzaOggi && presenzaOggi.ora_entrata) { %>
-      <span class="p-tag p-tag--primary" style="padding:.4rem .8rem">Entrata: <%= presenzaOggi.ora_entrata %></span>
-      <a href="<%= bp %>/presenze" class="btn btn-sm" style="margin-left:.5rem">Timbra uscita</a>
-    <% } else { %>
-      <a href="<%= bp %>/presenze" class="btn btn-sm">Timbra entrata</a>
-    <% } %>
-  </div>
-</div>
-<% } %>
 
 <!-- ========== 6. FERIE DA APPROVARE (admin/manager) ========== -->
 <% if (typeof ferieDaApprovare !== 'undefined' && ferieDaApprovare.length > 0) { %>
@@ -277,10 +255,6 @@
     <svg class="icon" style="color:var(--primary)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
     Ferie
   </a>
-  <a href="<%= bp %>/presenze" class="p-quick-action">
-    <svg class="icon" style="color:var(--success)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-    Presenze
-  </a>
   <a href="<%= bp %>/avvisi" class="p-quick-action">
     <svg class="icon" style="color:var(--warn)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
     Avvisi
@@ -309,7 +283,7 @@
     <label class="p-widget-option"><input type="checkbox" data-widget="approvazioni" checked> Approvazioni</label>
     <label class="p-widget-option"><input type="checkbox" data-widget="avvisi" checked> Avvisi staff</label>
     <label class="p-widget-option"><input type="checkbox" data-widget="sicurezza" checked> Scadenze sicurezza</label>
-    <label class="p-widget-option"><input type="checkbox" data-widget="presenze" checked> Presenza oggi</label>
+
     <label class="p-widget-option"><input type="checkbox" data-widget="calendario" checked> Calendario ferie</label>
     <label class="p-widget-option"><input type="checkbox" data-widget="richieste" checked> Le mie richieste</label>
     <label class="p-widget-option"><input type="checkbox" data-widget="meteo" checked> Meteo</label>
@@ -326,7 +300,7 @@
   var map = {
     stats: '.dashboard-stats', approvazioni: '.dashboard-approvazioni',
     avvisi: '.dashboard-avvisi', sicurezza: '.dashboard-sicurezza',
-    presenze: '.dashboard-presenze', calendario: '.dashboard-calendario',
+    calendario: '.dashboard-calendario',
     richieste: '.dashboard-ultime', meteo: '.dashboard-meteo',
     azioni: '.dashboard-actions', approvare: '.dashboard-approvare'
   };

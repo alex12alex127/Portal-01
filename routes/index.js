@@ -5,7 +5,6 @@ const { requireAuth } = require('../middleware/auth');
 const { soloData } = require('../lib/helpers');
 const { getScadenzeSicurezza } = require('../lib/sicurezza');
 const { getSaldoFerie } = require('../lib/budget_ferie');
-const { getPresenzaOggi } = require('../lib/presenze');
 
 router.get('/', (req, res) => {
   const base = req.app.get('basePath') || '';
@@ -111,11 +110,7 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       [userId]
     );
 
-    // 9. Presenza oggi
-    let presenzaOggi = null;
-    try { presenzaOggi = await getPresenzaOggi(userId); } catch (_) {}
-
-    // 10. Ferie da approvare (per admin/manager)
+    // 9. Ferie da approvare (per admin/manager)
     let ferieDaApprovare = [];
     if (isAdmin || isManager) {
       try {
@@ -148,7 +143,6 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       primoGiornoMese: new Date(oggi.getFullYear(), oggi.getMonth(), 1).getDay(),
       annoMese: { anno: oggi.getFullYear(), mese: oggi.getMonth() + 1 },
       ultimeRichieste: ultimeRichieste.rows.map(r => ({ ...r, data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine) })),
-      presenzaOggi,
       ferieDaApprovare
     });
   } catch (err) {

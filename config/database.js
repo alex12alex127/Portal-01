@@ -248,25 +248,6 @@ async function initDatabase() {
     `);
     await client.query('CREATE INDEX IF NOT EXISTS idx_budget_ferie_user_anno ON budget_ferie(user_id, anno)');
 
-    // ===== PRESENZE / TIMBRATURE =====
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS presenze (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        data DATE NOT NULL,
-        ora_entrata TIME,
-        ora_uscita TIME,
-        ore_lavorate NUMERIC(4,1),
-        ore_straordinario NUMERIC(4,1) DEFAULT 0,
-        tipo VARCHAR(30) DEFAULT 'ordinario',
-        note TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    await client.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_presenze_user_data ON presenze(user_id, data)');
-    await client.query('CREATE INDEX IF NOT EXISTS idx_presenze_data ON presenze(data)');
-
     console.log('Tabelle e indici create/verificate');
   } finally {
     client.release();

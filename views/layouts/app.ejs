@@ -8,6 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title><%= typeof title !== 'undefined' ? title : 'Portal-01' %></title>
   <link rel="stylesheet" href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/css/style.css">
+  <link rel="manifest" href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/manifest.json">
+  <meta name="theme-color" content="#4f46e5">
 </head>
 <body>
   <script>window.APP_BASE='<%= typeof basePath !== "undefined" ? basePath : "" %>';</script>
@@ -21,5 +23,6 @@
     </main>
   </div>
   <script src="<%= typeof basePath !== 'undefined' ? basePath : '' %>/js/app.js"></script>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('<%= typeof basePath !== "undefined" ? basePath : "" %>/sw.js').catch(function(){});}</script>
 </body>
 </html>

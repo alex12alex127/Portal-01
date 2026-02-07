@@ -92,4 +92,60 @@
       if (e.target === overlay) { close(); if (callback) callback(null); }
     };
   };
+  // ========== RICERCA GLOBALE ==========
+  var searchInput = document.getElementById('globalSearch');
+  var searchResults = document.getElementById('searchResults');
+  var searchTimer = null;
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimer);
+      var q = searchInput.value.trim();
+      if (q.length < 2) { searchResults.style.display = 'none'; return; }
+      searchTimer = setTimeout(function() {
+        fetch(window.APP_BASE + '/admin/search?q=' + encodeURIComponent(q))
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (!data.results || data.results.length === 0) {
+              searchResults.innerHTML = '<div style="padding:.5rem .75rem;color:var(--muted,#888);font-size:.85rem">Nessun risultato</div>';
+              searchResults.style.display = 'block';
+              return;
+            }
+            var html = '';
+            data.results.forEach(function(r) {
+              var icon = r.type === 'avviso' ? 'Avviso' : r.type === 'utente' ? 'Utente' : 'Notifica';
+              html += '<a href="' + window.APP_BASE + r.url + '" style="display:block;padding:.5rem .75rem;text-decoration:none;color:inherit;border-bottom:1px solid var(--border,#eee);font-size:.85rem">';
+              html += '<span style="font-size:.7rem;text-transform:uppercase;color:var(--muted,#888)">' + icon + '</span><br>';
+              html += '<strong>' + r.label + '</strong></a>';
+            });
+            searchResults.innerHTML = html;
+            searchResults.style.display = 'block';
+          })
+          .catch(function() { searchResults.style.display = 'none'; });
+      }, 300);
+    });
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.style.display = 'none';
+      }
+    });
+  }
+
+  // ========== DARK MODE AUTO ==========
+  (function() {
+    var stored = localStorage.getItem('portal-theme');
+    if (stored === 'auto' || !stored) {
+      var mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+      if (mq && mq.matches) document.documentElement.setAttribute('data-theme', 'dark');
+      else document.documentElement.removeAttribute('data-theme');
+      if (mq && mq.addEventListener) {
+        mq.addEventListener('change', function(e) {
+          var current = localStorage.getItem('portal-theme');
+          if (current === 'auto' || !current) {
+            if (e.matches) document.documentElement.setAttribute('data-theme', 'dark');
+            else document.documentElement.removeAttribute('data-theme');
+          }
+        });
+      }
+    }
+  })();
 })();

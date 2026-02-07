@@ -97,4 +97,41 @@ router.get('/export', requireAuth, async (req, res) => {
   }
 });
 
+// ========== IMPOSTAZIONI UTENTE ==========
+
+router.get('/settings', requireAuth, async (req, res) => {
+  try {
+    const settingsResult = await db.query('SELECT * FROM user_settings WHERE user_id = $1', [req.session.user.id]);
+    const settings = settingsResult.rows[0] || { lingua: 'it', tema: 'auto', notifiche_email: true, avatar_path: null };
+    res.render('profile/settings', {
+      title: 'Impostazioni - Portal-01',
+      activePage: 'profile',
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Profilo', url: '/profile' }, { label: 'Impostazioni' }],
+      settings
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+router.post('/settings', requireAuth, apiLimiter, async (req, res) => {
+  const { lingua, tema, notifiche_email } = req.body || {};
+  const linguaVal = ['it', 'en'].includes(lingua) ? lingua : 'it';
+  const temaVal = ['auto', 'light', 'dark'].includes(tema) ? tema : 'auto';
+  const emailVal = notifiche_email === 'on' || notifiche_email === '1' || notifiche_email === true;
+  try {
+    await db.query(
+      `INSERT INTO user_settings (user_id, lingua, tema, notifiche_email, updated_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (user_id) DO UPDATE SET lingua = $2, tema = $3, notifiche_email = $4, updated_at = NOW()`,
+      [req.session.user.id, linguaVal, temaVal, emailVal]
+    );
+    res.json({ success: true, message: 'Impostazioni salvate' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore salvataggio impostazioni' });
+  }
+});
+
 module.exports = router;

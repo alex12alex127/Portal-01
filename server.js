@@ -9,6 +9,7 @@ const db = require('./config/database');
 const { helmetConfig, csrfProtection } = require('./middleware/security');
 const { sanitizeInput } = require('./middleware/validation');
 const { addGlobalCounts } = require('./middleware/global');
+const { i18nMiddleware } = require('./lib/i18n');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -73,6 +74,9 @@ app.use((req, res, next) => {
 // Middleware per conteggi globali (dopo session, prima routes)
 app.use(addGlobalCounts);
 
+// Middleware i18n (dopo session)
+app.use(i18nMiddleware);
+
 if (!isProd) {
   app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}${req.path !== req.originalUrl ? ' (original: ' + req.originalUrl + ')' : ''}`);
@@ -87,6 +91,7 @@ app.use(BASE_PATH + '/avvisi', require('./routes/avvisi'));
 app.use(BASE_PATH + '/profile', require('./routes/profile'));
 app.use(BASE_PATH + '/admin', require('./routes/admin'));
 app.use(BASE_PATH + '/notifiche', require('./routes/notifiche'));
+app.use(BASE_PATH + '/api/v1', require('./routes/api'));
 
 app.use((req, res) => {
   const requestPath = req.originalUrl || req.url || req.path;

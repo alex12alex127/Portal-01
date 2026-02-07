@@ -118,6 +118,22 @@ async function initDatabase() {
       )
     `);
     await client.query('CREATE INDEX IF NOT EXISTS idx_avvisi_letti_user ON avvisi_letti(user_id)');
+    // Colonna commento_admin per motivo rifiuto/approvazione ferie
+    await client.query('ALTER TABLE ferie ADD COLUMN IF NOT EXISTS commento_admin TEXT');
+    // Colonna allegato per certificati medici
+    await client.query('ALTER TABLE ferie ADD COLUMN IF NOT EXISTS allegato_path VARCHAR(500)');
+    await client.query('ALTER TABLE ferie ADD COLUMN IF NOT EXISTS allegato_nome VARCHAR(255)');
+    // Tabella impostazioni utente
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS user_settings (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        lingua VARCHAR(10) DEFAULT 'it',
+        tema VARCHAR(10) DEFAULT 'auto',
+        notifiche_email BOOLEAN DEFAULT true,
+        avatar_path VARCHAR(500),
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
     console.log('Tabelle e indici create/verificate');
   } finally {
     client.release();

@@ -16,6 +16,35 @@ const {
   contaAvvisiNonLetti
 } = require('../lib/avvisi');
 
+// Helper per inviare email notifica ferie
+async function sendFerieEmail(userId, stato, dataInizio, dataFine, commento) {
+  if (!process.env.SMTP_HOST) return;
+  try {
+    const userResult = await db.query('SELECT email, full_name FROM users WHERE id = $1', [userId]);
+    if (userResult.rows.length === 0) return;
+    const { email, full_name } = userResult.rows[0];
+    const nodemailer = require('nodemailer');
+    const transport = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT, 10) || 587,
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined
+    });
+    const subject = `Portal-01 - Richiesta ferie ${stato}`;
+    let text = `Ciao ${full_name},\n\nLa tua richiesta di ferie dal ${dataInizio} al ${dataFine} è stata ${stato}.`;
+    if (commento) text += `\n${stato === 'rifiutata' ? 'Motivo' : 'Nota'}: ${commento}`;
+    text += '\n\nPortal-01';
+    await transport.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: email,
+      subject,
+      text
+    });
+  } catch (err) {
+    console.error('[sendFerieEmail]', err.message);
+  }
+}
+
 router.get('/users', requireAuth, requireAdmin, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
@@ -182,13 +211,17 @@ router.get('/ferie', requireAuth, requireManager, async (req, res) => {
 router.post('/ferie/:id/approve', requireAuth, requireManager, apiLimiter, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID richiesta non valido' });
+  const commento = (req.body.commento_admin && String(req.body.commento_admin).trim()) || null;
   try {
-    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id, user_id, data_inizio, data_fine', ['approved', id, 'pending']);
+    const r = await db.query('UPDATE ferie SET stato = $1, commento_admin = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 AND stato = $4 RETURNING id, user_id, data_inizio, data_fine', ['approved', commento, id, 'pending']);
     if (r.rows.length === 0) return res.status(400).json({ error: 'Richiesta non trovata o già gestita' });
     const row = r.rows[0];
     const dataInizio = row.data_inizio ? String(row.data_inizio).slice(0, 10) : '';
     const dataFine = row.data_fine ? String(row.data_fine).slice(0, 10) : '';
-    await creaNotifica(row.user_id, 'ferie_approvata', 'Richiesta ferie approvata', `La tua richiesta dal ${dataInizio} al ${dataFine} è stata approvata.`);
+    const msg = `La tua richiesta dal ${dataInizio} al ${dataFine} è stata approvata.` + (commento ? ` Nota: ${commento}` : '');
+    await creaNotifica(row.user_id, 'ferie_approvata', 'Richiesta ferie approvata', msg);
+    // Notifica email
+    await sendFerieEmail(row.user_id, 'approvata', dataInizio, dataFine, commento);
     await logAudit(req.session.user.id, 'ferie_approvata', `id=${id} user_id=${row.user_id}`, req.ip);
     res.json({ success: true, message: 'Richiesta approvata' });
   } catch (err) {
@@ -200,13 +233,17 @@ router.post('/ferie/:id/approve', requireAuth, requireManager, apiLimiter, async
 router.post('/ferie/:id/reject', requireAuth, requireManager, apiLimiter, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID richiesta non valido' });
+  const commento = (req.body.commento_admin && String(req.body.commento_admin).trim()) || null;
   try {
-    const r = await db.query('UPDATE ferie SET stato = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND stato = $3 RETURNING id, user_id, data_inizio, data_fine', ['rejected', id, 'pending']);
+    const r = await db.query('UPDATE ferie SET stato = $1, commento_admin = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 AND stato = $4 RETURNING id, user_id, data_inizio, data_fine', ['rejected', commento, id, 'pending']);
     if (r.rows.length === 0) return res.status(400).json({ error: 'Richiesta non trovata o già gestita' });
     const row = r.rows[0];
     const dataInizio = row.data_inizio ? String(row.data_inizio).slice(0, 10) : '';
     const dataFine = row.data_fine ? String(row.data_fine).slice(0, 10) : '';
-    await creaNotifica(row.user_id, 'ferie_rifiutata', 'Richiesta ferie rifiutata', `La tua richiesta dal ${dataInizio} al ${dataFine} è stata rifiutata.`);
+    const msg = `La tua richiesta dal ${dataInizio} al ${dataFine} è stata rifiutata.` + (commento ? ` Motivo: ${commento}` : '');
+    await creaNotifica(row.user_id, 'ferie_rifiutata', 'Richiesta ferie rifiutata', msg);
+    // Notifica email
+    await sendFerieEmail(row.user_id, 'rifiutata', dataInizio, dataFine, commento);
     await logAudit(req.session.user.id, 'ferie_rifiutata', `id=${id} user_id=${row.user_id}`, req.ip);
     res.json({ success: true, message: 'Richiesta rifiutata' });
   } catch (err) {
@@ -425,6 +462,160 @@ router.delete('/avvisi/:id', requireAuth, requireAdmin, apiLimiter, async (req, 
   } catch (err) {
     console.error('[admin avviso delete]', err);
     res.status(500).json({ success: false, error: 'Errore' });
+  }
+});
+
+// ========== AUDIT LOG (admin) ==========
+
+router.get('/audit', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = (page - 1) * limit;
+    const userFilter = parseInt(req.query.user_id, 10);
+    const azioneFilter = (req.query.azione && String(req.query.azione).trim()) || '';
+    const dataFilter = (req.query.data && String(req.query.data).trim()) || '';
+    let where = '';
+    const countParams = [];
+    const listParams = [];
+    let n = 1;
+    if (!Number.isNaN(userFilter) && userFilter > 0) {
+      where = ' WHERE al.user_id = $' + n;
+      countParams.push(userFilter);
+      listParams.push(userFilter);
+      n++;
+    }
+    if (azioneFilter) {
+      where += (where ? ' AND' : ' WHERE') + ' al.azione ILIKE $' + n;
+      countParams.push('%' + azioneFilter + '%');
+      listParams.push('%' + azioneFilter + '%');
+      n++;
+    }
+    if (dataFilter) {
+      where += (where ? ' AND' : ' WHERE') + ' al.created_at::date = $' + n;
+      countParams.push(dataFilter);
+      listParams.push(dataFilter);
+      n++;
+    }
+    const countResult = await db.query('SELECT COUNT(*)::int AS total FROM audit_log al' + where, countParams);
+    const total = countResult.rows[0].total;
+    listParams.push(limit, offset);
+    const result = await db.query(
+      'SELECT al.id, al.user_id, al.azione, al.dettaglio, al.ip, al.created_at, u.username, u.full_name FROM audit_log al LEFT JOIN users u ON al.user_id = u.id' + where + ' ORDER BY al.created_at DESC LIMIT $' + n + ' OFFSET $' + (n + 1),
+      listParams
+    );
+    const totalPages = Math.ceil(total / limit) || 1;
+    const usersList = await db.query('SELECT id, username, full_name FROM users ORDER BY username');
+    res.render('admin/audit', {
+      title: 'Audit Log - Portal-01',
+      activePage: 'adminAudit',
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Audit Log' }],
+      logs: result.rows,
+      pagination: { page, limit, total, totalPages },
+      filtri: { user_id: Number.isNaN(userFilter) ? '' : userFilter, azione: azioneFilter, data: dataFilter },
+      usersList: usersList.rows
+    });
+  } catch (err) {
+    console.error('[admin audit]', err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+// ========== REPORT FERIE (admin) ==========
+
+router.get('/report', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+    // Statistiche per stato
+    const byStato = await db.query(
+      `SELECT stato, COUNT(*)::int AS n, COALESCE(SUM(giorni_totali),0)::int AS giorni FROM ferie WHERE EXTRACT(YEAR FROM data_inizio) = $1 GROUP BY stato`,
+      [year]
+    );
+    // Statistiche per mese
+    const byMese = await db.query(
+      `SELECT EXTRACT(MONTH FROM data_inizio)::int AS mese, COUNT(*)::int AS n, COALESCE(SUM(giorni_totali),0)::int AS giorni FROM ferie WHERE EXTRACT(YEAR FROM data_inizio) = $1 AND stato = 'approved' GROUP BY mese ORDER BY mese`,
+      [year]
+    );
+    // Statistiche per dipendente
+    const byUser = await db.query(
+      `SELECT u.id, u.username, u.full_name, COUNT(f.id)::int AS richieste, COALESCE(SUM(CASE WHEN f.stato='approved' THEN f.giorni_totali ELSE 0 END),0)::int AS giorni_approvati, COALESCE(SUM(CASE WHEN f.stato='pending' THEN f.giorni_totali ELSE 0 END),0)::int AS giorni_pending FROM users u LEFT JOIN ferie f ON u.id = f.user_id AND EXTRACT(YEAR FROM f.data_inizio) = $1 WHERE u.is_active = true GROUP BY u.id, u.username, u.full_name ORDER BY giorni_approvati DESC`,
+      [year]
+    );
+    // Statistiche per tipo
+    const byTipo = await db.query(
+      `SELECT tipo, COUNT(*)::int AS n, COALESCE(SUM(giorni_totali),0)::int AS giorni FROM ferie WHERE EXTRACT(YEAR FROM data_inizio) = $1 AND stato = 'approved' GROUP BY tipo`,
+      [year]
+    );
+    // Anni disponibili
+    const anni = await db.query('SELECT DISTINCT EXTRACT(YEAR FROM data_inizio)::int AS y FROM ferie ORDER BY y DESC');
+    res.render('admin/report', {
+      title: 'Report Ferie - Portal-01',
+      activePage: 'adminReport',
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Report Ferie' }],
+      year,
+      byStato: byStato.rows,
+      byMese: byMese.rows,
+      byUser: byUser.rows,
+      byTipo: byTipo.rows,
+      anni: anni.rows.map(r => r.y)
+    });
+  } catch (err) {
+    console.error('[admin report]', err);
+    res.status(500).send('Errore del server');
+  }
+});
+
+// GET /admin/report/export - Export CSV ferie
+router.get('/report/export', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+    const result = await db.query(
+      `SELECT u.username, u.full_name, f.data_inizio, f.data_fine, f.giorni_totali, f.tipo, f.stato, f.note, f.created_at FROM ferie f JOIN users u ON u.id = f.user_id WHERE EXTRACT(YEAR FROM f.data_inizio) = $1 ORDER BY f.data_inizio`,
+      [year]
+    );
+    const soloData = (val) => (val == null ? '' : typeof val === 'string' ? val.slice(0, 10) : typeof val.toISOString === 'function' ? val.toISOString().slice(0, 10) : String(val).slice(0, 10));
+    let csv = 'Username,Nome,Data Inizio,Data Fine,Giorni,Tipo,Stato,Note,Creata il\n';
+    result.rows.forEach(r => {
+      csv += `"${r.username}","${r.full_name}","${soloData(r.data_inizio)}","${soloData(r.data_fine)}",${r.giorni_totali},"${r.tipo}","${r.stato}","${(r.note || '').replace(/"/g, '""')}","${soloData(r.created_at)}"\n`;
+    });
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="report-ferie-${year}.csv"`);
+    res.send('\uFEFF' + csv);
+  } catch (err) {
+    console.error('[admin report export]', err);
+    res.status(500).json({ error: 'Errore export' });
+  }
+});
+
+// ========== RICERCA GLOBALE ==========
+
+router.get('/search', requireAuth, async (req, res) => {
+  const q = (req.query.q && String(req.query.q).trim()) || '';
+  if (!q || q.length < 2) return res.json({ results: [] });
+  const like = '%' + q + '%';
+  try {
+    const results = [];
+    // Cerca avvisi
+    const avvisi = await db.query(
+      `SELECT id, titolo, 'avviso' AS type FROM avvisi WHERE titolo ILIKE $1 OR contenuto ILIKE $1 LIMIT 5`, [like]
+    );
+    avvisi.rows.forEach(r => results.push({ type: 'avviso', id: r.id, label: r.titolo, url: '/avvisi/' + r.id }));
+    // Cerca utenti (solo admin)
+    if (req.session.user.role === 'admin') {
+      const users = await db.query(
+        `SELECT id, username, full_name, 'utente' AS type FROM users WHERE username ILIKE $1 OR full_name ILIKE $1 OR email ILIKE $1 LIMIT 5`, [like]
+      );
+      users.rows.forEach(r => results.push({ type: 'utente', id: r.id, label: r.full_name + ' (' + r.username + ')', url: '/admin/users' }));
+    }
+    // Cerca notifiche
+    const notifiche = await db.query(
+      `SELECT id, titolo, 'notifica' AS type FROM notifiche WHERE user_id = $1 AND (titolo ILIKE $2 OR messaggio ILIKE $2) LIMIT 5`, [req.session.user.id, like]
+    );
+    notifiche.rows.forEach(r => results.push({ type: 'notifica', id: r.id, label: r.titolo, url: '/notifiche' }));
+    res.json({ results });
+  } catch (err) {
+    console.error('[search]', err);
+    res.json({ results: [] });
   }
 });
 

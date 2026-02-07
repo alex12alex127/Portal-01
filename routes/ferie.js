@@ -1,10 +1,30 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 const { validateFerie } = require('../middleware/validation');
 const { apiLimiter } = require('../middleware/security');
 const { creaNotifica } = require('../lib/notifiche');
+
+// Upload allegati ferie
+const uploadDir = path.join(__dirname, '..', 'uploads', 'ferie');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_'))
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, allowed.includes(ext));
+  }
+});
 
 function soloData (val) {
   if (val == null) return '';
@@ -197,6 +217,71 @@ router.post('/:id/withdraw', requireAuth, apiLimiter, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Errore' });
+  }
+});
+
+// Upload allegato per richiesta ferie
+router.post('/:id/allegato', requireAuth, apiLimiter, upload.single('allegato'), async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).json({ error: 'ID non valido' });
+  if (!req.file) return res.status(400).json({ error: 'File non valido. Formati: PDF, JPG, PNG, DOC. Max 5MB.' });
+  try {
+    const check = await db.query('SELECT id FROM ferie WHERE id = $1 AND user_id = $2', [id, req.session.user.id]);
+    if (check.rows.length === 0) return res.status(403).json({ error: 'Richiesta non trovata' });
+    await db.query('UPDATE ferie SET allegato_path = $1, allegato_nome = $2 WHERE id = $3', [req.file.filename, req.file.originalname, id]);
+    res.json({ success: true, message: 'Allegato caricato', filename: req.file.originalname });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Errore upload' });
+  }
+});
+
+// Download allegato
+router.get('/:id/allegato', requireAuth, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || id < 1) return res.status(400).send('ID non valido');
+  try {
+    const r = await db.query('SELECT allegato_path, allegato_nome, user_id FROM ferie WHERE id = $1', [id]);
+    if (r.rows.length === 0 || !r.rows[0].allegato_path) return res.status(404).send('Allegato non trovato');
+    const row = r.rows[0];
+    // Solo proprietario o admin/manager possono scaricare
+    if (row.user_id !== req.session.user.id && !['admin', 'manager'].includes(req.session.user.role)) {
+      return res.status(403).send('Accesso negato');
+    }
+    const filePath = path.join(uploadDir, row.allegato_path);
+    if (!fs.existsSync(filePath)) return res.status(404).send('File non trovato');
+    res.download(filePath, row.allegato_nome);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Errore download');
+  }
+});
+
+// Calendario condiviso - iCal export
+router.get('/calendar/ical', requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT f.data_inizio, f.data_fine, f.tipo, u.full_name
+      FROM ferie f JOIN users u ON u.id = f.user_id
+      WHERE f.stato = 'approved'
+      ORDER BY f.data_inizio
+    `);
+    let ical = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Portal-01//Ferie//IT\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:Ferie Portal-01\r\n';
+    result.rows.forEach((r, i) => {
+      const dtStart = soloData(r.data_inizio).replace(/-/g, '');
+      const dtEndDate = new Date(r.data_fine);
+      dtEndDate.setDate(dtEndDate.getDate() + 1);
+      const dtEnd = dtEndDate.toISOString().slice(0, 10).replace(/-/g, '');
+      const tipoLabel = r.tipo === 'ferie' ? 'Ferie' : r.tipo === 'permesso' ? 'Permesso' : r.tipo === 'malattia' ? 'Malattia' : r.tipo;
+      ical += `BEGIN:VEVENT\r\nDTSTART;VALUE=DATE:${dtStart}\r\nDTEND;VALUE=DATE:${dtEnd}\r\nSUMMARY:${r.full_name} - ${tipoLabel}\r\nUID:ferie-${i}@portal-01\r\nEND:VEVENT\r\n`;
+    });
+    ical += 'END:VCALENDAR\r\n';
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="ferie-portal-01.ics"');
+    res.send(ical);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Errore export calendario');
   }
 });
 

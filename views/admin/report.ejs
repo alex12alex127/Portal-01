@@ -1,0 +1,102 @@
+<h1 class="page-title">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+  Report Ferie <%= year %>
+</h1>
+
+<div style="margin-bottom:1rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+  <form method="get" action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/report" style="display:flex;gap:.5rem;align-items:center">
+    <label>Anno
+      <select name="year" onchange="this.form.submit()">
+        <% (anni || []).forEach(function(y) { %>
+        <option value="<%= y %>"<%= y === year ? ' selected' : '' %>><%= y %></option>
+        <% }); %>
+        <% if (!anni || !anni.includes(year)) { %>
+        <option value="<%= year %>" selected><%= year %></option>
+        <% } %>
+      </select>
+    </label>
+  </form>
+  <a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/report/export?year=<%= year %>" class="btn btn-sm">
+    <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+    Esporta CSV
+  </a>
+</div>
+
+<div class="dashboard-stats" style="margin-bottom:1.5rem">
+  <% var totRichieste=0, totGiorni=0; byStato.forEach(function(s){totRichieste+=s.n; totGiorni+=s.giorni}); %>
+  <div class="dashboard-stats__item">
+    <span class="dashboard-stats__value"><%= totRichieste %></span>
+    <span class="dashboard-stats__label">Richieste totali</span>
+  </div>
+  <div class="dashboard-stats__item">
+    <span class="dashboard-stats__value"><%= totGiorni %></span>
+    <span class="dashboard-stats__label">Giorni totali</span>
+  </div>
+  <% byStato.forEach(function(s) { %>
+  <div class="dashboard-stats__item">
+    <span class="dashboard-stats__value"><%= s.n %></span>
+    <span class="dashboard-stats__label"><%= s.stato === 'pending' ? 'In attesa' : s.stato === 'approved' ? 'Approvate' : 'Rifiutate' %> (<%= s.giorni %>gg)</span>
+  </div>
+  <% }); %>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem;margin-bottom:1.5rem">
+  <div class="card">
+    <h2 style="margin-top:0">Per Tipo</h2>
+    <% if (byTipo.length === 0) { %>
+      <p class="text-muted">Nessun dato</p>
+    <% } else { %>
+      <table class="table">
+        <thead><tr><th>Tipo</th><th>Richieste</th><th>Giorni</th></tr></thead>
+        <tbody>
+          <% byTipo.forEach(function(t) { %>
+          <tr><td><%= t.tipo === 'ferie' ? 'Ferie' : t.tipo === 'permesso' ? 'Permesso' : t.tipo === 'malattia' ? 'Malattia' : t.tipo %></td><td><%= t.n %></td><td><%= t.giorni %></td></tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">Per Mese (approvate)</h2>
+    <% if (byMese.length === 0) { %>
+      <p class="text-muted">Nessun dato</p>
+    <% } else { %>
+      <div class="report-chart" style="display:flex;align-items:flex-end;gap:4px;height:120px;padding-top:1rem">
+        <% var maxG = Math.max.apply(null, byMese.map(function(m){return m.giorni})) || 1; %>
+        <% var mesiNomi = ['','Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']; %>
+        <% for (var mi=1; mi<=12; mi++) { var found = byMese.find(function(m){return m.mese===mi}); var g = found ? found.giorni : 0; var pct = Math.round(g/maxG*100); %>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:.7rem;color:var(--muted,#888)"><%= g || '' %></span>
+          <div style="width:100%;background:var(--accent,#4f46e5);border-radius:3px 3px 0 0;min-height:2px;height:<%= pct %>%" title="<%= mesiNomi[mi] %>: <%= g %> giorni"></div>
+          <span style="font-size:.65rem;color:var(--muted,#888)"><%= mesiNomi[mi] %></span>
+        </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Per Dipendente</h2>
+  <% if (byUser.length === 0) { %>
+    <p class="text-muted">Nessun dato</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Dipendente</th><th>Richieste</th><th>Giorni approvati</th><th>Giorni in attesa</th><th>Totale</th></tr></thead>
+        <tbody>
+          <% byUser.forEach(function(u) { %>
+          <tr>
+            <td><strong><%= u.full_name %></strong><br><span class="text-muted" style="font-size:.85rem"><%= u.username %></span></td>
+            <td><%= u.richieste %></td>
+            <td><%= u.giorni_approvati %></td>
+            <td><%= u.giorni_pending %></td>
+            <td><strong><%= u.giorni_approvati + u.giorni_pending %></strong></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>

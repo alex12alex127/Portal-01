@@ -1,0 +1,172 @@
+<%
+  var bp = typeof basePath !== 'undefined' ? basePath : '';
+  var _msgs = typeof messaggi !== 'undefined' ? messaggi : [];
+  var _parts = typeof partecipanti !== 'undefined' ? partecipanti : [];
+  var _userId = user ? user.id : 0;
+%>
+
+<!-- Header conversazione -->
+<div class="msg-chat-header animate-in">
+  <a href="<%= bp %>/messaggi" class="msg-chat-header__back" title="Torna ai messaggi">
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+  </a>
+  <div class="msg-chat-header__info">
+    <h1 class="msg-chat-header__title"><%= conv.oggetto %></h1>
+    <div class="msg-chat-header__partecipanti">
+      <% _parts.forEach(function(p, i) { %>
+        <span class="msg-chat-header__user <%= p.id === _userId ? 'msg-chat-header__user--me' : '' %>"><%= p.full_name %><% if (p.role === 'admin') { %> <span class="p-tag p-tag--primary" style="font-size:.55rem;padding:.1rem .3rem">Admin</span><% } else if (p.role === 'manager') { %> <span class="p-tag p-tag--warn" style="font-size:.55rem;padding:.1rem .3rem">Manager</span><% } %></span><%= i < _parts.length - 1 ? ', ' : '' %>
+      <% }); %>
+    </div>
+  </div>
+  <div class="msg-chat-header__actions">
+    <form method="POST" action="<%= bp %>/messaggi/<%= conv.id %>/archivia" style="display:inline">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="btn btn-sm btn--secondary" title="Archivia conversazione" style="font-size:.75rem">
+        <svg class="icon" style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+        Archivia
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Area messaggi -->
+<div class="msg-chat-area p-card animate-in" id="chatArea">
+  <div class="msg-chat-messages" id="chatMessages">
+    <% if (_msgs.length === 0) { %>
+      <div class="msg-chat-empty">
+        <svg class="icon" style="width:40px;height:40px;opacity:.3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+        <p>Nessun messaggio. Scrivi il primo!</p>
+      </div>
+    <% } else { %>
+      <% var lastDate = ''; %>
+      <% _msgs.forEach(function(m) { %>
+        <% var msgDate = new Date(m.created_at).toLocaleDateString('it-IT'); %>
+        <% if (msgDate !== lastDate) { lastDate = msgDate; %>
+          <div class="msg-chat-date-sep"><span><%= msgDate %></span></div>
+        <% } %>
+        <div class="msg-bubble <%= m.sender_id === _userId ? 'msg-bubble--mine' : 'msg-bubble--other' %>">
+          <% if (m.sender_id !== _userId) { %>
+            <div class="msg-bubble__sender">
+              <span class="msg-bubble__name"><%= m.sender_name %></span>
+              <% if (m.sender_role === 'admin') { %><span class="p-tag p-tag--primary" style="font-size:.5rem;padding:.05rem .25rem">Admin</span><% } else if (m.sender_role === 'manager') { %><span class="p-tag p-tag--warn" style="font-size:.5rem;padding:.05rem .25rem">Manager</span><% } %>
+            </div>
+          <% } %>
+          <div class="msg-bubble__text"><%= m.testo %></div>
+          <div class="msg-bubble__time"><%= new Date(m.created_at).toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }) %></div>
+        </div>
+      <% }); %>
+    <% } %>
+  </div>
+</div>
+
+<!-- Paginazione -->
+<% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+<div style="display:flex;justify-content:center;gap:.5rem;margin:.75rem 0;font-size:.85rem">
+  <% if (pagination.page > 1) { %><a href="?page=<%= pagination.page - 1 %>" class="btn btn-sm btn--secondary">&larr; Precedenti</a><% } %>
+  <span style="padding:.4rem .75rem;color:var(--text-muted)">Pagina <%= pagination.page %> di <%= pagination.totalPages %></span>
+  <% if (pagination.page < pagination.totalPages) { %><a href="?page=<%= pagination.page + 1 %>" class="btn btn-sm btn--secondary">Successivi &rarr;</a><% } %>
+</div>
+<% } %>
+
+<!-- Form invio messaggio -->
+<div class="msg-chat-input animate-in">
+  <form method="POST" action="<%= bp %>/messaggi/<%= conv.id %>/invia" id="formInviaMsg" class="msg-chat-input__form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="msg-chat-input__wrap">
+      <textarea name="testo" id="msgInput" placeholder="Scrivi un messaggio..." rows="1" required maxlength="2000" class="msg-chat-input__field"></textarea>
+      <button type="submit" class="msg-chat-input__send" title="Invia">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+(function(){
+  // Auto-scroll to bottom
+  var chatArea = document.getElementById('chatArea');
+  if (chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+
+  // Auto-resize textarea
+  var input = document.getElementById('msgInput');
+  if (input) {
+    input.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+    // Submit on Enter (Shift+Enter for newline)
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (this.value.trim()) {
+          document.getElementById('formInviaMsg').submit();
+        }
+      }
+    });
+  }
+
+  // AJAX send
+  var form = document.getElementById('formInviaMsg');
+  var csrf = '<%= csrfToken %>';
+  var base = window.APP_BASE || '';
+  var convId = '<%= conv.id %>';
+  var myName = '<%= user.full_name %>';
+  var myId = <%= _userId %>;
+
+  if (form) form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var testo = input.value.trim();
+    if (!testo) return;
+
+    // Optimistic UI: add message immediately
+    var chatMsgs = document.getElementById('chatMessages');
+    var emptyEl = chatMsgs.querySelector('.msg-chat-empty');
+    if (emptyEl) emptyEl.remove();
+
+    var bubble = document.createElement('div');
+    bubble.className = 'msg-bubble msg-bubble--mine msg-bubble--sending';
+    bubble.innerHTML = '<div class="msg-bubble__text">' + escapeHtml(testo) + '</div><div class="msg-bubble__time">Invio...</div>';
+    chatMsgs.appendChild(bubble);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    input.value = '';
+    input.style.height = 'auto';
+
+    try {
+      var res = await fetch(base + '/messaggi/' + convId + '/invia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': csrf },
+        body: JSON.stringify({ testo: testo })
+      });
+      var data = await res.json();
+      if (data.success) {
+        bubble.classList.remove('msg-bubble--sending');
+        var timeEl = bubble.querySelector('.msg-bubble__time');
+        if (timeEl) timeEl.textContent = new Date().toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' });
+      } else {
+        bubble.classList.add('msg-bubble--error');
+        var timeEl2 = bubble.querySelector('.msg-bubble__time');
+        if (timeEl2) timeEl2.textContent = 'Errore invio';
+      }
+    } catch(err) {
+      bubble.classList.add('msg-bubble--error');
+      var timeEl3 = bubble.querySelector('.msg-bubble__time');
+      if (timeEl3) timeEl3.textContent = 'Errore di rete';
+    }
+  });
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Poll for new messages every 10s
+  var lastMsgCount = <%= _msgs.length %>;
+  setInterval(async function() {
+    try {
+      var res = await fetch(base + '/messaggi/' + convId + '?page=1', { headers: { 'Accept': 'text/html' } });
+      // Simple approach: just reload if we detect new messages via count endpoint
+    } catch(e) {}
+  }, 30000);
+})();
+</script>

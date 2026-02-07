@@ -248,6 +248,39 @@ async function initDatabase() {
     `);
     await client.query('CREATE INDEX IF NOT EXISTS idx_budget_ferie_user_anno ON budget_ferie(user_id, anno)');
 
+    // ===== MESSAGGI INTERNI =====
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS conversazioni (
+        id SERIAL PRIMARY KEY,
+        oggetto VARCHAR(255) NOT NULL,
+        created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        is_group BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS conversazione_partecipanti (
+        conversazione_id INTEGER NOT NULL REFERENCES conversazioni(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        ultimo_letto TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        archiviata BOOLEAN DEFAULT false,
+        PRIMARY KEY (conversazione_id, user_id)
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_conv_partecipanti_user ON conversazione_partecipanti(user_id)');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS messaggi (
+        id SERIAL PRIMARY KEY,
+        conversazione_id INTEGER NOT NULL REFERENCES conversazioni(id) ON DELETE CASCADE,
+        sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        testo TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_messaggi_conv ON messaggi(conversazione_id, created_at DESC)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_messaggi_sender ON messaggi(sender_id)');
+
     console.log('Tabelle e indici create/verificate');
   } finally {
     client.release();

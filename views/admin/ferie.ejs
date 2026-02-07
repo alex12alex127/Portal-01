@@ -1,9 +1,9 @@
 <h1 class="page-title">
-  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 1.26-.21 2.465-.59 3.56" /></svg>
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><path d="M22 4L12 14.01l-3-3"></path></svg>
   Richieste Ferie
 </h1>
 <div class="card">
-  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg> Tutte le richieste (<%= typeof pagination !== 'undefined' ? pagination.total : ferie.length %>)</h2>
+  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><path d="M22 4L12 14.01l-3-3"></path></svg> Tutte le richieste (<%= typeof pagination !== 'undefined' ? pagination.total : ferie.length %>)</h2>
   <% if (typeof filtri !== 'undefined' && (typeof usersList !== 'undefined' && usersList.length)) { %>
   <form method="get" action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/admin/ferie" class="ferie-filtri" style="margin-bottom:1rem">
     <label>Stato <select name="stato"><option value="">Tutte</option><option value="pending"<%= filtri.stato === 'pending' ? ' selected' : '' %>>In attesa</option><option value="approved"<%= filtri.stato === 'approved' ? ' selected' : '' %>>Approvate</option><option value="rejected"<%= filtri.stato === 'rejected' ? ' selected' : '' %>>Rifiutate</option></select></label>
@@ -13,7 +13,7 @@
   </form>
   <% } %>
   <% if (ferie.length === 0) { %>
-    <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><path d="M22 4L12 14.01l-3-3"></path></svg> Nessuna richiesta di ferie.</p>
+    <p class="empty"><svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Nessuna richiesta.</p>
   <% } else { %>
     <div class="table-wrap">
       <table>

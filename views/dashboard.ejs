@@ -1,5 +1,5 @@
 <h1 class="page-title">
-  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3A2.25 2.25 0 016 5.25h13.5A2.25 2.25 0 0121.75 7.5v10.5A2.25 2.25 0 0119.5 20.25H6.75a2.25 2.25 0 01-2.25-2.25V7.5A2.25 2.25 0 013.75 5.25zm0 2.25a.75.75 0 01.75-.75h13.5a.75.75 0 01.75.75v10.5a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V7.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5H6.75a.75.75 0 01-.75-.75zm0 4a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5H6.75a.75.75 0 01-.75-.75zm0 4a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5H6.75a.75.75 0 01-.75-.75z" /></svg>
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
   Panoramica
 </h1>
 
@@ -44,7 +44,7 @@
 
 <% if (typeof notifiche !== 'undefined' && notifiche.length > 0) { %>
 <div class="card dashboard-notifiche">
-  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg> Notifiche</h2>
+  <h2><i class="fa fa-envelope"></i> Notifiche</h2>
   <ul class="dashboard-notifiche__list">
     <% notifiche.forEach(function(n) { %>
     <li class="dashboard-notifiche__item <%= n.letta ? 'letta' : '' %>">
@@ -63,7 +63,7 @@
 
 <% if (typeof ultimeRichieste !== 'undefined' && ultimeRichieste.length > 0) { %>
 <div class="card dashboard-ultime">
-  <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5M12 3v1.5m0 15v1.5m9-9h-1.5M3.75 12H5.25m13.5 0a.75.75 0 01-1.5 0H5.25a.75.75 0 010-1.5h13.5a.75.75 0 010 1.5z" /></svg> Ultime richieste ferie</h2>
+  <h2><i class="fa fa-calendar"></i> Ultime richieste ferie</h2>
   <ul class="dashboard-ultime__list">
     <% ultimeRichieste.forEach(function(r) { %>
     <li><%= r.data_inizio %> → <%= r.data_fine %> · <%= r.tipo %> · <span class="badge badge--ferie <%= r.stato %>"><%= r.stato === 'pending' ? 'In attesa' : r.stato === 'approved' ? 'Approvato' : 'Rifiutato' %></span></li>

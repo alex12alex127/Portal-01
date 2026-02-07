@@ -336,19 +336,30 @@ router.get('/avvisi', requireAuth, requireAdmin, async (req, res) => {
 // GET /admin/avvisi/api - Lista avvisi (JSON per AJAX)
 router.get('/avvisi/api', requireAuth, requireAdmin, async (req, res) => {
   try {
+    console.log('[AdminRoute] API: Caricamento avvisi admin');
+    
     const result = await db.query(`
       SELECT a.*, u.full_name as autore_nome
       FROM avvisi a
       LEFT JOIN users u ON a.created_by = u.id
       ORDER BY a.in_evidenza DESC, a.created_at DESC
     `);
+    
     res.json({
       success: true,
-      avvisi: result.rows
+      data: {
+        avvisi: result.rows,
+        totalCount: result.rows.length
+      },
+      message: 'Avvisi admin caricati con successo'
     });
-  } catch (err) {
-    console.error('[admin avvisi api]', err);
-    res.status(500).json({ error: 'Errore caricamento avvisi' });
+  } catch (error) {
+    console.error('[AdminRoute] Errore API caricamento avvisi admin:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Errore caricamento avvisi',
+      message: error.message
+    });
   }
 });
 

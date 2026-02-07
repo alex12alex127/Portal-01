@@ -124,6 +124,17 @@
 (function(){
   var base = window.APP_BASE || '';
   var csrf = '<%= csrfToken %>';
+  var POLL_MS = 2000;
+
+  // Track known IDs to detect new items
+  var knownNotificheIds = {};
+  var knownAvvisiIds = {};
+  <% (typeof notifiche !== 'undefined' ? notifiche : []).forEach(function(n) { %>
+  knownNotificheIds[<%= n.id %>] = true;
+  <% }); %>
+  <% (typeof avvisi !== 'undefined' ? avvisi : []).forEach(function(a) { %>
+  knownAvvisiIds[<%= a.id %>] = true;
+  <% }); %>
 
   // Tab switching (client-side for instant feel)
   document.querySelectorAll('.p-tab').forEach(function(tab) {
@@ -134,7 +145,6 @@
       document.getElementById('tabAvvisi').style.display = isAvvisi ? '' : 'none';
       document.querySelectorAll('.p-tab').forEach(function(t) { t.classList.remove('p-tab--active'); });
       tab.classList.add('p-tab--active');
-      // Update URL without reload
       history.replaceState(null, '', href);
       e.preventDefault();
     });
@@ -148,11 +158,18 @@
     setTimeout(function(){ el.remove(); }, 3000);
   }
 
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
   async function api(url, method) {
     var r = await fetch(base + url, { method: method || 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf } });
     return await r.json();
   }
 
+  // ========== NOTIFICHE ACTIONS ==========
   document.addEventListener('click', async function(e) {
     var markBtn = e.target.closest('.btn-mark-read');
     if (markBtn) {
@@ -164,7 +181,7 @@
           if (item) { item.classList.remove('non-letta','p-notifica--unread'); item.classList.add('letta','p-notifica--read'); }
           markBtn.remove();
           showMsg('Notifica marcata come letta', true);
-          updateBadge(res.nonLette);
+          updateNotifBadge(res.nonLette);
         } else { showMsg(res.error || 'Errore', false); }
       } catch(err) { showMsg('Errore di rete', false); }
     }
@@ -184,8 +201,9 @@
       if (res.success) {
         var item = document.querySelector('.notifiche-item[data-id="' + id + '"]');
         if (item) { item.classList.add('removing'); setTimeout(function(){ item.remove(); checkEmpty(); }, 300); }
+        delete knownNotificheIds[id];
         showMsg('Notifica eliminata', true);
-        updateBadge(res.nonLette);
+        updateNotifBadge(res.nonLette);
       } else { showMsg(res.error || 'Errore', false); }
     } catch(err) { showMsg('Errore di rete', false); }
   }
@@ -201,7 +219,7 @@
         document.querySelectorAll('.btn-mark-read').forEach(function(b) { b.remove(); });
         btnAll.style.display = 'none';
         showMsg('Tutte lette (' + (res.updatedCount || 0) + ')', true);
-        updateBadge(0);
+        updateNotifBadge(0);
       } else { showMsg(res.error || 'Errore', false); }
     } catch(err) { showMsg('Errore di rete', false); }
   });
@@ -215,9 +233,10 @@
           if (list) list.innerHTML = '';
           btnDelAll.style.display = 'none';
           if (btnAll) btnAll.style.display = 'none';
+          knownNotificheIds = {};
           checkEmpty();
           showMsg('Tutte eliminate (' + (res.deletedCount || 0) + ')', true);
-          updateBadge(0);
+          updateNotifBadge(0);
         } else { showMsg(res.error || 'Errore', false); }
       }).catch(function() { showMsg('Errore di rete', false); });
     };
@@ -226,10 +245,17 @@
     } else { doIt(); }
   });
 
-  function updateBadge(count) {
-    document.querySelectorAll('.sidebar .notification-badge').forEach(function(b) {
-      if (count > 0) { b.textContent = count; b.style.display = ''; } else { b.style.display = 'none'; }
-    });
+  function updateNotifBadge(count) {
+    var tabBadge = document.querySelector('.p-tab .p-tag--danger');
+    if (count > 0) {
+      if (tabBadge) { tabBadge.textContent = count; }
+      else {
+        var tab = document.querySelector('.p-tab');
+        if (tab) { var s = document.createElement('span'); s.className = 'p-tag p-tag--danger'; s.style.cssText = 'margin-left:.35rem;font-size:.65rem'; s.textContent = count; tab.appendChild(s); }
+      }
+    } else {
+      if (tabBadge) tabBadge.remove();
+    }
   }
 
   function checkEmpty() {
@@ -238,5 +264,159 @@
       list.outerHTML = '<div class="p-empty"><p>Nessuna notifica.</p></div>';
     }
   }
+
+  // ========== RENDER HELPERS ==========
+  function renderNotificaHtml(n) {
+    var isUnread = !n.letta;
+    var html = '<div class="p-notifica notifiche-item ' + (isUnread ? 'p-notifica--unread non-letta' : 'p-notifica--read letta') + '" data-id="' + n.id + '" style="animation:fadeInUp .3s ease both">';
+    html += '<div style="display:flex;align-items:flex-start;gap:.75rem">';
+    html += '<div style="width:32px;height:32px;border-radius:50%;background:' + (isUnread ? 'var(--primary)' : 'var(--border)') + ';color:' + (isUnread ? '#fff' : 'var(--muted)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">';
+    html += '<svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>';
+    html += '</div>';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div class="p-notifica__title">' + escapeHtml(n.titolo || 'Notifica') + '</div>';
+    if (n.messaggio) html += '<div class="p-notifica__text" style="white-space:pre-wrap;word-break:break-word">' + escapeHtml(n.messaggio) + '</div>';
+    html += '<div class="p-notifica__date">' + (n.created_at ? new Date(n.created_at).toLocaleString('it-IT') : '') + '</div>';
+    html += '</div>';
+    html += '<div style="display:flex;gap:.3rem;flex-shrink:0;align-items:center">';
+    if (isUnread) {
+      html += '<button type="button" class="btn-mark-read rsp-btn-circle" data-id="' + n.id + '" title="Marca come letta" style="color:var(--success)">';
+      html += '<svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg></button>';
+    }
+    html += '<button type="button" class="btn-delete rsp-btn-circle" data-id="' + n.id + '" title="Elimina" style="color:var(--danger)">';
+    html += '<svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>';
+    html += '</div></div></div>';
+    return html;
+  }
+
+  function renderAvvisoHtml(a) {
+    var cls = 'avviso-card' + (a.in_evidenza ? ' avviso-card--evidenza' : '') + (a.tipo === 'urgent' ? ' avviso-card--urgent' : a.tipo === 'warning' ? ' avviso-card--warning' : '');
+    var tipoLabel = a.tipo === 'info' ? 'Info' : a.tipo === 'warning' ? 'Attenzione' : a.tipo === 'urgent' ? 'URGENTE' : a.tipo === 'success' ? 'Successo' : a.tipo;
+    var html = '<a href="' + base + '/avvisi/' + a.id + '" class="' + cls + '" style="display:block;text-decoration:none;animation:fadeInUp .3s ease both">';
+    html += '<div class="avviso-card__head"><div class="avviso-card__meta">';
+    html += '<span class="badge badge--avviso badge--' + a.tipo + '">' + escapeHtml(tipoLabel) + '</span>';
+    if (a.in_evidenza) html += '<span class="avviso-card__pin">&#128204;</span>';
+    html += '<span>' + (a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '') + '</span>';
+    html += '</div>';
+    html += '<h3 class="avviso-card__titolo">' + escapeHtml(a.titolo) + '</h3></div>';
+    if (a.contenuto) {
+      var preview = a.contenuto.length > 200 ? a.contenuto.substring(0, 200) + '...' : a.contenuto;
+      html += '<div class="avviso-card__body"><div class="avviso-card__contenuto--pre" style="max-height:80px;overflow:hidden">' + escapeHtml(preview) + '</div></div>';
+    }
+    html += '</a>';
+    return html;
+  }
+
+  // ========== LIVE POLLING ==========
+  var polling = true;
+
+  async function pollNotifiche() {
+    if (!polling) return;
+    try {
+      var res = await fetch(base + '/notifiche/api', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
+      if (res.status === 401) { polling = false; return; }
+      var data = await res.json();
+      if (!data.success) return;
+
+      var hasNew = false;
+      var list = document.getElementById('notificheList');
+
+      // If list doesn't exist yet (was empty state), create it
+      if (!list) {
+        var emptyDiv = document.querySelector('#tabNotifiche .p-empty');
+        if (emptyDiv && data.notifiche.length > 0) {
+          var card = emptyDiv.closest('.p-card');
+          if (card) {
+            emptyDiv.outerHTML = '<div class="p-card-body--flush" id="notificheList"></div>';
+            list = document.getElementById('notificheList');
+          }
+        }
+      }
+
+      if (list && data.notifiche) {
+        data.notifiche.forEach(function(n) {
+          if (!knownNotificheIds[n.id]) {
+            knownNotificheIds[n.id] = true;
+            hasNew = true;
+            // Prepend new notifica at top
+            list.insertAdjacentHTML('afterbegin', renderNotificaHtml(n));
+          }
+        });
+      }
+
+      // Update badge
+      updateNotifBadge(data.nonLette);
+
+      // Update count text
+      if (hasNew) {
+        var countSpan = document.querySelector('#tabNotifiche .p-card-header span');
+        if (countSpan && data.notifiche) countSpan.textContent = data.notifiche.length + ' notifiche';
+        // Show/hide mark all read button
+        if (btnAll && data.nonLette > 0) btnAll.style.display = '';
+      }
+    } catch(e) { /* silent */ }
+  }
+
+  async function pollAvvisi() {
+    if (!polling) return;
+    try {
+      var res = await fetch(base + '/notifiche/avvisi-api', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
+      if (res.status === 401) { polling = false; return; }
+      var data = await res.json();
+      if (!data.success) return;
+
+      var hasNew = false;
+      var avvisiList = document.querySelector('#tabAvvisi .avvisi-list');
+
+      // If list doesn't exist yet (was empty state), create it
+      if (!avvisiList && data.avvisi && data.avvisi.length > 0) {
+        var emptyCard = document.querySelector('#tabAvvisi .p-card');
+        if (emptyCard) {
+          emptyCard.outerHTML = '<div class="avvisi-list"></div>';
+          avvisiList = document.querySelector('#tabAvvisi .avvisi-list');
+        }
+      }
+
+      if (avvisiList && data.avvisi) {
+        data.avvisi.forEach(function(a) {
+          if (!knownAvvisiIds[a.id]) {
+            knownAvvisiIds[a.id] = true;
+            hasNew = true;
+            avvisiList.insertAdjacentHTML('afterbegin', renderAvvisoHtml(a));
+          }
+        });
+      }
+
+      // Update avvisi tab badge
+      var avvBadge = document.querySelectorAll('.p-tab')[1];
+      if (avvBadge) {
+        var existingBadge = avvBadge.querySelector('.p-tag--warn');
+        if (data.avvisiNonLetti > 0) {
+          if (existingBadge) { existingBadge.textContent = data.avvisiNonLetti; }
+          else { var s = document.createElement('span'); s.className = 'p-tag p-tag--warn'; s.style.cssText = 'margin-left:.35rem;font-size:.65rem'; s.textContent = data.avvisiNonLetti; avvBadge.appendChild(s); }
+        } else {
+          if (existingBadge) existingBadge.remove();
+        }
+      }
+    } catch(e) { /* silent */ }
+  }
+
+  function pollAll() {
+    if (!polling) return;
+    pollNotifiche();
+    pollAvvisi();
+  }
+
+  var pollTimer = setInterval(pollAll, POLL_MS);
+
+  // Pause when tab hidden, resume on visible
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      polling = false;
+    } else {
+      polling = true;
+      pollAll();
+    }
+  });
 })();
 </script>

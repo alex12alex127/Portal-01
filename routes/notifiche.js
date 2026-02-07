@@ -63,6 +63,21 @@ router.get('/api', async (req, res) => {
   }
 });
 
+// GET /notifiche/avvisi-api - JSON avvisi per polling
+router.get('/avvisi-api', async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const [avvisi, avvisiNonLetti] = await Promise.all([
+      getAvvisiVisibili(userId),
+      contaAvvisiNonLetti(userId)
+    ]);
+    res.json({ success: true, avvisi, avvisiNonLetti });
+  } catch (err) {
+    console.error('[notifiche avvisi-api]', err);
+    res.status(500).json({ success: false, error: 'Errore caricamento avvisi' });
+  }
+});
+
 // GET /notifiche/count
 router.get('/count', async (req, res) => {
   try {

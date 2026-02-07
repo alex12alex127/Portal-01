@@ -17,7 +17,7 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     const { stato, anno, tipo } = req.query;
     let query = 'SELECT * FROM ferie WHERE user_id = $1';
-    const params = [req.session.userId];
+    const params = [req.session.user.id];
     let n = 2;
     if (stato && ['pending', 'approved', 'rejected'].includes(stato)) {
       query += ` AND stato = $${n}`;
@@ -41,7 +41,7 @@ router.get('/', requireAuth, async (req, res) => {
       data_inizio: soloData(r.data_inizio),
       data_fine: soloData(r.data_fine)
     }));
-    const anni = await db.query('SELECT DISTINCT EXTRACT(YEAR FROM data_inizio)::int AS y FROM ferie WHERE user_id = $1 ORDER BY y DESC', [req.session.userId]);
+    const anni = await db.query('SELECT DISTINCT EXTRACT(YEAR FROM data_inizio)::int AS y FROM ferie WHERE user_id = $1 ORDER BY y DESC', [req.session.user.id]);
     res.render('ferie/index', {
       title: 'Ferie - Portal-01',
       activePage: 'ferie',

@@ -5,7 +5,7 @@ const { requireAuth } = require('../middleware/auth');
 
 router.get('/', (req, res) => {
   const base = req.app.get('basePath') || '';
-  if (req.session && req.session.userId) return res.redirect(base + '/dashboard');
+  if (req.session && req.session.user) return res.redirect(base + '/dashboard');
   res.redirect(base + '/auth/login');
 });
 
@@ -28,7 +28,7 @@ router.get('/dashboard', requireAuth, async (req, res) => {
     const year = new Date().getFullYear();
     const summaryResult = await db.query(
       `SELECT stato, COUNT(*)::int AS n, COALESCE(SUM(giorni_totali), 0)::int AS giorni FROM ferie WHERE user_id = $1 AND EXTRACT(YEAR FROM data_inizio) = $2 GROUP BY stato`,
-      [req.session.userId, year]
+      [req.session.user.id, year]
     );
     const summary = { pending: 0, approved: 0, rejected: 0, giorniPending: 0, giorniApproved: 0, giorniRejected: 0 };
     summaryResult.rows.forEach(row => {
@@ -37,12 +37,12 @@ router.get('/dashboard', requireAuth, async (req, res) => {
     });
     const ultimeRichieste = await db.query(
       'SELECT id, data_inizio, data_fine, tipo, stato, giorni_totali FROM ferie WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5',
-      [req.session.userId]
+      [req.session.user.id]
     );
     const soloData = (val) => (val == null ? '' : typeof val === 'string' ? val.slice(0, 10) : val.toISOString ? val.toISOString().slice(0, 10) : String(val).slice(0, 10));
     const notificheResult = await db.query(
       'SELECT id, tipo, titolo, messaggio, letta, created_at FROM notifiche WHERE user_id = $1 ORDER BY created_at DESC LIMIT 15',
-      [req.session.userId]
+      [req.session.user.id]
     );
     const notifiche = notificheResult.rows.map(n => ({ ...n, created_at: n.created_at ? new Date(n.created_at).toLocaleDateString('it-IT') : '' }));
     const avvisiResult = await db.query(`

@@ -10,7 +10,7 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       'SELECT id, username, email, full_name, role, last_login, created_at FROM users WHERE id = $1',
-      [req.session.userId]
+      [req.session.user.id]
     );
     if (result.rows.length === 0) return res.redirect((req.app.get('basePath') || '') + '/auth/logout');
     res.render('profile/index', {
@@ -34,9 +34,9 @@ router.post('/update', requireAuth, apiLimiter, (req, res, next) => {
 }, async (req, res) => {
   const { full_name, email } = req._profileUpdate;
   try {
-    const exist = await db.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email, req.session.userId]);
+    const exist = await db.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email, req.session.user.id]);
     if (exist.rows.length > 0) return res.status(400).json({ error: 'Email già in uso' });
-    await db.query('UPDATE users SET full_name = $1, email = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3', [full_name, email, req.session.userId]);
+    await db.query('UPDATE users SET full_name = $1, email = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3', [full_name, email, req.session.user.id]);
     req.session.user.full_name = full_name;
     req.session.user.email = email;
     res.json({ success: true, message: 'Profilo aggiornato' });
@@ -55,12 +55,12 @@ router.post('/change-password', requireAuth, apiLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Nuova password: almeno 8 caratteri, maiuscole, minuscole, numeri' });
   }
   try {
-    const r = await db.query('SELECT password FROM users WHERE id = $1', [req.session.userId]);
+    const r = await db.query('SELECT password FROM users WHERE id = $1', [req.session.user.id]);
     if (r.rows.length === 0) return res.status(404).json({ error: 'Utente non trovato' });
     const ok = await bcrypt.compare(current_password, r.rows[0].password);
     if (!ok) return res.status(401).json({ error: 'Password corrente errata' });
     const hash = await bcrypt.hash(new_password, 12);
-    await db.query('UPDATE users SET password = $1 WHERE id = $2', [hash, req.session.userId]);
+    await db.query('UPDATE users SET password = $1 WHERE id = $2', [hash, req.session.user.id]);
     res.json({ success: true, message: 'Password cambiata' });
   } catch (err) {
     console.error(err);
@@ -70,7 +70,7 @@ router.post('/change-password', requireAuth, apiLimiter, async (req, res) => {
 
 router.post('/notifiche-read', requireAuth, async (req, res) => {
   try {
-    await db.query('UPDATE notifiche SET letta = true WHERE user_id = $1', [req.session.userId]);
+    await db.query('UPDATE notifiche SET letta = true WHERE user_id = $1', [req.session.user.id]);
     res.redirect((req.app.get('basePath') || '') + '/dashboard');
   } catch (err) {
     console.error(err);
@@ -80,8 +80,8 @@ router.post('/notifiche-read', requireAuth, async (req, res) => {
 
 router.get('/export', requireAuth, async (req, res) => {
   try {
-    const user = await db.query('SELECT id, username, email, full_name, role, created_at FROM users WHERE id = $1', [req.session.userId]);
-    const ferie = await db.query('SELECT data_inizio, data_fine, giorni_totali, tipo, stato, note, created_at FROM ferie WHERE user_id = $1 ORDER BY data_inizio DESC', [req.session.userId]);
+    const user = await db.query('SELECT id, username, email, full_name, role, created_at FROM users WHERE id = $1', [req.session.user.id]);
+    const ferie = await db.query('SELECT data_inizio, data_fine, giorni_totali, tipo, stato, note, created_at FROM ferie WHERE user_id = $1 ORDER BY data_inizio DESC', [req.session.user.id]);
     const soloData = (val) => (val == null ? '' : typeof val === 'string' ? val.slice(0, 10) : val.toISOString ? val.toISOString().slice(0, 10) : String(val).slice(0, 10));
     const exportData = {
       exportato_il: new Date().toISOString(),
@@ -89,7 +89,7 @@ router.get('/export', requireAuth, async (req, res) => {
       ferie: ferie.rows.map(r => ({ data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine), giorni_totali: r.giorni_totali, tipo: r.tipo, stato: r.stato, note: r.note }))
     };
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', 'attachment; filename="portal-01-dati-' + req.session.userId + '.json"');
+    res.setHeader('Content-Disposition', 'attachment; filename="portal-01-dati-' + req.session.user.id + '.json"');
     res.send(JSON.stringify(exportData, null, 2));
   } catch (err) {
     console.error(err);

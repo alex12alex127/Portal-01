@@ -304,7 +304,7 @@ function editAvviso(id) {
   document.getElementById('modalTitle').textContent = 'Modifica Avviso';
   
   // Carica i dati dell'avviso
-  fetch(`${basePath}/avvisi/${id}`)
+  fetch(`${basePath}/admin/avvisi/${id}`)
     .then(response => response.json())
     .then(data => {
       if (data.success) {

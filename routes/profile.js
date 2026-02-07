@@ -16,7 +16,7 @@ router.get('/', requireAuth, async (req, res) => {
     res.render('profile/index', {
       title: 'Profilo - Portal-01',
       activePage: 'profile',
-      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Profilo' }],
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Profilo' }],
       profile: result.rows[0]
     });
   } catch (err) {

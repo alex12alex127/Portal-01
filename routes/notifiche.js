@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
     res.render('notifiche/index', {
       title: 'Notifiche - Portal-01',
       activePage: 'notifiche',
-      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Notifiche' }],
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Notifiche' }],
       notifiche,
       nonLette
     });

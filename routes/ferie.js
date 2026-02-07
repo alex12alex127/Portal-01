@@ -45,7 +45,7 @@ router.get('/', requireAuth, async (req, res) => {
     res.render('ferie/index', {
       title: 'Ferie - Portal-01',
       activePage: 'ferie',
-      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Ferie' }],
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Ferie' }],
       ferie,
       filtri: { stato: stato || '', anno: anno || '', tipo: tipo || '' },
       anni: anni.rows.map(r => r.y)

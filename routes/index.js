@@ -52,9 +52,9 @@ router.get('/dashboard', requireAuth, async (req, res) => {
     `);
     const avvisiDashboard = avvisiResult.rows.map(a => ({ ...a, created_at: a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' }));
     res.render('dashboard', {
-      title: 'Dashboard - Portal-01',
+      title: 'Panoramica - Portal-01',
       activePage: 'dashboard',
-      breadcrumbs: [{ label: 'Dashboard' }],
+      breadcrumbs: [{ label: 'Panoramica' }],
       summary: { year, ...summary },
       ultimeRichieste: ultimeRichieste.rows.map(r => ({ ...r, data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine) })),
       notifiche,

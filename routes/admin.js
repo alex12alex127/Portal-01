@@ -50,7 +50,7 @@ router.get('/users', requireAuth, requireAdmin, async (req, res) => {
     res.render('admin/users', {
       title: 'Gestione Utenti - Portal-01',
       activePage: 'admin',
-      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Gestione Utenti' }],
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Gestione Utenti' }],
       users: result.rows,
       pagination: { page, limit, total, totalPages },
       filtri: { q, role: roleFilter }
@@ -167,7 +167,7 @@ router.get('/ferie', requireAuth, requireManager, async (req, res) => {
     res.render('admin/ferie', {
       title: 'Richieste Ferie - Portal-01',
       activePage: 'adminFerie',
-      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Approva Ferie' }],
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Approva Ferie' }],
       ferie,
       pagination: { page, limit, total, totalPages },
       filtri: { stato: statoFilter, user_id: Number.isNaN(userIdFilter) ? '' : userIdFilter },
@@ -324,7 +324,7 @@ router.get('/avvisi', requireAuth, requireAdmin, async (req, res) => {
     res.render('admin/avvisi', {
       title: 'Gestione Avvisi - Portal-01',
       activePage: 'adminAvvisi',
-      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Amministrazione', url: '/admin' }, { label: 'Gestione Avvisi' }],
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Amministrazione', url: '/admin' }, { label: 'Gestione Avvisi' }],
       avvisi: result.rows
     });
   } catch (err) {

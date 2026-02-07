@@ -15,7 +15,7 @@ router.get('/', requireAuth, async (req, res) => {
     res.render('avvisi/index', {
       title: 'Avvisi - Portal-01',
       activePage: 'avvisi',
-      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Avvisi' }],
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Avvisi' }],
       avvisi,
       nonLetti
     });
@@ -50,7 +50,7 @@ router.get('/:id', requireAuth, async (req, res) => {
     res.render('avvisi/dettaglio', {
       title: avviso.titolo + ' - Portal-01',
       activePage: 'avvisi',
-      breadcrumbs: [{ label: 'Dashboard', url: '/dashboard' }, { label: 'Avvisi', url: '/avvisi' }, { label: avviso.titolo }],
+      breadcrumbs: [{ label: 'Panoramica', url: '/dashboard' }, { label: 'Avvisi', url: '/avvisi' }, { label: avviso.titolo }],
       avviso
     });
   } catch (err) {

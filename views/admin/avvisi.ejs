@@ -262,11 +262,45 @@
 <script>
 let editingId = null;
 
+// Assicurati che il DOM sia caricato
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM caricato - Admin Avvisi');
+  
+  // Bottoni modifica
+  document.querySelectorAll('.edit-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      editAvviso(this.dataset.id);
+    });
+  });
+  
+  // Bottoni elimina
+  document.querySelectorAll('.delete-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      deleteAvviso(this.dataset.id, this.dataset.title);
+    });
+  });
+});
+
 function showCreateForm() {
+  console.log('showCreateForm chiamato');
+  
+  // Verifica che gli elementi esistano
+  const formTitle = document.getElementById('formTitle');
+  const avvisoForm = document.getElementById('avvisoForm');
+  const formContainer = document.getElementById('avvisoFormContainer');
+  
+  if (!formTitle || !avvisoForm || !formContainer) {
+    console.error('Elementi del form non trovati:', { formTitle, avvisoForm, formContainer });
+    alert('Errore: form non trovato');
+    return;
+  }
+  
   editingId = null;
-  document.getElementById('formTitle').textContent = 'Nuovo Avviso';
-  document.getElementById('avvisoForm').reset();
-  document.getElementById('avvisoFormContainer').style.display = 'flex';
+  formTitle.textContent = 'Nuovo Avviso';
+  avvisoForm.reset();
+  formContainer.style.display = 'flex';
+  
+  console.log('Form mostrato correttamente');
 }
 
 function hideForm() {
@@ -324,23 +358,6 @@ function deleteAvviso(id, titolo) {
     });
   }
 }
-
-// Event listeners per i bottoni
-document.addEventListener('DOMContentLoaded', function() {
-  // Bottoni modifica
-  document.querySelectorAll('.edit-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      editAvviso(this.dataset.id);
-    });
-  });
-  
-  // Bottoni elimina
-  document.querySelectorAll('.delete-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      deleteAvviso(this.dataset.id, this.dataset.title);
-    });
-  });
-});
 
 // Gestione submit form
 document.getElementById('avvisoForm').addEventListener('submit', function(e) {

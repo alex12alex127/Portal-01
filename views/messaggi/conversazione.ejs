@@ -85,51 +85,126 @@
 
 <script>
 (function(){
-  // Auto-scroll to bottom
   var chatArea = document.getElementById('chatArea');
+  var chatMsgs = document.getElementById('chatMessages');
+  var input = document.getElementById('msgInput');
+  var form = document.getElementById('formInviaMsg');
+  var csrf = '<%= csrfToken %>';
+  var base = window.APP_BASE || '';
+  var convId = '<%= conv.id %>';
+  var myId = <%= _userId %>;
+  var POLL_MS = 3000;
+
+  // Track last known message ID for polling
+  var lastMsgId = 0;
+  <% if (_msgs.length > 0) { %>
+  lastMsgId = <%= _msgs[_msgs.length - 1].id %>;
+  <% } %>
+
+  // Track IDs we already rendered (server-rendered + optimistic)
+  var renderedIds = {};
+  <% _msgs.forEach(function(m) { %>
+  renderedIds[<%= m.id %>] = true;
+  <% }); %>
+
+  // Auto-scroll to bottom on load
   if (chatArea) chatArea.scrollTop = chatArea.scrollHeight;
 
+  // Check if user is scrolled near bottom
+  function isNearBottom() {
+    if (!chatArea) return true;
+    return chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight < 80;
+  }
+
+  function scrollToBottom() {
+    if (chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
   // Auto-resize textarea
-  var input = document.getElementById('msgInput');
   if (input) {
     input.addEventListener('input', function() {
       this.style.height = 'auto';
       this.style.height = Math.min(this.scrollHeight, 120) + 'px';
     });
-    // Submit on Enter (Shift+Enter for newline)
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        if (this.value.trim()) {
-          document.getElementById('formInviaMsg').submit();
-        }
+        if (this.value.trim()) form.dispatchEvent(new Event('submit'));
       }
     });
   }
 
-  // AJAX send
-  var form = document.getElementById('formInviaMsg');
-  var csrf = '<%= csrfToken %>';
-  var base = window.APP_BASE || '';
-  var convId = '<%= conv.id %>';
-  var myName = '<%= user.full_name %>';
-  var myId = <%= _userId %>;
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
+  function formatTime(dateStr) {
+    var d = new Date(dateStr);
+    return d.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function formatDate(dateStr) {
+    return new Date(dateStr).toLocaleDateString('it-IT');
+  }
+
+  // Render a single message bubble into the chat
+  function renderBubble(msg) {
+    var isMine = msg.sender_id === myId;
+    var wasNear = isNearBottom();
+
+    // Remove empty state if present
+    var emptyEl = chatMsgs.querySelector('.msg-chat-empty');
+    if (emptyEl) emptyEl.remove();
+
+    // Date separator
+    var msgDate = formatDate(msg.created_at);
+    var lastDateSep = chatMsgs.querySelector('.msg-chat-date-sep:last-of-type');
+    var lastDateStr = lastDateSep ? lastDateSep.querySelector('span').textContent : '';
+    if (msgDate !== lastDateStr) {
+      var sep = document.createElement('div');
+      sep.className = 'msg-chat-date-sep';
+      sep.innerHTML = '<span>' + escapeHtml(msgDate) + '</span>';
+      chatMsgs.appendChild(sep);
+    }
+
+    var bubble = document.createElement('div');
+    bubble.className = 'msg-bubble ' + (isMine ? 'msg-bubble--mine' : 'msg-bubble--other');
+    bubble.dataset.msgId = msg.id;
+
+    var html = '';
+    if (!isMine) {
+      html += '<div class="msg-bubble__sender">';
+      html += '<span class="msg-bubble__name">' + escapeHtml(msg.sender_name) + '</span>';
+      if (msg.sender_role === 'admin') html += ' <span class="p-tag p-tag--primary" style="font-size:.5rem;padding:.05rem .25rem">Admin</span>';
+      else if (msg.sender_role === 'manager') html += ' <span class="p-tag p-tag--warn" style="font-size:.5rem;padding:.05rem .25rem">Manager</span>';
+      html += '</div>';
+    }
+    html += '<div class="msg-bubble__text">' + escapeHtml(msg.testo) + '</div>';
+    html += '<div class="msg-bubble__time">' + formatTime(msg.created_at) + '</div>';
+    bubble.innerHTML = html;
+    chatMsgs.appendChild(bubble);
+
+    if (wasNear) scrollToBottom();
+  }
+
+  // ========== AJAX SEND ==========
   if (form) form.addEventListener('submit', async function(e) {
     e.preventDefault();
     var testo = input.value.trim();
     if (!testo) return;
 
-    // Optimistic UI: add message immediately
-    var chatMsgs = document.getElementById('chatMessages');
+    // Optimistic UI
     var emptyEl = chatMsgs.querySelector('.msg-chat-empty');
     if (emptyEl) emptyEl.remove();
 
-    var bubble = document.createElement('div');
-    bubble.className = 'msg-bubble msg-bubble--mine msg-bubble--sending';
-    bubble.innerHTML = '<div class="msg-bubble__text">' + escapeHtml(testo) + '</div><div class="msg-bubble__time">Invio...</div>';
-    chatMsgs.appendChild(bubble);
-    chatArea.scrollTop = chatArea.scrollHeight;
+    var tempBubble = document.createElement('div');
+    tempBubble.className = 'msg-bubble msg-bubble--mine msg-bubble--sending';
+    tempBubble.dataset.temp = 'true';
+    tempBubble.innerHTML = '<div class="msg-bubble__text">' + escapeHtml(testo) + '</div><div class="msg-bubble__time">Invio...</div>';
+    chatMsgs.appendChild(tempBubble);
+    scrollToBottom();
     input.value = '';
     input.style.height = 'auto';
 
@@ -140,35 +215,63 @@
         body: JSON.stringify({ testo: testo })
       });
       var data = await res.json();
-      if (data.success) {
-        bubble.classList.remove('msg-bubble--sending');
-        var timeEl = bubble.querySelector('.msg-bubble__time');
-        if (timeEl) timeEl.textContent = new Date().toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' });
+      if (data.success && data.messaggio) {
+        // Mark this ID so polling won't duplicate it
+        renderedIds[data.messaggio.id] = true;
+        if (data.messaggio.id > lastMsgId) lastMsgId = data.messaggio.id;
+        // Update temp bubble
+        tempBubble.classList.remove('msg-bubble--sending');
+        tempBubble.dataset.msgId = data.messaggio.id;
+        delete tempBubble.dataset.temp;
+        var timeEl = tempBubble.querySelector('.msg-bubble__time');
+        if (timeEl) timeEl.textContent = formatTime(data.messaggio.created_at);
       } else {
-        bubble.classList.add('msg-bubble--error');
-        var timeEl2 = bubble.querySelector('.msg-bubble__time');
-        if (timeEl2) timeEl2.textContent = 'Errore invio';
+        tempBubble.classList.add('msg-bubble--error');
+        tempBubble.querySelector('.msg-bubble__time').textContent = 'Errore invio';
       }
     } catch(err) {
-      bubble.classList.add('msg-bubble--error');
-      var timeEl3 = bubble.querySelector('.msg-bubble__time');
-      if (timeEl3) timeEl3.textContent = 'Errore di rete';
+      tempBubble.classList.add('msg-bubble--error');
+      tempBubble.querySelector('.msg-bubble__time').textContent = 'Errore di rete';
     }
   });
 
-  function escapeHtml(str) {
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+  // ========== LIVE POLLING ==========
+  var polling = true;
+
+  async function pollNewMessages() {
+    if (!polling) return;
+    try {
+      var res = await fetch(base + '/messaggi/' + convId + '/nuovi?after=' + lastMsgId, {
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.status === 401) { polling = false; return; }
+      var data = await res.json();
+      if (data.success && data.messaggi && data.messaggi.length > 0) {
+        data.messaggi.forEach(function(msg) {
+          if (!renderedIds[msg.id]) {
+            renderedIds[msg.id] = true;
+            renderBubble(msg);
+          }
+          if (msg.id > lastMsgId) lastMsgId = msg.id;
+        });
+      }
+    } catch(e) { /* silent */ }
   }
 
-  // Poll for new messages every 10s
-  var lastMsgCount = <%= _msgs.length %>;
-  setInterval(async function() {
-    try {
-      var res = await fetch(base + '/messaggi/' + convId + '?page=1', { headers: { 'Accept': 'text/html' } });
-      // Simple approach: just reload if we detect new messages via count endpoint
-    } catch(e) {}
-  }, 30000);
+  var pollTimer = setInterval(pollNewMessages, POLL_MS);
+
+  // Pause when tab hidden, resume + immediate poll when visible
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      polling = false;
+    } else {
+      polling = true;
+      pollNewMessages();
+    }
+  });
+
+  // Focus input on load
+  if (input) input.focus();
 })();
 </script>

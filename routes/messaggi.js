@@ -164,6 +164,39 @@ router.post('/:id/invia', apiLimiter, async (req, res) => {
   }
 });
 
+// GET /messaggi/:id/nuovi?after=ID - Messaggi nuovi dopo un certo ID (JSON)
+router.get('/:id/nuovi', async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const convId = parseInt(req.params.id, 10);
+    const afterId = parseInt(req.query.after, 10) || 0;
+
+    const conv = await getConversazione(convId, userId);
+    if (!conv) return res.status(403).json({ success: false, error: 'Non autorizzato' });
+
+    const result = await require('../config/database').query(
+      `SELECT m.id, m.testo, m.created_at, m.sender_id,
+              u.full_name AS sender_name, u.role AS sender_role
+       FROM messaggi m
+       JOIN users u ON u.id = m.sender_id
+       WHERE m.conversazione_id = $1 AND m.id > $2
+       ORDER BY m.created_at ASC
+       LIMIT 50`,
+      [convId, afterId]
+    );
+
+    // Segna come letta
+    if (result.rows.length > 0) {
+      await segnaComeLetta(convId, userId);
+    }
+
+    res.json({ success: true, messaggi: result.rows });
+  } catch (err) {
+    console.error('[messaggi nuovi]', err);
+    res.status(500).json({ success: false, error: 'Errore' });
+  }
+});
+
 // POST /messaggi/:id/letto - Segna come letta
 router.post('/:id/letto', apiLimiter, async (req, res) => {
   try {

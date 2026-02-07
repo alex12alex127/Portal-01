@@ -3,17 +3,31 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/security');
 const {
+  AnnouncementService,
   getAvvisiVisibili,
   getAvviso,
   marcaAvvisoComeLetto,
   contaAvvisiNonLetti
 } = require('../lib/avvisi');
 
-// GET /avvisi - Lista avvisi visibili (per tutti gli utenti autenticati)
+/**
+ * Routes per gestione avvisi (utenti)
+ * Pattern RESTful con error handling professionale
+ */
+
+/**
+ * GET /avvisi - Lista avvisi visibili (pagina principale)
+ */
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const avvisi = await getAvvisiVisibili(req.session.user.id);
-    const nonLetti = await contaAvvisiNonLetti(req.session.user.id);
+    const userId = req.session.user.id;
+    
+    console.log(`[AnnouncementsRoute] Caricamento pagina avvisi per utente ${userId}`);
+    
+    const [avvisi, nonLetti] = await Promise.all([
+      getAvvisiVisibili(userId),
+      contaAvvisiNonLetti(userId)
+    ]);
     
     res.render('avvisi/index', {
       title: 'Avvisi - Portal-01',
@@ -23,25 +37,80 @@ router.get('/', requireAuth, async (req, res) => {
       nonLetti,
       isAdmin: req.session.user.role === 'admin'
     });
-  } catch (err) {
-    console.error('[avvisi]', err);
-    res.status(500).send('Errore del server');
+  } catch (error) {
+    console.error('[AnnouncementsRoute] Errore caricamento pagina avvisi:', error);
+    res.status(500).render('error', { 
+      title: 'Errore', 
+      message: 'Impossibile caricare gli avvisi' 
+    });
   }
 });
 
-// GET /avvisi/:id - Dettaglio avviso
+/**
+ * GET /avvisi/api - API endpoint per caricamento avvisi (AJAX)
+ */
+router.get('/api', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    
+    console.log(`[AnnouncementsRoute] API: Caricamento avvisi per utente ${userId}`);
+    
+    const [avvisi, nonLetti] = await Promise.all([
+      getAvvisiVisibili(userId),
+      contaAvvisiNonLetti(userId)
+    ]);
+    
+    res.json({
+      success: true,
+      data: {
+        avvisi,
+        nonLetti,
+        totalCount: avvisi.length
+      },
+      message: 'Avvisi caricati con successo'
+    });
+  } catch (error) {
+    console.error('[AnnouncementsRoute] Errore API caricamento avvisi:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Errore caricamento avvisi',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /avvisi/:id - Dettaglio avviso specifico
+ */
 router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const avviso = await getAvviso(req.params.id);
-    if (!avviso) {
-      return res.status(404).send('Avviso non trovato');
+    const avvisoId = parseInt(req.params.id);
+    const userId = req.session.user.id;
+    
+    if (!avvisoId || isNaN(avvisoId)) {
+      return res.status(400).render('error', {
+        title: 'Errore',
+        message: 'ID avviso non valido'
+      });
     }
     
-    // Marca come letto
-    await marcaAvvisoComeLetto(req.params.id, req.session.user.id);
+    console.log(`[AnnouncementsRoute] Caricamento dettaglio avviso ${avvisoId} per utente ${userId}`);
+    
+    const avviso = await getAvviso(avvisoId);
+    if (!avviso) {
+      return res.status(404).render('error', {
+        title: 'Avviso non trovato',
+        message: 'L\'avviso richiesto non esiste'
+      });
+    }
+    
+    // Marca come letto in background (non bloccante)
+    marcaAvvisoComeLetto(avvisoId, userId).catch(err => {
+      console.warn('[AnnouncementsRoute] Errore marcatura avviso come letto:', err);
+    });
     
     res.render('avvisi/dettaglio', {
-      title: avviso.titolo + ' - Portal-01',
+      title: `${avviso.titolo} - Portal-01`,
       activePage: 'avvisi',
       breadcrumbs: [
         { label: 'Dashboard', url: '/dashboard' },
@@ -50,38 +119,50 @@ router.get('/:id', requireAuth, async (req, res) => {
       ],
       avviso
     });
-  } catch (err) {
-    console.error('[avviso dettaglio]', err);
-    res.status(500).send('Errore del server');
+  } catch (error) {
+    console.error('[AnnouncementsRoute] Errore caricamento dettaglio avviso:', error);
+    res.status(500).render('error', { 
+      title: 'Errore', 
+      message: 'Impossibile caricare il dettaglio dell\'avviso' 
+    });
   }
 });
 
-// GET /avvisi/api - Lista avvisi visibili (JSON per AJAX)
-router.get('/api', requireAuth, async (req, res) => {
+/**
+ * POST /avvisi/:id/letta - Marca avviso come letto (AJAX)
+ */
+router.post('/:id/letta', requireAuth, apiLimiter, async (req, res) => {
   try {
-    const avvisi = await getAvvisiVisibili(req.session.user.id);
-    const nonLetti = await contaAvvisiNonLetti(req.session.user.id);
+    const avvisoId = parseInt(req.params.id);
+    const userId = req.session.user.id;
+    
+    if (!avvisoId || isNaN(avvisoId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID avviso non valido'
+      });
+    }
+    
+    console.log(`[AnnouncementsRoute] Marcatura avviso ${avvisoId} come letto per utente ${userId}`);
+    
+    await marcaAvvisoComeLetto(avvisoId, userId);
+    const newUnreadCount = await contaAvvisiNonLetti(userId);
     
     res.json({
       success: true,
-      avvisi,
-      nonLetti
+      data: {
+        avvisoId,
+        nonLette: newUnreadCount
+      },
+      message: 'Avviso segnato come letto'
     });
-  } catch (err) {
-    console.error('[avvisi api]', err);
-    res.status(500).json({ error: 'Errore caricamento avvisi' });
-  }
-});
-
-// POST /avvisi/:id/letta - Marca avviso come letto (AJAX)
-router.post('/:id/letta', requireAuth, apiLimiter, async (req, res) => {
-  try {
-    await marcaAvvisoComeLetto(req.params.id, req.session.user.id);
-    const nonLetti = await contaAvvisiNonLetti(req.session.user.id);
-    res.json({ success: true, nonLetti });
-  } catch (err) {
-    console.error('[avviso letto]', err);
-    res.status(500).json({ error: 'Errore' });
+  } catch (error) {
+    console.error('[AnnouncementsRoute] Errore marcatura avviso come letto:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Errore marcatura avviso',
+      message: error.message
+    });
   }
 });
 

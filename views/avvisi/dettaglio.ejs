@@ -1,159 +1,262 @@
-<%
-  var tipoLabels = { info: 'Info', warning: 'Attenzione', urgent: 'Urgente', success: 'Successo' };
-  function fmtDate(v) {
-    if (!v) return '';
-    var d = new Date(v);
-    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-%>
-<div class="avviso-dettaglio">
-  <div class="avviso-header">
-    <div class="avviso-tipo">
-      <span class="badge badge--<%= avviso.tipo %>"><%= tipoLabels[avviso.tipo] || avviso.tipo %></span>
-      <% if (avviso.in_evidenza) { %>
-        <span class="badge badge--evidence">📌 In evidenza</span>
-      <% } %>
+<%- include('../layouts/app') %>
+
+<div class="announcement-detail-page">
+  <div class="detail-header">
+    <div class="breadcrumb">
+      <a href="<%= basePath %>/dashboard" class="breadcrumb-link">Dashboard</a>
+      <span class="breadcrumb-separator">/</span>
+      <a href="<%= basePath %>/avvisi" class="breadcrumb-link">Avvisi</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current"><%= avviso.titolo %></span>
     </div>
-    <div class="avviso-meta">
-      <span class="avviso-date">Pubblicato il <%= fmtDate(avviso.created_at) %></span>
-      <% if (avviso.autore_nome) { %>
-        <span class="avviso-author">di <%= avviso.autore_nome %></span>
-      <% } %>
+    
+    <div class="detail-actions">
+      <a href="<%= basePath %>/avvisi" class="btn btn-secondary">
+        <svg class="icon" style="width: 16px; height: 16px; margin-right: 0.5rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Torna agli avvisi
+      </a>
     </div>
   </div>
 
-  <h1 class="avviso-title"><%= avviso.titolo %></h1>
-  
-  <div class="avviso-content">
-    <div class="prose">
-      <%- avviso.contenuto.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>') %>
+  <article class="announcement-detail">
+    <header class="announcement-header">
+      <div class="announcement-meta">
+        <span class="announcement-type <%= avviso.tipo %>"><%= getTipoLabel(avviso.tipo) %></span>
+        <% if (avviso.in_evidenza) { %>
+          <span class="announcement-featured">📌 In evidenza</span>
+        <% } %>
+        <% if (avviso.visibile_da || avviso.visibile_fino) { %>
+          <span class="announcement-period">
+            Visibile <%= avviso.visibile_da ? 'dal ' + avviso.visibile_da : '' %><%= avviso.visibile_da && avviso.visibile_fino ? ' ' : '' %><%= avviso.visibile_fino ? 'al ' + avviso.visibile_fino : '' %>
+          </span>
+        <% } %>
+      </div>
+      
+      <h1 class="announcement-title"><%= avviso.titolo %></h1>
+      
+      <div class="announcement-info">
+        <div class="info-item">
+          <svg class="icon" style="width: 16px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Pubblicato il <%= formatDate(avviso.created_at) %>
+        </div>
+        <% if (avviso.autore_nome) { %>
+          <div class="info-item">
+            <svg class="icon" style="width: 16px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+            Da <%= avviso.autore_nome %>
+          </div>
+        <% } %>
+      </div>
+    </header>
+    
+    <div class="announcement-content">
+      <%= avviso.contenuto %>
     </div>
-  </div>
-
-  <% if (avviso.visibile_da || avviso.visibile_fino) { %>
-  <div class="avviso-periodo">
-    <h3>Periodo di visibilità</h3>
-    <p>
-      <% if (avviso.visibile_da) { %>
-        Dal <strong><%= fmtDate(avviso.visibile_da) %></strong>
-      <% } %>
-      <% if (avviso.visibile_fino) { %>
-        <% if (avviso.visibile_da) { %> al <% } else { %>Fino al <% } %>
-        <strong><%= fmtDate(avviso.visibile_fino) %></strong>
-      <% } %>
-    </p>
-  </div>
-  <% } %>
-
-  <div class="avviso-actions">
-    <a href="<%= basePath %>/avvisi" class="btn btn-secondary">← Torna agli avvisi</a>
-  </div>
+  </article>
 </div>
 
 <style>
-.avviso-dettaglio {
+.announcement-detail-page {
   max-width: 800px;
   margin: 0 auto;
 }
 
-.avviso-header {
+.detail-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border);
 }
 
-.avviso-tipo {
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.breadcrumb-link {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  color: var(--primary);
+}
+
+.breadcrumb-separator {
+  color: var(--muted);
+}
+
+.breadcrumb-current {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.detail-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+.announcement-detail {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.announcement-header {
+  margin-bottom: 2rem;
+}
+
+.announcement-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
-.avviso-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.25rem;
-  font-size: 0.9rem;
-  color: var(--muted);
+.announcement-type {
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.avviso-title {
+.announcement-type.info { 
+  background: linear-gradient(135deg, var(--primary-light), var(--primary)); 
+  color: white; 
+}
+
+.announcement-type.warning { 
+  background: linear-gradient(135deg, var(--warn-light), var(--warn)); 
+  color: white; 
+}
+
+.announcement-type.urgent { 
+  background: linear-gradient(135deg, var(--danger-light), var(--danger)); 
+  color: white; 
+}
+
+.announcement-type.success { 
+  background: linear-gradient(135deg, var(--success-light), var(--success)); 
+  color: white; 
+}
+
+.announcement-featured {
+  background: var(--primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.announcement-period {
+  background: var(--bg);
+  color: var(--muted);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  border: 1px solid var(--border);
+}
+
+.announcement-title {
   font-size: 2rem;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 2rem;
+  margin: 0 0 1.5rem 0;
   line-height: 1.2;
 }
 
-.avviso-content {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 2rem;
-  margin-bottom: 2rem;
-}
-
-.prose {
-  line-height: 1.7;
-  color: var(--text);
-}
-
-.prose br {
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-.avviso-periodo {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.avviso-periodo h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  color: var(--text);
-}
-
-.avviso-periodo p {
-  margin: 0;
-  color: var(--muted);
-}
-
-.avviso-actions {
+.announcement-info {
   display: flex;
-  gap: 1rem;
-  justify-content: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
-.badge--evidence {
-  background: #ff6b35;
-  color: white;
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.info-item svg {
+  flex-shrink: 0;
+}
+
+.announcement-content {
+  color: var(--text);
+  line-height: 1.8;
+  font-size: 1.1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 @media (max-width: 768px) {
-  .avviso-header {
+  .detail-header {
     flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
-    align-items: flex-start;
   }
   
-  .avviso-meta {
-    align-items: flex-start;
+  .announcement-detail {
+    padding: 1.5rem;
   }
   
-  .avviso-title {
+  .announcement-title {
     font-size: 1.5rem;
   }
   
-  .avviso-content {
-    padding: 1.5rem;
+  .announcement-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .announcement-info {
+    flex-direction: column;
+    gap: 0.75rem;
   }
 }
 </style>
 
+<script>
+// Funzioni helper per EJS
+function getTipoLabel(tipo) {
+  const labels = {
+    'info': 'Informazione',
+    'warning': 'Attenzione',
+    'urgent': 'Urgente',
+    'success': 'Successo',
+    'maintenance': 'Manutenzione'
+  };
+  return labels[tipo] || tipo;
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('it-IT', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+</script>

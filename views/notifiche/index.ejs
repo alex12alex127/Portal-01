@@ -305,12 +305,36 @@ function escapeHtml(text) {
 // Funzioni API
 async function markAsRead(id) {
   try {
-    console.log('Marcatura notifica come letta:', id);
+    console.log('[frontend] Marcatura notifica come letta:', {
+      id: id,
+      basePath: basePath,
+      url: `${basePath}/notifiche/${id}/read`
+    });
+    
     const notification = notifications.find(n => n.id === id);
+    console.log('[frontend] Notifica trovata:', notification ? {
+      id: notification.id,
+      letta: notification.letta,
+      titolo: notification.titolo
+    } : 'NON TROVATA');
+    
     if (notification && !notification.letta) {
-      const response = await fetch(`${basePath}/notifiche/${id}/read`, { method: 'POST' });
+      console.log('[frontend] Invio richiesta POST...');
+      const response = await fetch(`${basePath}/notifiche/${id}/read`, { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('[frontend] Risposta HTTP:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+      
       const data = await response.json();
-      console.log('Risposta marcatura:', data);
+      console.log('[frontend] Risposta JSON:', data);
       
       if (data.success) {
         notification.letta = true;
@@ -318,10 +342,19 @@ async function markAsRead(id) {
         updateNotificationCount(data.nonLette);
         updateActionButtons(data.nonLette, notifications.length);
         showToast('Notifica marcata come letta', 'ok');
+        console.log('[frontend] Marcatura completata con successo');
+      } else {
+        console.error('[frontend] Errore nel response:', data);
+        showToast(data.error || 'Errore durante la marcatura', 'error');
       }
+    } else {
+      console.log('[frontend] Notifica già letta o non trovata');
     }
   } catch (err) {
-    console.error('Errore marcatura notifica:', err);
+    console.error('[frontend] Errore marcatura notifica:', {
+      message: err.message,
+      stack: err.stack
+    });
     showToast('Errore durante la marcatura della notifica', 'error');
   }
 }

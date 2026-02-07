@@ -63,12 +63,30 @@ router.get('/count', async (req, res) => {
 // POST /notifiche/:id/read - Marca notifica come letta
 router.post('/:id/read', async (req, res) => {
   try {
-    await marcaNotificaComeLetta(req.params.id, req.session.user.id);
+    console.log('[notifiche read] Attempting to mark notification as read:', {
+      notificationId: req.params.id,
+      userId: req.session.user.id,
+      userRole: req.session.user.role
+    });
+    
+    const result = await marcaNotificaComeLetta(req.params.id, req.session.user.id);
+    console.log('[notifiche read] Successfully marked notification as read:', result);
+    
     const count = await contaNotificheNonLette(req.session.user.id);
+    console.log('[notifiche read] Updated unread count:', count);
+    
     res.json({ success: true, nonLette: count });
   } catch (err) {
-    console.error('[notifiche read]', err);
-    res.status(500).json({ error: 'Errore marcatura notifica' });
+    console.error('[notifiche read] Error marking notification as read:', {
+      error: err.message,
+      stack: err.stack,
+      notificationId: req.params.id,
+      userId: req.session.user.id
+    });
+    res.status(500).json({ 
+      error: 'Errore marcatura notifica',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 });
 

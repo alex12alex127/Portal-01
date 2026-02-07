@@ -90,6 +90,7 @@ app.use(BASE_PATH + '/ferie', require('./routes/ferie'));
 app.use(BASE_PATH + '/avvisi', require('./routes/avvisi'));
 app.use(BASE_PATH + '/profile', require('./routes/profile'));
 app.use(BASE_PATH + '/admin', require('./routes/admin/index'));
+app.use(BASE_PATH + '/sicurezza', require('./routes/sicurezza'));
 app.use(BASE_PATH + '/notifiche', require('./routes/notifiche'));
 app.use(BASE_PATH + '/api/v1', require('./routes/api'));
 

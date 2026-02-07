@@ -136,6 +136,99 @@ async function initDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // ===== MODULO SICUREZZA SUL LAVORO =====
+    // Formazioni / corsi sicurezza dipendenti
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS formazioni (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        tipo VARCHAR(100) NOT NULL,
+        descrizione TEXT,
+        ente_formatore VARCHAR(200),
+        data_corso DATE NOT NULL,
+        data_scadenza DATE,
+        ore INTEGER,
+        attestato_path VARCHAR(500),
+        attestato_nome VARCHAR(255),
+        stato VARCHAR(20) DEFAULT 'valido',
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_formazioni_user ON formazioni(user_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_formazioni_scadenza ON formazioni(data_scadenza)');
+
+    // Consegne DPI (Dispositivi di Protezione Individuale)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS dpi_consegne (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        tipo_dpi VARCHAR(100) NOT NULL,
+        descrizione TEXT,
+        taglia VARCHAR(20),
+        quantita INTEGER DEFAULT 1,
+        data_consegna DATE NOT NULL,
+        data_scadenza DATE,
+        lotto VARCHAR(100),
+        stato VARCHAR(20) DEFAULT 'consegnato',
+        note TEXT,
+        consegnato_da INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_dpi_user ON dpi_consegne(user_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_dpi_scadenza ON dpi_consegne(data_scadenza)');
+
+    // Registro infortuni
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS infortuni (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        data_evento DATE NOT NULL,
+        ora_evento TIME,
+        luogo VARCHAR(300),
+        descrizione TEXT NOT NULL,
+        tipo_lesione VARCHAR(200),
+        parte_corpo VARCHAR(200),
+        giorni_prognosi INTEGER DEFAULT 0,
+        data_rientro DATE,
+        testimoni TEXT,
+        provvedimenti TEXT,
+        denunciato_inail BOOLEAN DEFAULT false,
+        numero_pratica VARCHAR(100),
+        allegato_path VARCHAR(500),
+        allegato_nome VARCHAR(255),
+        stato VARCHAR(20) DEFAULT 'aperto',
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_infortuni_user ON infortuni(user_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_infortuni_data ON infortuni(data_evento DESC)');
+
+    // Documenti sicurezza (DVR, procedure, istruzioni operative)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS documenti_sicurezza (
+        id SERIAL PRIMARY KEY,
+        titolo VARCHAR(255) NOT NULL,
+        categoria VARCHAR(100) NOT NULL,
+        descrizione TEXT,
+        versione VARCHAR(20) DEFAULT '1.0',
+        data_approvazione DATE,
+        data_scadenza DATE,
+        file_path VARCHAR(500),
+        file_nome VARCHAR(255),
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_docsic_categoria ON documenti_sicurezza(categoria)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_docsic_scadenza ON documenti_sicurezza(data_scadenza)');
+
     console.log('Tabelle e indici create/verificate');
   } finally {
     client.release();

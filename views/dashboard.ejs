@@ -93,6 +93,42 @@
 </div>
 <% } %>
 
+<% if (typeof sicurezzaScadenze !== 'undefined' && sicurezzaScadenze.totale > 0) { %>
+<div class="dashboard-sicurezza" style="background:var(--card-bg,#fff);border:1px solid var(--danger,#dc2626);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border,#e5e7eb);background:rgba(220,38,38,.04)">
+    <h2 style="margin:0;font-size:1rem;display:flex;align-items:center;gap:.5rem;color:var(--danger,#dc2626)">
+      <svg style="width:18px;height:18px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+      Scadenze Sicurezza
+      <span style="background:var(--danger,#dc2626);color:#fff;font-size:.7rem;font-weight:700;padding:.15rem .45rem;border-radius:10px"><%= sicurezzaScadenze.totale %></span>
+    </h2>
+    <a href="<%= bp %>/sicurezza" style="font-size:.8rem;color:var(--primary)">Dettagli →</a>
+  </div>
+  <div style="padding:.5rem 0">
+    <% sicurezzaScadenze.formazioni.forEach(function(s) { %>
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
+      <span style="background:var(--danger,#dc2626);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;flex-shrink:0">FORMAZIONE</span>
+      <span style="flex:1;font-size:.85rem"><%= s.tipo %></span>
+      <span style="font-size:.78rem;color:var(--danger,#dc2626);font-weight:600"><%= s.data_scadenza %></span>
+    </div>
+    <% }); %>
+    <% sicurezzaScadenze.dpi.forEach(function(s) { %>
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
+      <span style="background:var(--warn,#f59e0b);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;flex-shrink:0">DPI</span>
+      <span style="flex:1;font-size:.85rem"><%= s.tipo %></span>
+      <span style="font-size:.78rem;color:var(--danger,#dc2626);font-weight:600"><%= s.data_scadenza %></span>
+    </div>
+    <% }); %>
+    <% sicurezzaScadenze.documenti.forEach(function(s) { %>
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--border,#f3f4f6)">
+      <span style="background:var(--primary,#1a56db);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;flex-shrink:0">DOCUMENTO</span>
+      <span style="flex:1;font-size:.85rem"><%= s.tipo %></span>
+      <span style="font-size:.78rem;color:var(--danger,#dc2626);font-weight:600"><%= s.data_scadenza %></span>
+    </div>
+    <% }); %>
+  </div>
+</div>
+<% } %>
+
 <div class="dashboard-actions rsp-quick-actions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;margin-bottom:1.5rem">
   <a href="<%= bp %>/ferie" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
     <svg style="width:24px;height:24px;color:var(--primary)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
@@ -101,6 +137,10 @@
   <a href="<%= bp %>/avvisi" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
     <svg style="width:24px;height:24px;color:var(--warn,#f59e0b)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
     Avvisi
+  </a>
+  <a href="<%= bp %>/sicurezza" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
+    <svg style="width:24px;height:24px;color:var(--danger,#dc2626)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+    Sicurezza
   </a>
   <a href="<%= bp %>/ferie/calendar/ical" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;font-size:.9rem;font-weight:500">
     <svg style="width:24px;height:24px;color:var(--success,#22c55e)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>

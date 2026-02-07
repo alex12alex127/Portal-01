@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 const { soloData } = require('../lib/helpers');
+const { getScadenzeSicurezza } = require('../lib/sicurezza');
 
 router.get('/', (req, res) => {
   const base = req.app.get('basePath') || '';
@@ -51,6 +52,17 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       ORDER BY in_evidenza DESC, created_at DESC LIMIT 5
     `);
     const avvisiDashboard = avvisiResult.rows.map(a => ({ ...a, created_at: a.created_at ? new Date(a.created_at).toLocaleDateString('it-IT') : '' }));
+    let sicurezzaScadenze = { formazioni: [], dpi: [], documenti: [], totale: 0 };
+    try {
+      const scadRaw = await getScadenzeSicurezza(30);
+      sicurezzaScadenze = {
+        formazioni: scadRaw.formazioni.filter(s => s.user_id === req.session.user.id).map(s => ({ ...s, data_scadenza: soloData(s.data_scadenza) })),
+        dpi: scadRaw.dpi.filter(s => s.user_id === req.session.user.id).map(s => ({ ...s, data_scadenza: soloData(s.data_scadenza) })),
+        documenti: scadRaw.documenti.map(s => ({ ...s, data_scadenza: soloData(s.data_scadenza) })),
+        totale: 0
+      };
+      sicurezzaScadenze.totale = sicurezzaScadenze.formazioni.length + sicurezzaScadenze.dpi.length + sicurezzaScadenze.documenti.length;
+    } catch (_) { /* tabelle non ancora create */ }
     res.render('dashboard', {
       title: 'Panoramica - Portal-01',
       activePage: 'dashboard',
@@ -58,7 +70,8 @@ router.get('/dashboard', requireAuth, async (req, res) => {
       summary: { year, ...summary },
       ultimeRichieste: ultimeRichieste.rows.map(r => ({ ...r, data_inizio: soloData(r.data_inizio), data_fine: soloData(r.data_fine) })),
       notifiche,
-      avvisiDashboard: avvisiDashboard
+      avvisiDashboard: avvisiDashboard,
+      sicurezzaScadenze
     });
   } catch (err) {
     console.error(err);

@@ -132,7 +132,7 @@
 
   <div class="card card--calendar">
     <h2><svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5M12 3v1.5m0 15v1.5m9-9h-1.5M3.75 12H5.25m13.5 0a.75.75 0 01-1.5 0H5.25a.75.75 0 010-1.5h13.5a.75.75 0 010 1.5z" /></svg> Calendario ferie</h2>
-    <p class="calendar-hint">Clicca su un giorno per vedere chi è in ferie (solo richieste approvate).</p>
+    <p class="calendar-hint">Clicca su un giorno per vedere chi è in ferie. <span style="display:inline-flex;align-items:center;gap:.3rem;margin-left:.5rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--primary,#3b82f6);display:inline-block"></span> Ferie</span> <span style="display:inline-flex;align-items:center;gap:.3rem;margin-left:.5rem"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block"></span> Festività</span></p>
     <div class="calendar-nav">
       <button type="button" class="btn btn-sm calendar-prev" aria-label="Mese precedente"><span class="calendar-nav__arrow">‹</span><span class="calendar-nav__label">Prec</span></button>
       <h3 class="calendar-title" id="calendarMonthTitle">—</h3>
@@ -323,6 +323,7 @@
   var gridEl = document.getElementById('calendarGrid');
   var titleEl = document.getElementById('calendarMonthTitle');
   var byDate = {};
+  var festivita = {};
 
   function firstDayOffset(y, m) { return ((new Date(y, m - 1, 1).getDay() + 6) % 7); }
   function daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
@@ -337,9 +338,31 @@
       var key = year + '-' + String(month).padStart(2,'0') + '-' + String(d).padStart(2,'0');
       var people = byDate[key] || [];
       var hasFerie = people.length > 0;
-      var label = hasFerie ? people.length + ' in ferie' : '';
-      var dot = hasFerie ? '<span class="calendar-day__dot" aria-hidden="true"></span>' : '';
-      html += '<button type="button" class="calendar-day' + (hasFerie ? ' calendar-day--has' : '') + '" data-date="' + key + '" title="' + (hasFerie ? 'Clicca: ' + people.length + ' in ferie' : 'Clicca per dettaglio') + '"><span class="calendar-day__num">' + d + '</span>' + dot + (label ? '<span class="calendar-day__label">' + label + '</span>' : '') + '</button>';
+      var isFestivo = !!festivita[key];
+      var festName = festivita[key] || '';
+      var cls = 'calendar-day';
+      if (hasFerie) cls += ' calendar-day--has';
+      if (isFestivo) cls += ' calendar-day--festivo';
+
+      var dots = '';
+      if (hasFerie) dots += '<span class="calendar-day__dot" aria-hidden="true"></span>';
+      if (isFestivo) dots += '<span class="calendar-day__dot calendar-day__dot--festivo" aria-hidden="true"></span>';
+
+      var label = '';
+      if (isFestivo) label = festName;
+      else if (hasFerie) label = people.length + ' in ferie';
+
+      var titleAttr = '';
+      if (isFestivo && hasFerie) titleAttr = festName + ' — ' + people.length + ' in ferie';
+      else if (isFestivo) titleAttr = festName;
+      else if (hasFerie) titleAttr = people.length + ' in ferie';
+      else titleAttr = 'Clicca per dettaglio';
+
+      html += '<button type="button" class="' + cls + '" data-date="' + key + '" title="' + titleAttr + '">';
+      html += '<span class="calendar-day__num">' + d + '</span>';
+      html += dots;
+      if (label) html += '<span class="calendar-day__label">' + label + '</span>';
+      html += '</button>';
     }
     gridEl.innerHTML = html;
     gridEl.querySelectorAll('.calendar-day:not(.calendar-day--empty)').forEach(function(btn){
@@ -348,8 +371,12 @@
         if (!date) return;
         var parts = date.split('-');
         var people = byDate[date] || [];
-        var text = people.length ? people.map(function(p){ return p.full_name; }).join('\n') : 'Nessuno in ferie in questo giorno.';
-        if (typeof window.showModal === 'function') window.showModal({ title: 'Ferie il ' + parts[2] + '/' + parts[1] + '/' + parts[0], text: text });
+        var isFest = !!festivita[date];
+        var lines = [];
+        if (isFest) lines.push('Festività: ' + festivita[date]);
+        if (people.length) lines.push(people.map(function(p){ return p.full_name; }).join('\n'));
+        if (!lines.length) lines.push('Nessuno in ferie in questo giorno.');
+        if (typeof window.showModal === 'function') window.showModal({ title: (isFest ? festivita[date] + ' — ' : '') + parts[2] + '/' + parts[1] + '/' + parts[0], text: lines.join('\n\n') });
       });
     });
   }
@@ -357,9 +384,14 @@
   function load() {
     fetch((window.APP_BASE||'')+'/ferie/calendar?year=' + year + '&month=' + month).then(function(r){ return r.json(); }).then(function(j){
       byDate = (j && typeof j.byDate === 'object' && j.byDate !== null) ? j.byDate : {};
+      festivita = (j && typeof j.festivita === 'object' && j.festivita !== null) ? j.festivita : {};
       render();
-    }).catch(function(){ byDate = {}; render(); });
+    }).catch(function(){ byDate = {}; festivita = {}; render(); });
   }
+
+  // Expose festivita for datepicker
+  window._calFestivita = festivita;
+  window._calLoadFestivita = function() { return festivita; };
 
   document.querySelector('.calendar-prev').addEventListener('click', function(){
     month--; if (month < 1) { month = 12; year--; }

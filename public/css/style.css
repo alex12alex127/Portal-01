@@ -1309,6 +1309,16 @@ tr:hover td { background: rgba(59,130,246,.03); }
 .calendar-day__dot { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin: 2px auto 0; flex-shrink: 0; }
 .calendar-day--has .calendar-day__dot { background: var(--primary-dark); }
 .calendar-day__label { font-size: 0.65rem; margin-top: 2px; opacity: .9; }
+.calendar-day--festivo { background: rgba(239,68,68,.08); border-color: #ef4444; }
+.calendar-day--festivo:hover { background: rgba(239,68,68,.15); }
+.calendar-day--festivo .calendar-day__num { color: #ef4444; font-weight: 700; }
+.calendar-day--festivo .calendar-day__label { color: #ef4444; font-weight: 600; font-size: .58rem; }
+.calendar-day__dot--festivo { background: #ef4444 !important; }
+.calendar-day--festivo.calendar-day--has { background: linear-gradient(135deg, rgba(59,130,246,.08), rgba(239,68,68,.08)); border-color: #ef4444; }
+[data-theme="dark"] .calendar-day--festivo { background: rgba(239,68,68,.12); }
+[data-theme="dark"] .calendar-day--festivo:hover { background: rgba(239,68,68,.2); }
+[data-theme="dark"] .calendar-day--festivo .calendar-day__num { color: #f87171; }
+[data-theme="dark"] .calendar-day--festivo .calendar-day__label { color: #f87171; }
 @media (min-width: 768px) {
   .card--calendar .calendar-grid { gap: 6px; }
   .calendar-day { min-height: 52px; }

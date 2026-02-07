@@ -8,6 +8,7 @@ const { requireAuth } = require('../middleware/auth');
 const { validateFerie } = require('../middleware/validation');
 const { apiLimiter } = require('../middleware/security');
 const { creaNotifica } = require('../lib/notifiche');
+const { getFestivitaAnno } = require('../lib/festivita');
 
 // Upload allegati ferie
 const uploadDir = path.join(__dirname, '..', 'uploads', 'ferie');
@@ -122,7 +123,19 @@ router.get('/calendar', requireAuth, async (req, res) => {
         byDate[key].push({ full_name: row.full_name, username: row.username });
       }
     }
-    res.json({ year, month, byDate });
+    // Festivita per questo mese
+    const festivitaAnno = await getFestivitaAnno(year);
+    const festivitaMap = {};
+    festivitaAnno.forEach(f => {
+      // Per ricorrenti, proietta sull'anno richiesto
+      const dataStr = f.ricorrente ? (year + '-' + f.data.slice(5)) : f.data;
+      const [fy, fm] = dataStr.split('-').map(Number);
+      if (fy === year && fm === month) {
+        festivitaMap[dataStr] = f.nome;
+      }
+    });
+
+    res.json({ year, month, byDate, festivita: festivitaMap });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Errore del server' });

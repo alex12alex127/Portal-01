@@ -1,0 +1,196 @@
+<% var bp = typeof basePath !== 'undefined' ? basePath : ''; %>
+<h1 class="page-title animate-in">
+  <svg class="icon icon--lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+  Festività Aziendali
+</h1>
+
+<!-- Stats -->
+<div class="p-stats">
+  <div class="p-stat p-stat--primary">
+    <div class="p-stat__value"><%= festivita.length %></div>
+    <div class="p-stat__label">Totali</div>
+  </div>
+  <div class="p-stat p-stat--success">
+    <div class="p-stat__value"><%= festivita.filter(f => f.ricorrente).length %></div>
+    <div class="p-stat__label">Ricorrenti</div>
+  </div>
+  <div class="p-stat p-stat--warn">
+    <div class="p-stat__value"><%= festivita.filter(f => !f.ricorrente).length %></div>
+    <div class="p-stat__label">Una tantum</div>
+  </div>
+  <div class="p-stat p-stat--primary">
+    <div class="p-stat__value"><%= festivita.filter(f => { var d = new Date(f.data); var now = new Date(); return (f.ricorrente && d.getMonth() >= now.getMonth()) || d >= now; }).length %></div>
+    <div class="p-stat__label">Prossime</div>
+  </div>
+</div>
+
+<!-- Azioni -->
+<div class="p-card" style="margin-bottom:var(--space-md)">
+  <div class="p-card-header">
+    <span class="p-list-item__sub">Gestione festività</span>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button type="button" class="btn btn-sm btn--secondary" id="btnImportItaliane">Importa festività italiane</button>
+      <button type="button" class="btn btn-sm" id="btnNewFestivita">+ Nuova festività</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lista -->
+<div class="p-card">
+  <% if (festivita.length === 0) { %>
+  <div class="p-empty">
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" /></svg>
+    <p>Nessuna festività configurata.</p>
+    <p class="p-list-item__sub">Clicca "Importa festività italiane" per iniziare con le festività nazionali.</p>
+  </div>
+  <% } else { %>
+  <div class="p-card-body--flush">
+    <% festivita.forEach(function(f) {
+      var dParts = f.data.split('-');
+      var mesi = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+      var dataLabel = parseInt(dParts[2],10) + ' ' + mesi[parseInt(dParts[1],10)-1] + (f.ricorrente ? '' : ' ' + dParts[0]);
+      var isPast = !f.ricorrente && new Date(f.data) < new Date();
+    %>
+    <div class="p-list-item<%= isPast ? ' p-list-item--alert' : '' %>">
+      <div class="p-list-item__avatar p-list-item__avatar--primary" style="font-size:.7rem;width:42px;height:42px">
+        <span><%= parseInt(dParts[2],10) %></span>
+      </div>
+      <div class="p-list-item__body">
+        <div class="p-list-item__title">
+          <span class="p-list-item__name"><%= f.nome %></span>
+          <% if (f.ricorrente) { %><span class="p-tag p-tag--primary">RICORRENTE</span><% } else { %><span class="p-tag p-tag--warn">UNA TANTUM</span><% } %>
+          <% if (isPast) { %><span class="p-tag p-tag--muted">PASSATA</span><% } %>
+        </div>
+        <div class="p-list-item__meta">
+          <span><%= dataLabel %></span>
+          <% if (f.note) { %><span>· <%= f.note %></span><% } %>
+          <% if (f.creato_da_nome) { %><span>· Creata da: <%= f.creato_da_nome %></span><% } %>
+        </div>
+      </div>
+      <div class="p-list-item__actions">
+        <button type="button" class="btn-sm fest-edit-btn" data-id="<%= f.id %>" data-nome="<%= f.nome %>" data-data="<%= f.data %>" data-ricorrente="<%= f.ricorrente %>" data-note="<%= f.note || '' %>">Modifica</button>
+        <button type="button" class="btn-sm fest-del-btn" data-id="<%= f.id %>" data-nome="<%= f.nome %>">Elimina</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+</div>
+
+<!-- Modale -->
+<div id="festModal" class="modal-overlay admin-ferie-modal" aria-hidden="true" hidden>
+  <div class="modal admin-ferie-modal__box admin-ferie-modal__box--form" role="dialog" aria-modal="true" style="max-width:480px">
+    <h3 class="modal__title" id="festModalTitle">Nuova festività</h3>
+    <form id="festForm" class="admin-ferie-edit-form p-modal-form">
+      <input type="hidden" id="festId" name="id">
+      <input type="hidden" id="festMethod" value="POST">
+      <label>Nome festività
+        <input type="text" id="festNome" name="nome" required placeholder="es. Natale, Patrono di Milano...">
+      </label>
+      <div class="p-form-grid-2">
+        <label>Data
+          <input type="date" id="festData" name="data" required>
+        </label>
+        <label style="display:flex;flex-direction:column">
+          <span>Ricorrente ogni anno</span>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-top:.35rem">
+            <input type="checkbox" id="festRicorrente" name="ricorrente" style="width:auto">
+            <span style="font-size:.82rem;color:var(--muted)">Si ripete ogni anno</span>
+          </div>
+        </label>
+      </div>
+      <label>Note (opzionale)
+        <textarea id="festNote" name="note" rows="2" placeholder="es. Patrono, chiusura aziendale..."></textarea>
+      </label>
+      <div class="modal__actions">
+        <button type="button" class="btn btn--secondary" id="festCancel">Annulla</button>
+        <button type="submit" class="btn">Salva</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+var csrf = '<%= csrfToken %>';
+var base = window.APP_BASE || '';
+
+function openFestModal(title, data) {
+  document.getElementById('festModalTitle').textContent = title;
+  document.getElementById('festId').value = data ? data.id : '';
+  document.getElementById('festMethod').value = data ? 'PUT' : 'POST';
+  document.getElementById('festNome').value = data ? data.nome : '';
+  document.getElementById('festData').value = data ? data.data : '';
+  document.getElementById('festRicorrente').checked = data ? (data.ricorrente === 'true' || data.ricorrente === true) : false;
+  document.getElementById('festNote').value = data ? data.note : '';
+  document.getElementById('festModal').removeAttribute('hidden');
+  document.getElementById('festModal').setAttribute('aria-hidden', 'false');
+  document.getElementById('festNome').focus();
+}
+function closeFestModal() {
+  document.getElementById('festModal').setAttribute('hidden', '');
+  document.getElementById('festModal').setAttribute('aria-hidden', 'true');
+}
+document.getElementById('festCancel').onclick = closeFestModal;
+document.getElementById('festModal').onclick = function(e) { if (e.target === this) closeFestModal(); };
+
+document.getElementById('btnNewFestivita').onclick = function() {
+  openFestModal('Nuova festività', null);
+};
+
+// Edit
+document.querySelectorAll('.fest-edit-btn').forEach(function(btn) {
+  btn.onclick = function() {
+    openFestModal('Modifica festività', this.dataset);
+  };
+});
+
+// Delete
+document.querySelectorAll('.fest-del-btn').forEach(function(btn) {
+  btn.onclick = function() {
+    var id = this.dataset.id;
+    var nome = this.dataset.nome;
+    window.showModal({ title: 'Elimina festività', text: 'Eliminare "' + nome + '"?', onConfirm: async function() {
+      try {
+        var r = await fetch(base + '/admin/festivita/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf }) });
+        var j = await r.json();
+        window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+        if (j.success) location.reload();
+      } catch (x) { window.showToast('Errore', 'error'); }
+    }});
+  };
+});
+
+// Import italiane
+document.getElementById('btnImportItaliane').onclick = function() {
+  var anno = new Date().getFullYear();
+  window.showModal({ title: 'Importa festività italiane', text: 'Verranno aggiunte le 10 festività nazionali italiane come ricorrenti (se non già presenti).', onConfirm: async function() {
+    try {
+      var r = await fetch(base + '/admin/festivita/italiane', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf, anno: anno }) });
+      var j = await r.json();
+      window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+      if (j.success) location.reload();
+    } catch (x) { window.showToast('Errore', 'error'); }
+  }});
+};
+
+// Form submit
+document.getElementById('festForm').onsubmit = async function(e) {
+  e.preventDefault();
+  var id = document.getElementById('festId').value;
+  var method = document.getElementById('festMethod').value;
+  var url = base + '/admin/festivita' + (id ? '/' + id : '');
+  var payload = {
+    _csrf: csrf,
+    nome: document.getElementById('festNome').value,
+    data: document.getElementById('festData').value,
+    ricorrente: document.getElementById('festRicorrente').checked,
+    note: document.getElementById('festNote').value || null
+  };
+  try {
+    var r = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    var j = await r.json();
+    window.showToast(j.message || j.error, j.success ? 'ok' : 'error');
+    if (j.success) { closeFestModal(); location.reload(); }
+  } catch (x) { window.showToast('Errore', 'error'); }
+};
+</script>

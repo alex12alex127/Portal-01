@@ -7,6 +7,7 @@ const { creaNotifica } = require('../../lib/notifiche');
 const { logAudit } = require('../../lib/audit');
 const { sendFerieEmail } = require('../../lib/email');
 const { soloData } = require('../../lib/helpers');
+const { calcolaGiorniLavorativi } = require('../../lib/festivita');
 
 router.get('/', requireAuth, requireManager, async (req, res) => {
   try {
@@ -158,8 +159,8 @@ router.put('/:id', requireAuth, requireManager, apiLimiter, async (req, res) => 
   if (tipoVal === 'malattia' && !codice_protocollo) {
     return res.status(400).json({ error: 'Il codice protocollo del medico è obbligatorio per le richieste di malattia' });
   }
-  const giorni = Math.ceil((fine - inizio) / (1000 * 60 * 60 * 24)) + 1;
   try {
+    const giorni = await calcolaGiorniLavorativi(data_inizio, data_fine);
     const r = await db.query(
       'UPDATE ferie SET data_inizio = $1, data_fine = $2, giorni_totali = $3, tipo = $4, note = $5, codice_protocollo = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING id',
       [data_inizio, data_fine, giorni, tipoVal, note || null, tipoVal === 'malattia' ? codice_protocollo : null, id]

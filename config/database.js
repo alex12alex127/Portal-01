@@ -181,6 +181,22 @@ async function initDatabase() {
     await client.query('CREATE INDEX IF NOT EXISTS idx_dpi_user ON dpi_consegne(user_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_dpi_scadenza ON dpi_consegne(data_scadenza)');
 
+    // ===== FESTIVITA AZIENDALI CONFIGURABILI =====
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS festivita (
+        id SERIAL PRIMARY KEY,
+        nome VARCHAR(150) NOT NULL,
+        data DATE NOT NULL,
+        ricorrente BOOLEAN DEFAULT false,
+        note TEXT,
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_festivita_data ON festivita(data)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_festivita_ricorrente ON festivita(ricorrente)');
+
     console.log('Tabelle e indici create/verificate');
   } finally {
     client.release();

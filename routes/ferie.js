@@ -27,6 +27,7 @@ const upload = multer({
 });
 
 const { soloData } = require('../lib/helpers');
+const { calcolaGiorniLavorativi } = require('../lib/festivita');
 
 router.get('/', requireAuth, async (req, res) => {
   try {
@@ -144,7 +145,7 @@ router.post('/create', requireAuth, apiLimiter, validateFerie, async (req, res) 
     if (overlap.rows.length > 0) {
       return res.status(400).json({ error: 'Hai già una richiesta per questo periodo' });
     }
-    const giorni = Math.ceil((new Date(data_fine) - new Date(data_inizio)) / (1000 * 60 * 60 * 24)) + 1;
+    const giorni = await calcolaGiorniLavorativi(data_inizio, data_fine);
     await db.query(
       'INSERT INTO ferie (user_id, data_inizio, data_fine, giorni_totali, tipo, note, codice_protocollo) VALUES ($1, $2, $3, $4, $5, $6, $7)',
       [req.session.user.id, data_inizio, data_fine, giorni, tipo, note || null, tipo === 'malattia' ? codice_protocollo : null]
@@ -198,7 +199,7 @@ router.put('/:id', requireAuth, apiLimiter, validateFerie, async (req, res) => {
       [req.session.user.id, id, data_inizio, data_fine]
     );
     if (overlap.rows.length > 0) return res.status(400).json({ error: 'Hai già una richiesta per questo periodo' });
-    const giorni = Math.ceil((new Date(data_fine) - new Date(data_inizio)) / (1000 * 60 * 60 * 24)) + 1;
+    const giorni = await calcolaGiorniLavorativi(data_inizio, data_fine);
     await db.query(
       'UPDATE ferie SET data_inizio = $1, data_fine = $2, giorni_totali = $3, tipo = $4, note = $5, codice_protocollo = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7',
       [data_inizio, data_fine, giorni, tipoVal, note || null, tipoVal === 'malattia' ? codice_protocollo : null, id]

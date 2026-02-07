@@ -7,6 +7,7 @@ router.use('/avvisi', require('./avvisi'));
 router.use('/audit', require('./audit'));
 router.use('/report', require('./report'));
 router.use('/sicurezza', require('./sicurezza'));
+router.use('/festivita', require('./festivita'));
 router.use('/search', require('./search'));
 
 module.exports = router;
